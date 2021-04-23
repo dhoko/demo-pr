@@ -1,5 +1,5 @@
-import { c } from 'ttag';
-import getRandomValues from 'get-random-values';
+import { c } from "ttag";
+import getRandomValues from "get-random-values";
 import {
     arrayToHexString,
     createMessage,
@@ -13,10 +13,10 @@ import {
     reformatKey,
     signMessage,
     VERIFICATION_STATUS,
-} from 'pmcrypto';
-import { decryptMemberToken } from './memberToken';
-import { EncryptionConfig } from '../interfaces';
-import { DEFAULT_ENCRYPTION_CONFIG, ENCRYPTION_CONFIGS } from '../constants';
+} from "pmcrypto";
+import { decryptMemberToken } from "./memberToken";
+import { EncryptionConfig } from "../interfaces";
+import { DEFAULT_ENCRYPTION_CONFIG, ENCRYPTION_CONFIGS } from "../constants";
 
 interface EncryptAddressKeyTokenArguments {
     token: string;
@@ -24,9 +24,16 @@ interface EncryptAddressKeyTokenArguments {
     organizationKey?: OpenPGPKey;
 }
 
-export const encryptAddressKeyToken = async ({ token, userKey, organizationKey }: EncryptAddressKeyTokenArguments) => {
+export const encryptAddressKeyToken = async ({
+    token,
+    userKey,
+    organizationKey,
+}: EncryptAddressKeyTokenArguments) => {
     const message = createMessage(token);
-    const [userSignatureResult, organizationSignatureResult] = await Promise.all([
+    const [
+        userSignatureResult,
+        organizationSignatureResult,
+    ] = await Promise.all([
         signMessage({
             message,
             privateKeys: [userKey],
@@ -43,14 +50,18 @@ export const encryptAddressKeyToken = async ({ token, userKey, organizationKey }
 
     const { data: encryptedToken } = await encryptMessage({
         message,
-        publicKeys: organizationKey ? [userKey.toPublic(), organizationKey.toPublic()] : [userKey.toPublic()],
+        publicKeys: organizationKey
+            ? [userKey.toPublic(), organizationKey.toPublic()]
+            : [userKey.toPublic()],
     });
 
     return {
         token,
         encryptedToken,
         signature: userSignatureResult.signature,
-        ...(organizationSignatureResult?.signature && { organizationSignature: organizationSignatureResult.signature }),
+        ...(organizationSignatureResult?.signature && {
+            organizationSignature: organizationSignatureResult.signature,
+        }),
     };
 };
 
@@ -75,8 +86,8 @@ export const decryptAddressKeyToken = async ({
     });
 
     if (verified !== VERIFICATION_STATUS.SIGNED_AND_VALID) {
-        const error = new Error(c('Error').t`Signature verification failed`);
-        error.name = 'SignatureError';
+        const error = new Error(c("Error").t`Signature verification failed`);
+        error.name = "SignatureError";
         throw error;
     }
 
@@ -89,13 +100,18 @@ interface AddressKeyTokenResult {
     signature: string;
 }
 
-export function generateAddressKeyTokens(userKey: OpenPGPKey): Promise<AddressKeyTokenResult>;
+export function generateAddressKeyTokens(
+    userKey: OpenPGPKey
+): Promise<AddressKeyTokenResult>;
 export function generateAddressKeyTokens(
     userKey: OpenPGPKey,
     organizationKey: OpenPGPKey
 ): Promise<AddressKeyTokenResult & { organizationSignature: string }>;
 
-export async function generateAddressKeyTokens(userKey: OpenPGPKey, organizationKey?: OpenPGPKey) {
+export async function generateAddressKeyTokens(
+    userKey: OpenPGPKey,
+    organizationKey?: OpenPGPKey
+) {
     const randomBytes = getRandomValues(new Uint8Array(32));
     const token = arrayToHexString(randomBytes);
     return encryptAddressKeyToken({ token, organizationKey, userKey });
@@ -123,11 +139,13 @@ export const getAddressKeyToken = ({
             Signature,
             privateKeys,
             // Verify against the organization key in case an admin is signed in to a non-private member.
-            publicKeys: organizationKey ? [organizationKey.toPublic()] : publicKeys,
+            publicKeys: organizationKey
+                ? [organizationKey.toPublic()]
+                : publicKeys,
         });
     }
     if (!organizationKey) {
-        throw new Error('Missing organization key');
+        throw new Error("Missing organization key");
     }
     // Old address key format for an admin signed into a non-private user
     return decryptMemberToken(Token, organizationKey);
@@ -169,7 +187,11 @@ export const getEncryptedArmoredAddressKey = async (
     const primaryUserId = userIds?.[0]?.userId?.userid;
 
     if (userIds?.length !== 1 || !`${primaryUserId}`.endsWith(`<${email}>`)) {
-        const { privateKeyArmored } = await reformatAddressKey({ email, passphrase: newKeyPassword, privateKey });
+        const { privateKeyArmored } = await reformatAddressKey({
+            email,
+            passphrase: newKeyPassword,
+            privateKey,
+        });
         return privateKeyArmored;
     }
 

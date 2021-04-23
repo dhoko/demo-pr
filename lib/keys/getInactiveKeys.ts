@@ -1,7 +1,10 @@
-import { getKeys } from 'pmcrypto';
-import { DecryptedKey, Key } from '../interfaces';
+import { getKeys } from "pmcrypto";
+import { DecryptedKey, Key } from "../interfaces";
 
-export const getInactiveKeys = async (Keys: Key[], decryptedKeys: DecryptedKey[]) => {
+export const getInactiveKeys = async (
+    Keys: Key[],
+    decryptedKeys: DecryptedKey[]
+) => {
     const decryptedKeysIDs = new Set<string>(decryptedKeys.map(({ ID }) => ID));
     const inactiveKeys = Keys.filter(({ ID }) => !decryptedKeysIDs.has(ID));
     return Promise.all(

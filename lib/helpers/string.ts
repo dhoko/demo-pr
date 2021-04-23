@@ -1,17 +1,17 @@
-import getRandomValues from 'get-random-values';
+import getRandomValues from "get-random-values";
 
 enum CURRENCIES {
-    USD = '$',
-    EUR = '€',
-    CHF = 'CHF',
+    USD = "$",
+    EUR = "€",
+    CHF = "CHF",
 }
 
 export const getRandomString = (
     length: number,
-    charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 ) => {
     let i;
-    let result = '';
+    let result = "";
 
     const values = getRandomValues(new Uint32Array(length));
 
@@ -22,39 +22,46 @@ export const getRandomString = (
     return result;
 };
 
-export const normalize = (value = '', removeDiacritics = false) => {
+export const normalize = (value = "", removeDiacritics = false) => {
     let normalized = value.toLowerCase().trim();
     if (removeDiacritics) {
-        normalized = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        normalized = normalized
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
     }
     return normalized;
 };
 
-export const replaceLineBreak = (content = '') => content.replace(/(?:\r\n|\r|\n)/g, '<br />');
+export const replaceLineBreak = (content = "") =>
+    content.replace(/(?:\r\n|\r|\n)/g, "<br />");
 
-export const toPrice = (amount = 0, currency: keyof typeof CURRENCIES = 'EUR', divisor = 100) => {
+export const toPrice = (
+    amount = 0,
+    currency: keyof typeof CURRENCIES = "EUR",
+    divisor = 100
+) => {
     const symbol = CURRENCIES[currency] || currency;
     const value = Number(amount / divisor).toFixed(2);
-    const prefix = +value < 0 ? '-' : '';
+    const prefix = +value < 0 ? "-" : "";
     const absValue = Math.abs(+value);
 
-    if (currency === 'USD') {
+    if (currency === "USD") {
         return `${prefix}${symbol}${absValue}`;
     }
 
     return `${prefix}${absValue} ${symbol}`;
 };
 
-export const addPlus = ([first = '', ...rest] = []) => {
-    return [first, rest.length && `+${rest.length}`].filter(Boolean).join(', ');
+export const addPlus = ([first = "", ...rest] = []) => {
+    return [first, rest.length && `+${rest.length}`].filter(Boolean).join(", ");
 };
 
 /**
  * Capitalize a string
  */
 export const capitalize = (str: any) => {
-    if (str === '' || typeof str !== 'string') {
-        return '';
+    if (str === "" || typeof str !== "string") {
+        return "";
     }
     return str[0].toUpperCase() + str.slice(1);
 };
@@ -63,8 +70,8 @@ export const capitalize = (str: any) => {
  * Uncapitalize a string
  */
 export const uncapitalize = (str: any) => {
-    if (str === '' || typeof str !== 'string') {
-        return '';
+    if (str === "" || typeof str !== "string") {
+        return "";
     }
     return str[0].toLowerCase() + str.slice(1);
 };
@@ -73,7 +80,7 @@ export const uncapitalize = (str: any) => {
  * Given a maximum number of characters to display,
  * truncate a string by adding omission if too long
  */
-export const truncate = (str = '', charsToDisplay = 50, omission = '…') => {
+export const truncate = (str = "", charsToDisplay = 50, omission = "…") => {
     if (str.length === 0) {
         return str;
     }
@@ -87,32 +94,43 @@ export const truncate = (str = '', charsToDisplay = 50, omission = '…') => {
  * Given a maximum number of characters to capture from a string at the start and end of it,
  * truncate the string by adding omission if too long
  */
-export const truncateMore = ({ string = '', charsToDisplayStart = 0, charsToDisplayEnd = 0, omission = '…' }) => {
+export const truncateMore = ({
+    string = "",
+    charsToDisplayStart = 0,
+    charsToDisplayEnd = 0,
+    omission = "…",
+}) => {
     if (string.length === 0) {
         return string;
     }
-    if (string.length <= charsToDisplayStart + charsToDisplayEnd + omission.length) {
+    if (
+        string.length <=
+        charsToDisplayStart + charsToDisplayEnd + omission.length
+    ) {
         return string;
     }
     const strBegin = string.substring(0, charsToDisplayStart);
-    const strEnd = string.substring(string.length - charsToDisplayEnd, string.length);
+    const strEnd = string.substring(
+        string.length - charsToDisplayEnd,
+        string.length
+    );
     return strBegin + omission + strEnd;
 };
 
-export const getInitials = (fullName = '') => {
-    const [first = '', ...rest] = fullName
-        .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '') // Remove specific punctuation
-        .replace(/\s{2,}/g, ' ')
-        .split(' ');
+export const getInitials = (fullName = "") => {
+    const [first = "", ...rest] = fullName
+        .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "") // Remove specific punctuation
+        .replace(/\s{2,}/g, " ")
+        .split(" ");
     const last = rest[rest.length - 1];
 
     return [first, last]
         .filter(Boolean)
-        .map((letter = '') => [...letter.toUpperCase()][0]) // We use the spread operator to support Unicode characters
-        .join('');
+        .map((letter = "") => [...letter.toUpperCase()][0]) // We use the spread operator to support Unicode characters
+        .join("");
 };
 
-export const hasProtonDomain = (email = '') => {
+export const hasProtonDomain = (email = "") => {
     const protonmailRegex = /@(protonmail\.(com|ch)|pm\.me|)$/i;
     return protonmailRegex.test(email);
 };
@@ -127,7 +145,10 @@ const getMatchingCharacters = (string: string, substring: string) => {
     return i > 0 ? i : 0;
 };
 
-export const findLongestMatchingIndex = (strings: string[] = [], substring = '') => {
+export const findLongestMatchingIndex = (
+    strings: string[] = [],
+    substring = ""
+) => {
     let max = 0;
     let i = -1;
 
@@ -142,8 +163,9 @@ export const findLongestMatchingIndex = (strings: string[] = [], substring = '')
     return i;
 };
 
-export const stripLeadingAndTrailingSlash = (str: string) => str.replace(/^\/+|\/+$/g, '');
+export const stripLeadingAndTrailingSlash = (str: string) =>
+    str.replace(/^\/+|\/+$/g, "");
 
 export const removeDiacritics = (str: string) => {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };

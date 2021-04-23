@@ -1,11 +1,17 @@
-import { createCleartextMessage, getSignature, signMessage, VERIFICATION_STATUS, verifyMessage } from 'pmcrypto';
-import { getContact, updateContact } from '../api/contacts';
-import { CONTACT_CARD_TYPE } from '../constants';
-import { Api, DecryptedKey, Key } from '../interfaces';
-import { Contact } from '../interfaces/contacts';
-import { splitKeys } from '../keys/keys';
-import { getKeyUsedForContact } from './keyVerifications';
-import { resignCards } from './resign';
+import {
+    createCleartextMessage,
+    getSignature,
+    signMessage,
+    VERIFICATION_STATUS,
+    verifyMessage,
+} from "pmcrypto";
+import { getContact, updateContact } from "../api/contacts";
+import { CONTACT_CARD_TYPE } from "../constants";
+import { Api, DecryptedKey, Key } from "../interfaces";
+import { Contact } from "../interfaces/contacts";
+import { splitKeys } from "../keys/keys";
+import { getKeyUsedForContact } from "./keyVerifications";
+import { resignCards } from "./resign";
 
 /**
  * Process all contacts and update each of them without the content encrypted with the given key
@@ -23,7 +29,9 @@ export const dropDataEncryptedWithAKey = async (
 
     for (let i = 0; i < contacts.length && !exitRef.current; i++) {
         const contactID = contacts[i].ID;
-        const { Contact } = await api<{ Contact: Contact }>(getContact(contactID));
+        const { Contact } = await api<{ Contact: Contact }>(
+            getContact(contactID)
+        );
         const match = await getKeyUsedForContact(Contact, [referenceKey], true);
         if (match) {
             updated++;
@@ -46,7 +54,9 @@ export const dropDataEncryptedWithAKey = async (
                     return { ...card, Signature };
                 })
             );
-            await api<{ Contact: Contact }>(updateContact(contactID, { Cards }));
+            await api<{ Contact: Contact }>(
+                updateContact(contactID, { Cards })
+            );
             // console.log('dropDataEncryptedWithAKey', updateContact(contactID, { Cards }));
         }
         progressionCallback(i + 1, updated);
@@ -68,10 +78,14 @@ export const resignAllContacts = async (
 
     for (let i = 0; i < contacts.length && !exitRef.current; i++) {
         const contactID = contacts[i].ID;
-        const { Contact } = await api<{ Contact: Contact }>(getContact(contactID));
+        const { Contact } = await api<{ Contact: Contact }>(
+            getContact(contactID)
+        );
 
         // Should only be one signed card
-        const signedCard = Contact.Cards.find((card) => card.Type === CONTACT_CARD_TYPE.SIGNED);
+        const signedCard = Contact.Cards.find(
+            (card) => card.Type === CONTACT_CARD_TYPE.SIGNED
+        );
 
         if (!signedCard || !signedCard.Signature) {
             progressionCallback(i + 1, updated);
@@ -91,7 +105,9 @@ export const resignAllContacts = async (
                 contactCards: Contact.Cards,
                 privateKeys: [privateKeys[0]],
             });
-            await api<{ Contact: Contact }>(updateContact(contactID, { Cards }));
+            await api<{ Contact: Contact }>(
+                updateContact(contactID, { Cards })
+            );
             // console.log('resignAllContacts', updateContact(contactID, { Cards }));
         }
         progressionCallback(i + 1, updated);

@@ -1,27 +1,45 @@
-import { OpenPGPKey, serverTime } from 'pmcrypto';
-import { c } from 'ttag';
-import { KEY_FLAG, MIME_TYPES_MORE, PGP_SCHEMES_MORE, RECIPIENT_TYPES } from '../constants';
-import { canonizeEmailByGuess, canonizeInternalEmail } from '../helpers/email';
-import isTruthy from '../helpers/isTruthy';
-import { toBitMap } from '../helpers/object';
-import { ApiKeysConfig, ContactPublicKeyModel, PublicKeyConfigs, PublicKeyModel } from '../interfaces';
-import { hasBit } from '../helpers/bitset';
+import { OpenPGPKey, serverTime } from "pmcrypto";
+import { c } from "ttag";
+import {
+    KEY_FLAG,
+    MIME_TYPES_MORE,
+    PGP_SCHEMES_MORE,
+    RECIPIENT_TYPES,
+} from "../constants";
+import { canonizeEmailByGuess, canonizeInternalEmail } from "../helpers/email";
+import isTruthy from "../helpers/isTruthy";
+import { toBitMap } from "../helpers/object";
+import {
+    ApiKeysConfig,
+    ContactPublicKeyModel,
+    PublicKeyConfigs,
+    PublicKeyModel,
+} from "../interfaces";
+import { hasBit } from "../helpers/bitset";
 
 const { TYPE_INTERNAL } = RECIPIENT_TYPES;
 
 /**
  * Check if some API key data belongs to an internal user
  */
-export const getIsInternalUser = ({ RecipientType }: ApiKeysConfig): boolean => RecipientType === TYPE_INTERNAL;
+export const getIsInternalUser = ({ RecipientType }: ApiKeysConfig): boolean =>
+    RecipientType === TYPE_INTERNAL;
 
 /**
  * Test if no key is enabled
  */
 export const isDisabledUser = (config: ApiKeysConfig): boolean =>
-    getIsInternalUser(config) && !config.Keys.some(({ Flags }) => hasBit(Flags, KEY_FLAG.FLAG_NOT_OBSOLETE));
+    getIsInternalUser(config) &&
+    !config.Keys.some(({ Flags }) => hasBit(Flags, KEY_FLAG.FLAG_NOT_OBSOLETE));
 
-export const getEmailMismatchWarning = (publicKey: OpenPGPKey, emailAddress: string, isInternal: boolean): string[] => {
-    const canonicalEmail = isInternal ? canonizeInternalEmail(emailAddress) : canonizeEmailByGuess(emailAddress);
+export const getEmailMismatchWarning = (
+    publicKey: OpenPGPKey,
+    emailAddress: string,
+    isInternal: boolean
+): string[] => {
+    const canonicalEmail = isInternal
+        ? canonizeInternalEmail(emailAddress)
+        : canonizeEmailByGuess(emailAddress);
     const users = publicKey.users || [];
     const keyEmails = users.reduce<string[]>((acc, { userId = {} } = {}) => {
         if (!userId?.userid) {
@@ -37,8 +55,11 @@ export const getEmailMismatchWarning = (publicKey: OpenPGPKey, emailAddress: str
         isInternal ? canonizeInternalEmail(email) : canonizeEmailByGuess(email)
     );
     if (!canonicalKeyEmails.includes(canonicalEmail)) {
-        const keyUserIds = keyEmails.join(', ');
-        return [c('PGP key warning').t`Email address not found among user ids defined in sending key (${keyUserIds})`];
+        const keyUserIds = keyEmails.join(", ");
+        return [
+            c("PGP key warning")
+                .t`Email address not found among user ids defined in sending key (${keyUserIds})`,
+        ];
     }
     return [];
 };
@@ -82,7 +103,9 @@ export const sortPinnedKeys = (
                 const fingerprint = key.getFingerprint();
                 // calculate order through a bitmap
                 const index = toBitMap({
-                    cannotSend: expiredFingerprints.has(fingerprint) || revokedFingerprints.has(fingerprint),
+                    cannotSend:
+                        expiredFingerprints.has(fingerprint) ||
+                        revokedFingerprints.has(fingerprint),
                 });
                 acc[index].push(key);
                 return acc;
@@ -104,11 +127,15 @@ export const getKeyEncryptStatus = async (
     const now = timestamp || +serverTime();
     const creationTime = +publicKey.getCreationTime();
     // notice there are different expiration times depending on the use of the key.
-    const expirationTime = await publicKey.getExpirationTime('encrypt');
+    const expirationTime = await publicKey.getExpirationTime("encrypt");
     const isExpired = !(creationTime <= now && now <= expirationTime);
 
     // TODO: OpenPGP types not up-to-date, remove assertions when fixed
-    const isRevoked = (await publicKey.isRevoked(null as any, null as any, timestamp as any)) as boolean;
+    const isRevoked = (await publicKey.isRevoked(
+        null as any,
+        null as any,
+        timestamp as any
+    )) as boolean;
     return { isExpired, isRevoked };
 };
 
@@ -116,9 +143,14 @@ export const getKeyEncryptStatus = async (
  * Given a public key retrieved from the API, return true if it has been marked by the API as
  * verification-only. Return false if it's marked valid for encryption. Return undefined otherwise
  */
-export const getKeyVerificationOnlyStatus = (publicKey: OpenPGPKey, config: ApiKeysConfig): boolean | undefined => {
+export const getKeyVerificationOnlyStatus = (
+    publicKey: OpenPGPKey,
+    config: ApiKeysConfig
+): boolean | undefined => {
     const fingerprint = publicKey.getFingerprint();
-    const index = config.publicKeys.findIndex((publicKey) => publicKey?.getFingerprint() === fingerprint);
+    const index = config.publicKeys.findIndex(
+        (publicKey) => publicKey?.getFingerprint() === fingerprint
+    );
     if (index === -1) {
         return undefined;
     }
@@ -133,7 +165,11 @@ export const getIsValidForSending = (
     fingerprint: string,
     publicKeyModel: PublicKeyModel | ContactPublicKeyModel
 ): boolean => {
-    const { verifyOnlyFingerprints, revokedFingerprints, expiredFingerprints } = publicKeyModel;
+    const {
+        verifyOnlyFingerprints,
+        revokedFingerprints,
+        expiredFingerprints,
+    } = publicKeyModel;
     return (
         !verifyOnlyFingerprints.has(fingerprint) &&
         !revokedFingerprints.has(fingerprint) &&
@@ -149,7 +185,7 @@ export const getContactPublicKeyModel = async ({
     emailAddress,
     apiKeysConfig,
     pinnedKeysConfig,
-}: Omit<PublicKeyConfigs, 'mailSettings'>): Promise<ContactPublicKeyModel> => {
+}: Omit<PublicKeyConfigs, "mailSettings">): Promise<ContactPublicKeyModel> => {
     const {
         pinnedKeys = [],
         encrypt,
@@ -167,7 +203,9 @@ export const getContactPublicKeyModel = async ({
     await Promise.all(
         pinnedKeys.map(async (publicKey) => {
             const fingerprint = publicKey.getFingerprint();
-            const { isExpired, isRevoked } = await getKeyEncryptStatus(publicKey);
+            const { isExpired, isRevoked } = await getKeyEncryptStatus(
+                publicKey
+            );
             trustedFingerprints.add(fingerprint);
             if (isExpired) {
                 expiredFingerprints.add(fingerprint);
@@ -177,7 +215,11 @@ export const getContactPublicKeyModel = async ({
             }
         })
     );
-    const orderedPinnedKeys = sortPinnedKeys(pinnedKeys, expiredFingerprints, revokedFingerprints);
+    const orderedPinnedKeys = sortPinnedKeys(
+        pinnedKeys,
+        expiredFingerprints,
+        revokedFingerprints
+    );
 
     // prepare keys retrieved from the API
     const isInternalUser = getIsInternalUser(apiKeysConfig);
@@ -189,7 +231,11 @@ export const getContactPublicKeyModel = async ({
             verifyOnlyFingerprints.add(publicKey.getFingerprint());
         }
     });
-    const orderedApiKeys = sortApiKeys(apiKeys, trustedFingerprints, verifyOnlyFingerprints);
+    const orderedApiKeys = sortApiKeys(
+        apiKeys,
+        trustedFingerprints,
+        verifyOnlyFingerprints
+    );
 
     return {
         encrypt,

@@ -1,10 +1,10 @@
-import { getSHA256Fingerprints, OpenPGPKey } from 'pmcrypto';
-import { ActiveKey, DecryptedKey, Key, SignedKeyList } from '../interfaces';
-import isTruthy from '../helpers/isTruthy';
-import { KEY_FLAG } from '../constants';
-import { clearBit } from '../helpers/bitset';
-import { getParsedSignedKeyList, getSignedKeyListMap } from './signedKeyList';
-import { getDefaultKeyFlags } from './keyFlags';
+import { getSHA256Fingerprints, OpenPGPKey } from "pmcrypto";
+import { ActiveKey, DecryptedKey, Key, SignedKeyList } from "../interfaces";
+import isTruthy from "../helpers/isTruthy";
+import { KEY_FLAG } from "../constants";
+import { clearBit } from "../helpers/bitset";
+import { getParsedSignedKeyList, getSignedKeyListMap } from "./signedKeyList";
+import { getDefaultKeyFlags } from "./keyFlags";
 
 export const getPrimaryFlag = (keys: ActiveKey[]): 1 | 0 => {
     return !keys.length ? 1 : 0;
@@ -39,7 +39,9 @@ export const getActiveKeys = async (
         return [];
     }
 
-    const signedKeyListMap = getSignedKeyListMap(getParsedSignedKeyList(signedKeyList?.Data));
+    const signedKeyListMap = getSignedKeyListMap(
+        getParsedSignedKeyList(signedKeyList?.Data)
+    );
 
     const result = await Promise.all(
         decryptedKeys.map(async ({ ID, privateKey }, index) => {

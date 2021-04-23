@@ -1,4 +1,4 @@
-import { FormattedContact } from './FormattedContact';
+import { FormattedContact } from "./FormattedContact";
 
 export interface MergeModel {
     orderedContacts: FormattedContact[][];

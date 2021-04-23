@@ -1,4 +1,4 @@
-import { OpenPGPKey } from 'pmcrypto';
+import { OpenPGPKey } from "pmcrypto";
 
 export enum CalendarKeyFlags {
     INACTIVE = 0,

@@ -1,17 +1,18 @@
-import * as Sentry from '@sentry/browser';
+import * as Sentry from "@sentry/browser";
 
-import { ProtonConfig } from '../interfaces';
-import { VPN_HOSTNAME } from '../constants';
+import { ProtonConfig } from "../interfaces";
+import { VPN_HOSTNAME } from "../constants";
 
-const isLocalhost = (host: string) => host.startsWith('localhost');
+const isLocalhost = (host: string) => host.startsWith("localhost");
 
-const isProduction = (host: string) => host.endsWith('.protonmail.com') || host === VPN_HOSTNAME;
+const isProduction = (host: string) =>
+    host.endsWith(".protonmail.com") || host === VPN_HOSTNAME;
 
 function main({
     SENTRY_DSN,
     COMMIT_RELEASE,
     APP_VERSION,
-}: Pick<ProtonConfig, 'SENTRY_DSN' | 'COMMIT_RELEASE' | 'APP_VERSION'>) {
+}: Pick<ProtonConfig, "SENTRY_DSN" | "COMMIT_RELEASE" | "APP_VERSION">) {
     const { host } = window.location;
 
     // No need to configure it if we don't load the DSN
@@ -21,7 +22,7 @@ function main({
 
     // Assumes SENTRY_DSN is: https://111b3eeaaec34cae8e812df705690a36@sentry/11
     // To get https://111b3eeaaec34cae8e812df705690a36@mail.protonmail.com/api/reports/sentry/11
-    const dsn = SENTRY_DSN.replace('sentry', `${host}/api/reports/sentry`);
+    const dsn = SENTRY_DSN.replace("sentry", `${host}/api/reports/sentry`);
 
     Sentry.init({
         dsn,
@@ -30,7 +31,7 @@ function main({
         normalizeDepth: 5,
         beforeSend(event) {
             // @ts-ignore
-            if (event && 'error' in event && event.error?.stack) {
+            if (event && "error" in event && event.error?.stack) {
                 // @ts-ignore Filter out broken ferdi errors
                 if (event.error.stack.includes(/ferdi/i)) {
                     return null;
@@ -40,23 +41,23 @@ function main({
         },
         ignoreErrors: [
             // Ignore random plugins/extensions
-            'top.GLOBALS',
-            'canvas.contentDocument',
-            'MyApp_RemoveAllHighlights',
-            'atomicFindClose',
-            'conduitPage',
+            "top.GLOBALS",
+            "canvas.contentDocument",
+            "MyApp_RemoveAllHighlights",
+            "atomicFindClose",
+            "conduitPage",
             // https://bugzilla.mozilla.org/show_bug.cgi?id=1678243
-            'XDR encoding failure',
-            'Request timed out',
-            'No network connection',
-            'Failed to fetch',
-            'NetworkError when attempting to fetch resource.',
-            'No network connection',
+            "XDR encoding failure",
+            "Request timed out",
+            "No network connection",
+            "Failed to fetch",
+            "NetworkError when attempting to fetch resource.",
+            "No network connection",
         ],
     });
 
     Sentry.configureScope((scope) => {
-        scope.setTag('appVersion', APP_VERSION);
+        scope.setTag("appVersion", APP_VERSION);
     });
 }
 
@@ -66,7 +67,9 @@ export const traceError = (e: unknown) => {
     }
 };
 
-export const captureMessage = (...args: Parameters<typeof Sentry.captureMessage>) => {
+export const captureMessage = (
+    ...args: Parameters<typeof Sentry.captureMessage>
+) => {
     if (!isLocalhost(window.location.host)) {
         Sentry.captureMessage(...args);
     }

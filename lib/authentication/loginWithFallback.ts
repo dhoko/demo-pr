@@ -1,9 +1,9 @@
-import { getAuthVersionWithFallback } from 'pm-srp';
+import { getAuthVersionWithFallback } from "pm-srp";
 
-import { auth, getInfo, PASSWORD_WRONG_ERROR } from '../api/auth';
-import { srpAuth } from '../srp';
-import { Api } from '../interfaces';
-import { AuthResponse, AuthVersion, InfoResponse } from './interface';
+import { auth, getInfo, PASSWORD_WRONG_ERROR } from "../api/auth";
+import { srpAuth } from "../srp";
+import { Api } from "../interfaces";
+import { AuthResponse, AuthVersion, InfoResponse } from "./interface";
 
 /**
  * Provides authentication with fallback behavior in case the user's auth version is unknown.
@@ -13,7 +13,11 @@ interface Arguments {
     credentials: { username: string; password: string };
     initialAuthInfo?: InfoResponse;
 }
-const loginWithFallback = async ({ api, credentials, initialAuthInfo }: Arguments) => {
+const loginWithFallback = async ({
+    api,
+    credentials,
+    initialAuthInfo,
+}: Arguments) => {
     let state: { authInfo?: InfoResponse; lastAuthVersion?: AuthVersion } = {
         authInfo: initialAuthInfo,
         lastAuthVersion: undefined,
@@ -22,9 +26,15 @@ const loginWithFallback = async ({ api, credentials, initialAuthInfo }: Argument
     const data = { Username: username };
 
     do {
-        const { authInfo = await api<InfoResponse>(getInfo(username)), lastAuthVersion } = state;
+        const {
+            authInfo = await api<InfoResponse>(getInfo(username)),
+            lastAuthVersion,
+        } = state;
 
-        const { version, done }: { version: AuthVersion; done: boolean } = getAuthVersionWithFallback(
+        const {
+            version,
+            done,
+        }: { version: AuthVersion; done: boolean } = getAuthVersionWithFallback(
             authInfo,
             username,
             lastAuthVersion
@@ -32,7 +42,9 @@ const loginWithFallback = async ({ api, credentials, initialAuthInfo }: Argument
 
         try {
             // If it's not the last fallback attempt, suppress the wrong password notification from the API.
-            const suppress = done ? undefined : { suppress: [PASSWORD_WRONG_ERROR] };
+            const suppress = done
+                ? undefined
+                : { suppress: [PASSWORD_WRONG_ERROR] };
             const srpConfig = {
                 ...auth(data),
                 ...suppress,

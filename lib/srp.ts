@@ -1,8 +1,8 @@
-import { getSrp, getRandomSrpVerifier } from 'pm-srp';
+import { getSrp, getRandomSrpVerifier } from "pm-srp";
 
-import { getInfo, getModulus } from './api/auth';
-import { Api } from './interfaces';
-import { InfoResponse, ModulusResponse } from './authentication/interface';
+import { getInfo, getModulus } from "./api/auth";
+import { Api } from "./interfaces";
+import { InfoResponse, ModulusResponse } from "./authentication/interface";
 
 interface Credentials {
     username?: string;
@@ -46,7 +46,7 @@ const callAndValidate = async <T>({
     const { ServerProof } = result;
 
     if (ServerProof !== expectedServerProof) {
-        throw new Error('Unexpected server proof');
+        throw new Error("Unexpected server proof");
     }
 
     return result;
@@ -62,9 +62,20 @@ interface SrpAuthArguments {
     info?: InfoResponse;
     version?: number;
 }
-export const srpAuth = async <T>({ api, credentials, config, info, version }: SrpAuthArguments) => {
-    const actualInfo = info || (await api<InfoResponse>(getInfo(credentials.username)));
-    const { expectedServerProof, clientProof, clientEphemeral } = await getSrp(actualInfo, credentials, version);
+export const srpAuth = async <T>({
+    api,
+    credentials,
+    config,
+    info,
+    version,
+}: SrpAuthArguments) => {
+    const actualInfo =
+        info || (await api<InfoResponse>(getInfo(credentials.username)));
+    const { expectedServerProof, clientProof, clientEphemeral } = await getSrp(
+        actualInfo,
+        credentials,
+        version
+    );
     const authData = {
         ClientProof: clientProof,
         ClientEphemeral: clientEphemeral,
@@ -82,9 +93,18 @@ export const srpAuth = async <T>({ api, credentials, config, info, version }: Sr
 /**
  * Get initialization parameters for SRP.
  */
-export const srpGetVerify = async ({ api, credentials }: { api: Api; credentials: Credentials }) => {
+export const srpGetVerify = async ({
+    api,
+    credentials,
+}: {
+    api: Api;
+    credentials: Credentials;
+}) => {
     const data = await api<ModulusResponse>(getModulus());
-    const { version, salt, verifier } = await getRandomSrpVerifier(data, credentials);
+    const { version, salt, verifier } = await getRandomSrpVerifier(
+        data,
+        credentials
+    );
     const authData = {
         ModulusID: data.ModulusID,
         Version: version,

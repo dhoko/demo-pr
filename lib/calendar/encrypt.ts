@@ -7,11 +7,17 @@ import {
     SessionKey,
     signMessage,
     splitMessage,
-} from 'pmcrypto';
-import { EncryptPartResult, SignPartResult } from '../interfaces/calendar';
+} from "pmcrypto";
+import { EncryptPartResult, SignPartResult } from "../interfaces/calendar";
 
-export function signPart(dataToSign: string, signingKey: OpenPGPKey): Promise<SignPartResult>;
-export function signPart(dataToSign: string | undefined, signingKey: OpenPGPKey): Promise<SignPartResult | undefined>;
+export function signPart(
+    dataToSign: string,
+    signingKey: OpenPGPKey
+): Promise<SignPartResult>;
+export function signPart(
+    dataToSign: string | undefined,
+    signingKey: OpenPGPKey
+): Promise<SignPartResult | undefined>;
 
 export async function signPart(
     dataToSign: string | undefined,
@@ -65,8 +71,15 @@ export async function encryptPart(
     };
 }
 
-export const getEncryptedSessionKey = async ({ data, algorithm }: SessionKey, publicKey: OpenPGPKey) => {
-    const { message } = await encryptSessionKey({ data, algorithm, publicKeys: [publicKey] });
+export const getEncryptedSessionKey = async (
+    { data, algorithm }: SessionKey,
+    publicKey: OpenPGPKey
+) => {
+    const { message } = await encryptSessionKey({
+        data,
+        algorithm,
+        publicKeys: [publicKey],
+    });
     const { asymmetric } = await splitMessage(message);
     return asymmetric[0];
 };

@@ -1,16 +1,26 @@
 /* eslint-disable no-param-reassign */
-import { getInternalDateTimeValue, internalValueToIcalValue } from './vcal';
-import { getDtendProperty, propertyToUTCDate } from './vcalConverter';
-import { getIsAllDay, getPropertyTzid } from './vcalHelper';
-import { addDays, addMilliseconds, differenceInCalendarDays, max } from '../date-fns-utc';
-import { convertUTCDateTimeToZone, convertZonedDateTimeToUTC, fromUTCDate, toUTCDate } from '../date/timezone';
-import { createExdateMap } from './exdate';
+import { getInternalDateTimeValue, internalValueToIcalValue } from "./vcal";
+import { getDtendProperty, propertyToUTCDate } from "./vcalConverter";
+import { getIsAllDay, getPropertyTzid } from "./vcalHelper";
+import {
+    addDays,
+    addMilliseconds,
+    differenceInCalendarDays,
+    max,
+} from "../date-fns-utc";
+import {
+    convertUTCDateTimeToZone,
+    convertZonedDateTimeToUTC,
+    fromUTCDate,
+    toUTCDate,
+} from "../date/timezone";
+import { createExdateMap } from "./exdate";
 import {
     VcalDateOrDateTimeProperty,
     VcalDateOrDateTimeValue,
     VcalRruleProperty,
     VcalVeventComponent,
-} from '../interfaces/calendar/VcalModel';
+} from "../interfaces/calendar/VcalModel";
 
 interface CacheInner {
     dtstart: VcalDateOrDateTimeValue;
@@ -38,17 +48,21 @@ export interface OccurrenceIterationCache {
     };
 }
 
-type RequiredVcalVeventComponent = Pick<VcalVeventComponent, 'dtstart' | 'rrule' | 'exdate'>;
+type RequiredVcalVeventComponent = Pick<
+    VcalVeventComponent,
+    "dtstart" | "rrule" | "exdate"
+>;
 
 const YEAR_IN_MS = Date.UTC(1971, 0, 1);
 
-const isInInterval = (a1: number, a2: number, b1: number, b2: number) => a1 <= b2 && a2 >= b1;
+const isInInterval = (a1: number, a2: number, b1: number, b2: number) =>
+    a1 <= b2 && a2 >= b1;
 
 // Special case for when attempting to use occurrences when an rrule does not exist.
 // Fake an rrule so that the iteration goes through at least once
 const DEFAULT_RRULE = {
     value: {
-        freq: 'DAILY',
+        freq: "DAILY",
         count: 1,
     },
 };
@@ -98,17 +112,28 @@ const fillOccurrencesBetween = ({
             utcStart = localStart;
             utcEnd = localEnd;
         } else if (!startTzid || !endTzid) {
-            const endInStartTimezone = addMilliseconds(localStart, eventDuration);
+            const endInStartTimezone = addMilliseconds(
+                localStart,
+                eventDuration
+            );
             localEnd = endInStartTimezone;
             utcStart = localStart;
             utcEnd = endInStartTimezone;
         } else {
-            const endInStartTimezone = addMilliseconds(localStart, eventDuration);
+            const endInStartTimezone = addMilliseconds(
+                localStart,
+                eventDuration
+            );
 
-            const endInUTC = convertZonedDateTimeToUTC(fromUTCDate(endInStartTimezone), startTzid);
+            const endInUTC = convertZonedDateTimeToUTC(
+                fromUTCDate(endInStartTimezone),
+                startTzid
+            );
             localEnd = toUTCDate(convertUTCDateTimeToZone(endInUTC, endTzid));
 
-            utcStart = toUTCDate(convertZonedDateTimeToUTC(fromUTCDate(localStart), startTzid));
+            utcStart = toUTCDate(
+                convertZonedDateTimeToUTC(fromUTCDate(localStart), startTzid)
+            );
             utcEnd = toUTCDate(endInUTC);
         }
 
@@ -132,12 +157,23 @@ const fillOccurrencesBetween = ({
 /**
  * Convert the until property of an rrule to be in the timezone of the start date
  */
-const getModifiedUntilRrule = (internalRrule: VcalRruleProperty, startTzid: string | undefined): VcalRruleProperty => {
-    if (!internalRrule || !internalRrule.value || !internalRrule.value.until || !startTzid) {
+const getModifiedUntilRrule = (
+    internalRrule: VcalRruleProperty,
+    startTzid: string | undefined
+): VcalRruleProperty => {
+    if (
+        !internalRrule ||
+        !internalRrule.value ||
+        !internalRrule.value.until ||
+        !startTzid
+    ) {
         return internalRrule;
     }
     const utcUntil = toUTCDate(internalRrule.value.until);
-    const localUntil = convertUTCDateTimeToZone(fromUTCDate(utcUntil), startTzid);
+    const localUntil = convertUTCDateTimeToZone(
+        fromUTCDate(utcUntil),
+        startTzid
+    );
     return {
         ...internalRrule,
         value: {
@@ -151,11 +187,15 @@ const getModifiedUntilRrule = (internalRrule: VcalRruleProperty, startTzid: stri
 };
 
 const getOccurrenceSetup = (component: RequiredVcalVeventComponent) => {
-    const { dtstart: internalDtstart, rrule: internalRrule, exdate: internalExdate } = component;
+    const {
+        dtstart: internalDtstart,
+        rrule: internalRrule,
+        exdate: internalExdate,
+    } = component;
     const internalDtEnd = getDtendProperty(component);
 
     const isAllDay = getIsAllDay(component);
-    const dtstartType = isAllDay ? 'date' : 'date-time';
+    const dtstartType = isAllDay ? "date" : "date-time";
 
     // Pretend the (local) date is in UTC time to keep the absolute times.
     const dtstart = internalValueToIcalValue(dtstartType, {
@@ -163,7 +203,10 @@ const getOccurrenceSetup = (component: RequiredVcalVeventComponent) => {
         isUTC: true,
     }) as VcalDateOrDateTimeValue;
     // Since the local date is pretended in UTC time, the until has to be converted into a fake local UTC time too
-    const safeRrule = getModifiedUntilRrule(internalRrule || DEFAULT_RRULE, getPropertyTzid(internalDtstart));
+    const safeRrule = getModifiedUntilRrule(
+        internalRrule || DEFAULT_RRULE,
+        getPropertyTzid(internalDtstart)
+    );
 
     const utcStart = propertyToUTCDate(internalDtstart);
     let eventDuration: number;
@@ -203,7 +246,10 @@ export const getOccurrences = ({
     maxStart = new Date(9999, 0, 1),
     maxCount = 1,
     cache = {},
-}: GetOccurrences): Pick<RecurringResult, 'localStart' | 'localEnd' | 'occurrenceNumber'>[] => {
+}: GetOccurrences): Pick<
+    RecurringResult,
+    "localStart" | "localEnd" | "occurrenceNumber"
+>[] => {
     if (maxCount <= 0) {
         return [];
     }
@@ -212,9 +258,15 @@ export const getOccurrences = ({
         cache.start = getOccurrenceSetup(component);
     }
 
-    const { eventDuration, isAllDay, dtstart, modifiedRrule, exdateMap } = cache.start;
+    const {
+        eventDuration,
+        isAllDay,
+        dtstart,
+        modifiedRrule,
+        exdateMap,
+    } = cache.start;
 
-    const rrule = internalValueToIcalValue('recur', modifiedRrule.value);
+    const rrule = internalValueToIcalValue("recur", modifiedRrule.value);
     const iterator = rrule.iterator(dtstart);
     const result = [];
 
@@ -228,7 +280,9 @@ export const getOccurrences = ({
         if (result.length >= maxCount || localStart >= maxStart) {
             break;
         }
-        const localEnd = isAllDay ? addDays(localStart, eventDuration) : addMilliseconds(localStart, eventDuration);
+        const localEnd = isAllDay
+            ? addDays(localStart, eventDuration)
+            : addMilliseconds(localStart, eventDuration);
         result.push({
             localStart,
             localEnd,
@@ -239,7 +293,7 @@ export const getOccurrences = ({
 };
 
 export const getOccurrencesBetween = (
-    component: Pick<VcalVeventComponent, 'dtstart' | 'rrule' | 'exdate'>,
+    component: Pick<VcalVeventComponent, "dtstart" | "rrule" | "exdate">,
     start: number,
     end: number,
     cache: Partial<OccurrenceIterationCache> = {},
@@ -252,15 +306,26 @@ export const getOccurrencesBetween = (
     const originalDtstart = component.dtstart;
     const originalDtend = getDtendProperty(component);
 
-    const { eventDuration, isAllDay, utcStart, dtstart, modifiedRrule, exdateMap } = cache.start;
+    const {
+        eventDuration,
+        isAllDay,
+        utcStart,
+        dtstart,
+        modifiedRrule,
+        exdateMap,
+    } = cache.start;
 
     // If it starts after the current end, ignore it
     if (+utcStart > end) {
         return [];
     }
 
-    if (!cache.iteration || start < cache.iteration.interval[0] || end > cache.iteration.interval[1]) {
-        const rrule = internalValueToIcalValue('recur', modifiedRrule.value);
+    if (
+        !cache.iteration ||
+        start < cache.iteration.interval[0] ||
+        end > cache.iteration.interval[1]
+    ) {
+        const rrule = internalValueToIcalValue("recur", modifiedRrule.value);
         const iterator = rrule.iterator(dtstart);
 
         const interval = [start - YEAR_IN_MS, end + YEAR_IN_MS];
@@ -289,5 +354,7 @@ export const getOccurrencesBetween = (
         }
     }
 
-    return cache.iteration.result.filter(({ utcStart, utcEnd }) => isInInterval(+utcStart, +utcEnd, start, end));
+    return cache.iteration.result.filter(({ utcStart, utcEnd }) =>
+        isInInterval(+utcStart, +utcEnd, start, end)
+    );
 };

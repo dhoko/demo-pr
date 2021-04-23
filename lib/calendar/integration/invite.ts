@@ -1,15 +1,23 @@
-import { c } from 'ttag';
-import { addDays, format as formatUTC } from '../../date-fns-utc';
-import { Options } from '../../date-fns-utc/format';
-import { formatTimezoneOffset, getTimezoneOffset, toUTCDate } from '../../date/timezone';
-import { getIsAddressDisabled } from '../../helpers/address';
-import { canonizeEmail, canonizeEmailByGuess, canonizeInternalEmail } from '../../helpers/email';
-import { unary } from '../../helpers/function';
-import isTruthy from '../../helpers/isTruthy';
-import { omit, pick } from '../../helpers/object';
-import { getCurrentUnixTimestamp } from '../../helpers/time';
-import { dateLocale } from '../../i18n';
-import { Address, GetVTimezones } from '../../interfaces';
+import { c } from "ttag";
+import { addDays, format as formatUTC } from "../../date-fns-utc";
+import { Options } from "../../date-fns-utc/format";
+import {
+    formatTimezoneOffset,
+    getTimezoneOffset,
+    toUTCDate,
+} from "../../date/timezone";
+import { getIsAddressDisabled } from "../../helpers/address";
+import {
+    canonizeEmail,
+    canonizeEmailByGuess,
+    canonizeInternalEmail,
+} from "../../helpers/email";
+import { unary } from "../../helpers/function";
+import isTruthy from "../../helpers/isTruthy";
+import { omit, pick } from "../../helpers/object";
+import { getCurrentUnixTimestamp } from "../../helpers/time";
+import { dateLocale } from "../../i18n";
+import { Address, GetVTimezones } from "../../interfaces";
 import {
     Attendee,
     CalendarEvent,
@@ -21,16 +29,24 @@ import {
     VcalVcalendar,
     VcalVeventComponent,
     VcalVtimezoneComponent,
-} from '../../interfaces/calendar';
-import { ContactEmail } from '../../interfaces/contacts';
-import { RequireSome } from '../../interfaces/utils';
-import { formatSubject, RE_PREFIX } from '../../mail/messages';
-import { getAttendeeEmail, toIcsPartstat } from '../attendees';
-import { ICAL_ATTENDEE_STATUS, ICAL_METHOD, SETTINGS_NOTIFICATION_TYPE } from '../constants';
-import { getDisplayTitle } from '../helper';
-import { getIsRruleEqual } from '../rruleEqual';
-import { fromTriggerString, serialize } from '../vcal';
-import { getAllDayInfo, getHasModifiedDateTimes, propertyToUTCDate } from '../vcalConverter';
+} from "../../interfaces/calendar";
+import { ContactEmail } from "../../interfaces/contacts";
+import { RequireSome } from "../../interfaces/utils";
+import { formatSubject, RE_PREFIX } from "../../mail/messages";
+import { getAttendeeEmail, toIcsPartstat } from "../attendees";
+import {
+    ICAL_ATTENDEE_STATUS,
+    ICAL_METHOD,
+    SETTINGS_NOTIFICATION_TYPE,
+} from "../constants";
+import { getDisplayTitle } from "../helper";
+import { getIsRruleEqual } from "../rruleEqual";
+import { fromTriggerString, serialize } from "../vcal";
+import {
+    getAllDayInfo,
+    getHasModifiedDateTimes,
+    propertyToUTCDate,
+} from "../vcalConverter";
 import {
     getAttendeePartstat,
     getAttendeeRole,
@@ -38,12 +54,12 @@ import {
     getIsAllDay,
     getPropertyTzid,
     getSequence,
-} from '../vcalHelper';
-import { getIsEventCancelled, withDtstamp, withSummary } from '../veventHelper';
+} from "../vcalHelper";
+import { getIsEventCancelled, withDtstamp, withSummary } from "../veventHelper";
 
 export const getParticipantHasAddressID = (
     participant: Participant
-): participant is RequireSome<Participant, 'addressID'> => {
+): participant is RequireSome<Participant, "addressID"> => {
     return !!participant.addressID;
 };
 
@@ -65,21 +81,31 @@ export const getParticipant = ({
     const emailAddress = getAttendeeEmail(participant);
     const canonicalInternalEmail = canonizeInternalEmail(emailAddress);
     const canonicalEmail = canonizeEmailByGuess(emailAddress);
-    const selfAddress = addresses.find(({ Email }) => canonizeInternalEmail(Email) === canonicalInternalEmail);
-    const isYou = emailTo ? canonizeInternalEmail(emailTo) === canonicalInternalEmail : !!selfAddress;
-    const contact = contactEmails.find(({ Email }) => canonizeEmail(Email) === canonicalEmail);
+    const selfAddress = addresses.find(
+        ({ Email }) => canonizeInternalEmail(Email) === canonicalInternalEmail
+    );
+    const isYou = emailTo
+        ? canonizeInternalEmail(emailTo) === canonicalInternalEmail
+        : !!selfAddress;
+    const contact = contactEmails.find(
+        ({ Email }) => canonizeEmail(Email) === canonicalEmail
+    );
     const participantName = participant?.parameters?.cn || emailAddress;
-    const displayName = selfAddress?.DisplayName || contact?.Name || participantName;
+    const displayName =
+        selfAddress?.DisplayName || contact?.Name || participantName;
     const result: Participant = {
         vcalComponent: participant,
         name: participantName,
         emailAddress,
         partstat: getAttendeePartstat(participant),
-        displayName: isYou ? c('Participant name').t`You` : displayName,
+        displayName: isYou ? c("Participant name").t`You` : displayName,
         displayEmail: emailAddress,
     };
-    const { role, email, 'x-pm-token': token } = (participant as VcalAttendeeProperty).parameters || {};
-    const calendarAttendee = token ? calendarAttendees?.find(({ Token }) => Token === token) : undefined;
+    const { role, email, "x-pm-token": token } =
+        (participant as VcalAttendeeProperty).parameters || {};
+    const calendarAttendee = token
+        ? calendarAttendees?.find(({ Token }) => Token === token)
+        : undefined;
     if (role) {
         result.role = getAttendeeRole(participant);
     }
@@ -113,30 +139,38 @@ interface CreateInviteVeventParams {
     keepDtstamp?: boolean;
 }
 
-export const createInviteVevent = ({ method, attendeesTo, vevent, keepDtstamp }: CreateInviteVeventParams) => {
-    if ([ICAL_METHOD.REPLY, ICAL_METHOD.CANCEL].includes(method) && attendeesTo?.length) {
+export const createInviteVevent = ({
+    method,
+    attendeesTo,
+    vevent,
+    keepDtstamp,
+}: CreateInviteVeventParams) => {
+    if (
+        [ICAL_METHOD.REPLY, ICAL_METHOD.CANCEL].includes(method) &&
+        attendeesTo?.length
+    ) {
         // only put RFC-mandatory fields to make reply as short as possible
         // rrule, summary and location are also included for a better UI in the external provider widget
         const propertiesToKeep: (keyof VcalVeventComponent)[] = [
-            'uid',
-            'dtstart',
-            'dtend',
-            'sequence',
-            'recurrence-id',
-            'organizer',
-            'rrule',
-            'location',
-            'summary',
+            "uid",
+            "dtstart",
+            "dtend",
+            "sequence",
+            "recurrence-id",
+            "organizer",
+            "rrule",
+            "location",
+            "summary",
         ];
         // use current time as dtstamp unless indicated otherwise
         if (keepDtstamp) {
-            propertiesToKeep.push('dtstamp');
+            propertiesToKeep.push("dtstamp");
         }
         const attendee = attendeesTo.map(({ value, parameters }) => {
             const { partstat } = parameters || {};
             if (method === ICAL_METHOD.REPLY) {
                 if (!partstat) {
-                    throw new Error('Cannot reply without participant status');
+                    throw new Error("Cannot reply without participant status");
                 }
                 return {
                     value,
@@ -147,20 +181,22 @@ export const createInviteVevent = ({ method, attendeesTo, vevent, keepDtstamp }:
         });
         return withDtstamp({
             ...pick(vevent, propertiesToKeep),
-            component: 'vevent',
+            component: "vevent",
             attendee,
         });
     }
     if (method === ICAL_METHOD.REQUEST) {
         // strip alarms
-        const propertiesToOmit: (keyof VcalVeventComponent)[] = ['components'];
+        const propertiesToOmit: (keyof VcalVeventComponent)[] = ["components"];
         // use current time as dtstamp unless indicated otherwise
         if (!keepDtstamp) {
-            propertiesToOmit.push('dtstamp');
+            propertiesToOmit.push("dtstamp");
         }
         // SUMMARY is mandatory in a REQUEST ics
         const veventWithSummary = withSummary(vevent);
-        return withDtstamp(omit(veventWithSummary, propertiesToOmit) as VcalVeventComponent);
+        return withDtstamp(
+            omit(veventWithSummary, propertiesToOmit) as VcalVeventComponent
+        );
     }
 };
 
@@ -183,17 +219,22 @@ export const createInviteIcs = ({
     keepDtstamp,
 }: CreateInviteIcsParams): string => {
     // use current time as dtstamp
-    const inviteVevent = createInviteVevent({ method, vevent, attendeesTo, keepDtstamp });
+    const inviteVevent = createInviteVevent({
+        method,
+        vevent,
+        attendeesTo,
+        keepDtstamp,
+    });
     if (!inviteVevent) {
-        throw new Error('Invite vevent failed to be created');
+        throw new Error("Invite vevent failed to be created");
     }
-    const inviteVcal: RequireSome<VcalVcalendar, 'components'> = {
-        component: 'vcalendar',
+    const inviteVcal: RequireSome<VcalVcalendar, "components"> = {
+        component: "vcalendar",
         components: [inviteVevent],
         prodid: { value: prodId },
-        version: { value: '2.0' },
+        version: { value: "2.0" },
         method: { value: method },
-        calscale: { value: 'GREGORIAN' },
+        calscale: { value: "GREGORIAN" },
     };
     if (vtimezones?.length) {
         inviteVcal.components = [...vtimezones, ...inviteVcal.components];
@@ -201,12 +242,16 @@ export const createInviteIcs = ({
     return serialize(inviteVcal);
 };
 
-export const findAttendee = (email: string, attendees: VcalAttendeeProperty[] = []) => {
+export const findAttendee = (
+    email: string,
+    attendees: VcalAttendeeProperty[] = []
+) => {
     // treat all emails as internal. This is not fully correct (TO BE IMPROVED),
     // but it's better to have some false positives rather than many false negatives
     const canonicalEmail = canonizeInternalEmail(email);
     const index = attendees.findIndex(
-        (attendee) => canonizeInternalEmail(getAttendeeEmail(attendee)) === canonicalEmail
+        (attendee) =>
+            canonizeInternalEmail(getAttendeeEmail(attendee)) === canonicalEmail
     );
     const attendee = index !== -1 ? attendees[index] : undefined;
     return { index, attendee };
@@ -228,15 +273,25 @@ export const getSelfAddressData = ({
             // old events will not have organizer
             return {};
         }
-        const organizerEmail = canonizeInternalEmail(getAttendeeEmail(organizer));
+        const organizerEmail = canonizeInternalEmail(
+            getAttendeeEmail(organizer)
+        );
         return {
-            selfAddress: addresses.find(({ Email }) => canonizeInternalEmail(Email) === organizerEmail),
+            selfAddress: addresses.find(
+                ({ Email }) => canonizeInternalEmail(Email) === organizerEmail
+            ),
         };
     }
-    const canonicalAttendeeEmails = attendees.map((attendee) => canonizeInternalEmail(getAttendeeEmail(attendee)));
+    const canonicalAttendeeEmails = attendees.map((attendee) =>
+        canonizeInternalEmail(getAttendeeEmail(attendee))
+    );
     // start checking active addresses
     const activeAddresses = addresses.filter(({ Status }) => Status !== 0);
-    const { selfActiveAttendee, selfActiveAddress, selfActiveAttendeeIndex } = activeAddresses.reduce<{
+    const {
+        selfActiveAttendee,
+        selfActiveAddress,
+        selfActiveAttendeeIndex,
+    } = activeAddresses.reduce<{
         selfActiveAttendee?: VcalAttendeeProperty;
         selfActiveAttendeeIndex?: number;
         selfActiveAddress?: Address;
@@ -247,14 +302,20 @@ export const getSelfAddressData = ({
                 return acc;
             }
             const canonicalSelfEmail = canonizeInternalEmail(address.Email);
-            const index = canonicalAttendeeEmails.findIndex((email) => email === canonicalSelfEmail);
+            const index = canonicalAttendeeEmails.findIndex(
+                (email) => email === canonicalSelfEmail
+            );
             if (index === -1) {
                 return acc;
             }
             const attendee = attendees[index];
             const partstat = getAttendeePartstat(attendee);
-            const answeredAttendeeFound = partstat !== ICAL_ATTENDEE_STATUS.NEEDS_ACTION;
-            if (answeredAttendeeFound || !(acc.selfActiveAttendee && acc.selfActiveAddress)) {
+            const answeredAttendeeFound =
+                partstat !== ICAL_ATTENDEE_STATUS.NEEDS_ACTION;
+            if (
+                answeredAttendeeFound ||
+                !(acc.selfActiveAttendee && acc.selfActiveAddress)
+            ) {
                 return {
                     selfActiveAttendee: attendee,
                     selfActiveAddress: address,
@@ -274,7 +335,11 @@ export const getSelfAddressData = ({
         };
     }
     const disabledAddresses = addresses.filter(unary(getIsAddressDisabled));
-    const { selfDisabledAttendee, selfDisabledAddress, selfDisabledAttendeeIndex } = disabledAddresses.reduce<{
+    const {
+        selfDisabledAttendee,
+        selfDisabledAddress,
+        selfDisabledAttendeeIndex,
+    } = disabledAddresses.reduce<{
         selfDisabledAttendee?: VcalAttendeeProperty;
         selfDisabledAttendeeIndex?: number;
         selfDisabledAddress?: Address;
@@ -285,14 +350,20 @@ export const getSelfAddressData = ({
                 return acc;
             }
             const canonicalSelfEmail = canonizeInternalEmail(address.Email);
-            const index = canonicalAttendeeEmails.findIndex((email) => email === canonicalSelfEmail);
+            const index = canonicalAttendeeEmails.findIndex(
+                (email) => email === canonicalSelfEmail
+            );
             if (index === -1) {
                 return acc;
             }
             const attendee = attendees[index];
             const partstat = getAttendeePartstat(attendee);
-            const answeredAttendeeFound = partstat !== ICAL_ATTENDEE_STATUS.NEEDS_ACTION;
-            if (answeredAttendeeFound || !(acc.selfDisabledAttendee && acc.selfDisabledAddress)) {
+            const answeredAttendeeFound =
+                partstat !== ICAL_ATTENDEE_STATUS.NEEDS_ACTION;
+            if (
+                answeredAttendeeFound ||
+                !(acc.selfDisabledAttendee && acc.selfDisabledAddress)
+            ) {
                 return {
                     selfDisabledAttendee: attendee,
                     selfDisabledAttendeeIndex: index,
@@ -318,9 +389,16 @@ export const getInvitedEventWithAlarms = (
     oldPartstat?: ICAL_ATTENDEE_STATUS
 ) => {
     const { components } = vevent;
-    const otherComponents = components?.filter((component) => !getIsAlarmComponent(component));
+    const otherComponents = components?.filter(
+        (component) => !getIsAlarmComponent(component)
+    );
 
-    if ([ICAL_ATTENDEE_STATUS.DECLINED, ICAL_ATTENDEE_STATUS.NEEDS_ACTION].includes(partstat)) {
+    if (
+        [
+            ICAL_ATTENDEE_STATUS.DECLINED,
+            ICAL_ATTENDEE_STATUS.NEEDS_ACTION,
+        ].includes(partstat)
+    ) {
         // remove all alarms in this case
         if (otherComponents?.length) {
             return {
@@ -328,16 +406,22 @@ export const getInvitedEventWithAlarms = (
                 components: otherComponents,
             };
         }
-        return omit(vevent, ['components']);
+        return omit(vevent, ["components"]);
     }
-    if (oldPartstat && [ICAL_ATTENDEE_STATUS.ACCEPTED, ICAL_ATTENDEE_STATUS.TENTATIVE].includes(oldPartstat)) {
+    if (
+        oldPartstat &&
+        [
+            ICAL_ATTENDEE_STATUS.ACCEPTED,
+            ICAL_ATTENDEE_STATUS.TENTATIVE,
+        ].includes(oldPartstat)
+    ) {
         // Leave alarms as they are
         return { ...vevent };
     }
 
     // otherwise add calendar alarms
     if (!calendarSettings) {
-        throw new Error('Cannot retrieve calendar default notifications');
+        throw new Error("Cannot retrieve calendar default notifications");
     }
     const isAllDay = getIsAllDay(vevent);
     const notifications = isAllDay
@@ -346,18 +430,23 @@ export const getInvitedEventWithAlarms = (
     const valarmComponents = notifications
         .filter(({ Type }) => Type === SETTINGS_NOTIFICATION_TYPE.DEVICE)
         .map<VcalValarmComponent>(({ Trigger }) => ({
-            component: 'valarm',
-            action: { value: 'DISPLAY' },
+            component: "valarm",
+            action: { value: "DISPLAY" },
             trigger: { value: fromTriggerString(Trigger) },
         }));
 
     return {
         ...vevent,
-        components: components ? components.concat(valarmComponents) : valarmComponents,
+        components: components
+            ? components.concat(valarmComponents)
+            : valarmComponents,
     };
 };
 
-export const getSelfAttendeeToken = (vevent?: VcalVeventComponent, addresses: Address[] = []) => {
+export const getSelfAttendeeToken = (
+    vevent?: VcalVeventComponent,
+    addresses: Address[] = []
+) => {
     if (!vevent?.attendee) {
         return;
     }
@@ -369,7 +458,7 @@ export const getSelfAttendeeToken = (vevent?: VcalVeventComponent, addresses: Ad
     if (!selfAddress || selfAttendeeIndex === undefined) {
         return;
     }
-    return vevent.attendee[selfAttendeeIndex].parameters?.['x-pm-token'];
+    return vevent.attendee[selfAttendeeIndex].parameters?.["x-pm-token"];
 };
 
 export const generateVtimezonesComponents = async (
@@ -378,36 +467,63 @@ export const generateVtimezonesComponents = async (
 ): Promise<VcalVtimezoneComponent[]> => {
     const startTimezone = getPropertyTzid(dtstart);
     const endTimezone = dtend ? getPropertyTzid(dtend) : undefined;
-    const vtimezonesObject = await getVTimezones([startTimezone, endTimezone].filter(isTruthy));
+    const vtimezonesObject = await getVTimezones(
+        [startTimezone, endTimezone].filter(isTruthy)
+    );
     return Object.values(vtimezonesObject)
         .filter(isTruthy)
         .map(({ vtimezone }) => vtimezone);
 };
 
-const getFormattedDateInfo = (vevent: VcalVeventComponent, options: Options = { locale: dateLocale }) => {
+const getFormattedDateInfo = (
+    vevent: VcalVeventComponent,
+    options: Options = { locale: dateLocale }
+) => {
     const { dtstart, dtend } = vevent;
     const { isAllDay, isSingleAllDay } = getAllDayInfo(dtstart, dtend);
     if (isAllDay) {
         return {
-            formattedStart: formatUTC(toUTCDate(dtstart.value), 'cccc PPP', options),
-            formattedEnd: dtend ? formatUTC(addDays(toUTCDate(dtend.value), -1), 'cccc PPP', options) : undefined,
+            formattedStart: formatUTC(
+                toUTCDate(dtstart.value),
+                "cccc PPP",
+                options
+            ),
+            formattedEnd: dtend
+                ? formatUTC(
+                      addDays(toUTCDate(dtend.value), -1),
+                      "cccc PPP",
+                      options
+                  )
+                : undefined,
             isAllDay,
             isSingleAllDay,
         };
     }
-    const formattedStartDateTime = formatUTC(toUTCDate(dtstart.value), 'cccc PPPp', options);
+    const formattedStartDateTime = formatUTC(
+        toUTCDate(dtstart.value),
+        "cccc PPPp",
+        options
+    );
     const formattedEndDateTime = dtend
-        ? formatUTC(toUTCDate(dtend.value), 'cccc PPPp', { locale: dateLocale })
+        ? formatUTC(toUTCDate(dtend.value), "cccc PPPp", { locale: dateLocale })
         : undefined;
-    const { offset: startOffset } = getTimezoneOffset(propertyToUTCDate(dtstart), getPropertyTzid(dtstart) || 'UTC');
+    const { offset: startOffset } = getTimezoneOffset(
+        propertyToUTCDate(dtstart),
+        getPropertyTzid(dtstart) || "UTC"
+    );
     const { offset: endOffset } = dtend
-        ? getTimezoneOffset(propertyToUTCDate(dtend), getPropertyTzid(dtend) || 'UTC')
+        ? getTimezoneOffset(
+              propertyToUTCDate(dtend),
+              getPropertyTzid(dtend) || "UTC"
+          )
         : { offset: 0 };
     const formattedStartOffset = `GMT${formatTimezoneOffset(startOffset)}`;
     const formattedEndOffset = `GMT${formatTimezoneOffset(endOffset)}`;
     return {
         formattedStart: `${formattedStartDateTime} (${formattedStartOffset})`,
-        formattedEnd: formattedEndDateTime ? `${formattedEndDateTime} (${formattedEndOffset})` : undefined,
+        formattedEnd: formattedEndDateTime
+            ? `${formattedEndDateTime} (${formattedEndOffset})`
+            : undefined,
         isAllDay,
         isSingleAllDay,
     };
@@ -425,47 +541,71 @@ export const generateEmailSubject = ({
     options?: Options;
 }) => {
     if ([ICAL_METHOD.REQUEST, ICAL_METHOD.CANCEL].includes(method)) {
-        const { formattedStart, isAllDay, isSingleAllDay } = getFormattedDateInfo(vevent, options);
+        const {
+            formattedStart,
+            isAllDay,
+            isSingleAllDay,
+        } = getFormattedDateInfo(vevent, options);
         if (isAllDay) {
             if (isSingleAllDay) {
                 if (method === ICAL_METHOD.CANCEL) {
-                    return c('Email subject').t`Cancellation of an event on ${formattedStart}`;
+                    return c("Email subject")
+                        .t`Cancellation of an event on ${formattedStart}`;
                 }
                 return isCreateEvent
-                    ? c('Email subject').t`Invitation for an event on ${formattedStart}`
-                    : c('Email subject').t`Update for an event on ${formattedStart}`;
+                    ? c("Email subject")
+                          .t`Invitation for an event on ${formattedStart}`
+                    : c("Email subject")
+                          .t`Update for an event on ${formattedStart}`;
             }
             if (method === ICAL_METHOD.CANCEL) {
-                return c('Email subject').t`Cancellation of an event starting on ${formattedStart}`;
+                return c("Email subject")
+                    .t`Cancellation of an event starting on ${formattedStart}`;
             }
             return isCreateEvent
-                ? c('Email subject').t`Invitation for an event starting on ${formattedStart}`
-                : c('Email subject').t`Update for an event starting on ${formattedStart}`;
+                ? c("Email subject")
+                      .t`Invitation for an event starting on ${formattedStart}`
+                : c("Email subject")
+                      .t`Update for an event starting on ${formattedStart}`;
         }
         if (method === ICAL_METHOD.CANCEL) {
-            return c('Email subject').t`Cancellation of an event starting on ${formattedStart}`;
+            return c("Email subject")
+                .t`Cancellation of an event starting on ${formattedStart}`;
         }
         return isCreateEvent
-            ? c('Email subject').t`Invitation for an event starting on ${formattedStart}`
-            : c('Email subject').t`Update for an event starting on ${formattedStart}`;
+            ? c("Email subject")
+                  .t`Invitation for an event starting on ${formattedStart}`
+            : c("Email subject")
+                  .t`Update for an event starting on ${formattedStart}`;
     }
     if (method === ICAL_METHOD.REPLY) {
         const eventTitle = getDisplayTitle(vevent.summary?.value);
-        return formatSubject(c('Email subject').t`Invitation: ${eventTitle}`, RE_PREFIX);
+        return formatSubject(
+            c("Email subject").t`Invitation: ${eventTitle}`,
+            RE_PREFIX
+        );
     }
-    throw new Error('Unexpected method');
+    throw new Error("Unexpected method");
 };
 
 const getWhenText = (vevent: VcalVeventComponent, options?: Options) => {
-    const { formattedStart, formattedEnd, isAllDay, isSingleAllDay } = getFormattedDateInfo(vevent, options);
+    const {
+        formattedStart,
+        formattedEnd,
+        isAllDay,
+        isSingleAllDay,
+    } = getFormattedDateInfo(vevent, options);
     if (isAllDay) {
         return isSingleAllDay || !formattedEnd
-            ? c('Email body for invitation (date part)').t`When: ${formattedStart} (all day)`
-            : c('Email body for invitation (date part)').t`When: ${formattedStart} - ${formattedEnd}`;
+            ? c("Email body for invitation (date part)")
+                  .t`When: ${formattedStart} (all day)`
+            : c("Email body for invitation (date part)")
+                  .t`When: ${formattedStart} - ${formattedEnd}`;
     }
     return formattedEnd
-        ? c('Email body for invitation (date part)').t`When: ${formattedStart} - ${formattedEnd}`
-        : c('Email body for invitation (date part)').t`When: ${formattedStart}`;
+        ? c("Email body for invitation (date part)")
+              .t`When: ${formattedStart} - ${formattedEnd}`
+        : c("Email body for invitation (date part)").t`When: ${formattedStart}`;
 };
 
 const getEmailBodyTexts = (vevent: VcalVeventComponent, options?: Options) => {
@@ -476,10 +616,12 @@ const getEmailBodyTexts = (vevent: VcalVeventComponent, options?: Options) => {
 
     const whenText = getWhenText(vevent, options);
     const locationText = eventLocation
-        ? c('Email body for invitation (location part)').t`Where: ${eventLocation}`
+        ? c("Email body for invitation (location part)")
+              .t`Where: ${eventLocation}`
         : undefined;
     const descriptionText = eventDescription
-        ? c('Email body for description (description part)').t`Description: ${eventDescription}`
+        ? c("Email body for description (description part)")
+              .t`Description: ${eventDescription}`
         : undefined;
     const locationAndDescriptionText =
         locationText && descriptionText
@@ -487,7 +629,7 @@ const getEmailBodyTexts = (vevent: VcalVeventComponent, options?: Options) => {
 ${descriptionText}`
             : locationText || descriptionText
             ? `${locationText || descriptionText}`
-            : '';
+            : "";
     const eventDetailsText = locationAndDescriptionText
         ? `${whenText}
 ${locationAndDescriptionText}`
@@ -515,34 +657,36 @@ export const generateEmailBody = ({
 
     if (method === ICAL_METHOD.REQUEST) {
         if (isCreateEvent) {
-            return c('Email body for invitation').t`You are invited to ${eventTitle}
+            return c("Email body for invitation")
+                .t`You are invited to ${eventTitle}
 ${eventDetailsText}`;
         }
-        return c('Email body for invitation').t`${eventTitle} has been updated.
+        return c("Email body for invitation").t`${eventTitle} has been updated.
 ${eventDetailsText}`;
     }
     if (method === ICAL_METHOD.CANCEL) {
-        return c('Email body for invitation').t`${eventTitle} has been cancelled.`;
+        return c("Email body for invitation")
+            .t`${eventTitle} has been cancelled.`;
     }
     if (method === ICAL_METHOD.REPLY) {
         if (!partstat || !emailAddress) {
-            throw new Error('Missing parameters for reply body');
+            throw new Error("Missing parameters for reply body");
         }
         if (partstat === ICAL_ATTENDEE_STATUS.ACCEPTED) {
-            return c('Email body for response to invitation')
+            return c("Email body for response to invitation")
                 .t`${emailAddress} has accepted your invitation to ${eventTitle}`;
         }
         if (partstat === ICAL_ATTENDEE_STATUS.TENTATIVE) {
-            return c('Email body for response to invitation')
+            return c("Email body for response to invitation")
                 .t`${emailAddress} has tentatively accepted your invitation to ${eventTitle}`;
         }
         if (partstat === ICAL_ATTENDEE_STATUS.DECLINED) {
-            return c('Email body for response to invitation')
+            return c("Email body for response to invitation")
                 .t`${emailAddress} has declined your invitation to ${eventTitle}`;
         }
-        throw new Error('Unanswered partstat');
+        throw new Error("Unanswered partstat");
     }
-    throw new Error('Unexpected method');
+    throw new Error("Unexpected method");
 };
 
 export const getHasUpdatedInviteData = ({
@@ -558,12 +702,23 @@ export const getHasUpdatedInviteData = ({
         return;
     }
     const hasUpdatedDateTimes =
-        hasModifiedDateTimes !== undefined ? hasModifiedDateTimes : getHasModifiedDateTimes(newVevent, oldVevent);
-    const hasUpdatedTitle = newVevent.summary?.value !== oldVevent.summary?.value;
-    const hasUpdatedDescription = newVevent.description?.value !== oldVevent.description?.value;
-    const hasUpdatedLocation = newVevent.location?.value !== oldVevent.location?.value;
+        hasModifiedDateTimes !== undefined
+            ? hasModifiedDateTimes
+            : getHasModifiedDateTimes(newVevent, oldVevent);
+    const hasUpdatedTitle =
+        newVevent.summary?.value !== oldVevent.summary?.value;
+    const hasUpdatedDescription =
+        newVevent.description?.value !== oldVevent.description?.value;
+    const hasUpdatedLocation =
+        newVevent.location?.value !== oldVevent.location?.value;
     const hasUpdatedRrule = !getIsRruleEqual(newVevent.rrule, oldVevent.rrule);
-    return hasUpdatedDateTimes || hasUpdatedTitle || hasUpdatedDescription || hasUpdatedLocation || hasUpdatedRrule;
+    return (
+        hasUpdatedDateTimes ||
+        hasUpdatedTitle ||
+        hasUpdatedDescription ||
+        hasUpdatedLocation ||
+        hasUpdatedRrule
+    );
 };
 
 export const getUpdatedInviteVevent = (
@@ -571,17 +726,22 @@ export const getUpdatedInviteVevent = (
     oldVevent: VcalVeventComponent,
     method?: ICAL_METHOD
 ) => {
-    if (method === ICAL_METHOD.REQUEST && getSequence(newVevent) > getSequence(oldVevent)) {
+    if (
+        method === ICAL_METHOD.REQUEST &&
+        getSequence(newVevent) > getSequence(oldVevent)
+    ) {
         if (!newVevent.attendee?.length) {
             return { ...newVevent };
         }
-        const withResetPartstatAttendees = newVevent.attendee.map((attendee) => ({
-            ...attendee,
-            parameters: {
-                ...attendee.parameters,
-                partstat: ICAL_ATTENDEE_STATUS.NEEDS_ACTION,
-            },
-        }));
+        const withResetPartstatAttendees = newVevent.attendee.map(
+            (attendee) => ({
+                ...attendee,
+                parameters: {
+                    ...attendee.parameters,
+                    partstat: ICAL_ATTENDEE_STATUS.NEEDS_ACTION,
+                },
+            })
+        );
         return { ...newVevent, attendee: withResetPartstatAttendees };
     }
     return { ...newVevent };
@@ -599,12 +759,18 @@ export const getResetPartstatActions = (
                 // no need to reset the partsat as it should have been done already
                 return;
             }
-            const selfAttendee = event.Attendees.find(({ Token }) => Token === token);
+            const selfAttendee = event.Attendees.find(
+                ({ Token }) => Token === token
+            );
             if (!selfAttendee) {
                 return;
             }
             const oldPartstat = toIcsPartstat(selfAttendee.Status);
-            if ([ICAL_ATTENDEE_STATUS.NEEDS_ACTION, partstat].includes(oldPartstat)) {
+            if (
+                [ICAL_ATTENDEE_STATUS.NEEDS_ACTION, partstat].includes(
+                    oldPartstat
+                )
+            ) {
                 // no need to reset the partstat as it's already reset or it coincides with the new partstat
                 return;
             }
@@ -628,7 +794,11 @@ export const getHasNonCancelledSingleEdits = (singleEdits: CalendarEvent[]) => {
     return singleEdits.some((event) => !getIsEventCancelled(event));
 };
 
-export const getMustResetPartstat = (singleEdits: CalendarEvent[], token?: string, partstat?: ICAL_ATTENDEE_STATUS) => {
+export const getMustResetPartstat = (
+    singleEdits: CalendarEvent[],
+    token?: string,
+    partstat?: ICAL_ATTENDEE_STATUS
+) => {
     if (!token || !partstat) {
         return false;
     }
@@ -636,12 +806,16 @@ export const getMustResetPartstat = (singleEdits: CalendarEvent[], token?: strin
         if (getIsEventCancelled(event)) {
             return false;
         }
-        const selfAttendee = event.Attendees.find(({ Token }) => Token === token);
+        const selfAttendee = event.Attendees.find(
+            ({ Token }) => Token === token
+        );
         if (!selfAttendee) {
             return false;
         }
         const oldPartstat = toIcsPartstat(selfAttendee.Status);
-        if ([ICAL_ATTENDEE_STATUS.NEEDS_ACTION, partstat].includes(oldPartstat)) {
+        if (
+            [ICAL_ATTENDEE_STATUS.NEEDS_ACTION, partstat].includes(oldPartstat)
+        ) {
             return false;
         }
         return true;

@@ -1,9 +1,16 @@
-import { OpenPGPKey } from 'pmcrypto';
-import { createMemberAddressKeysLegacy, createMemberAddressKeysV2, getDecryptedMemberKey } from './memberKeys';
-import { Api, Address, Member, EncryptionConfig } from '../interfaces';
-import { getHasMigratedAddressKeys } from './keyMigration';
+import { OpenPGPKey } from "pmcrypto";
+import {
+    createMemberAddressKeysLegacy,
+    createMemberAddressKeysV2,
+    getDecryptedMemberKey,
+} from "./memberKeys";
+import { Api, Address, Member, EncryptionConfig } from "../interfaces";
+import { getHasMigratedAddressKeys } from "./keyMigration";
 
-type OnUpdateCallback = (ID: string, update: { status: 'loading' | 'error' | 'ok'; result?: string }) => void;
+type OnUpdateCallback = (
+    ID: string,
+    update: { status: "loading" | "error" | "ok"; result?: string }
+) => void;
 
 interface MissingKeysMemberProcessArguments {
     api: Api;
@@ -29,18 +36,22 @@ export const missingKeysMemberProcess = async ({
     const PrimaryKey = member.Keys.find(({ Primary }) => Primary === 1);
 
     if (!PrimaryKey) {
-        throw new Error('Member keys are not set up');
+        throw new Error("Member keys are not set up");
     }
 
     const hasMigratedAddressKeys =
-        getHasMigratedAddressKeys(memberAddresses) || getHasMigratedAddressKeys(ownerAddresses);
+        getHasMigratedAddressKeys(memberAddresses) ||
+        getHasMigratedAddressKeys(ownerAddresses);
 
-    const primaryMemberUserKey = await getDecryptedMemberKey(PrimaryKey, organizationKey);
+    const primaryMemberUserKey = await getDecryptedMemberKey(
+        PrimaryKey,
+        organizationKey
+    );
 
     return Promise.all(
         memberAddressesToGenerate.map(async (memberAddress) => {
             try {
-                onUpdate(memberAddress.ID, { status: 'loading' });
+                onUpdate(memberAddress.ID, { status: "loading" });
 
                 if (hasMigratedAddressKeys) {
                     await createMemberAddressKeysV2({
@@ -64,9 +75,12 @@ export const missingKeysMemberProcess = async ({
                     });
                 }
 
-                onUpdate(memberAddress.ID, { status: 'ok' });
+                onUpdate(memberAddress.ID, { status: "ok" });
             } catch (e) {
-                onUpdate(memberAddress.ID, { status: 'error', result: e.message });
+                onUpdate(memberAddress.ID, {
+                    status: "error",
+                    result: e.message,
+                });
             }
         })
     );

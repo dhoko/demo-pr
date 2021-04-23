@@ -2,7 +2,7 @@ const eachDayOfInterval = (start: Date, end: Date) => {
     const endTime = end.getTime();
 
     if (!(start.getTime() <= endTime)) {
-        throw new RangeError('Invalid interval');
+        throw new RangeError("Invalid interval");
     }
 
     const dates: Date[] = [];

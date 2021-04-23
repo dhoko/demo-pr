@@ -1,9 +1,19 @@
-import { encryptMessage, encryptPrivateKey, generateKey, OpenPGPKey, reformatKey } from 'pmcrypto';
-import { computeKeyPassword, generateKeySalt } from 'pm-srp';
+import {
+    encryptMessage,
+    encryptPrivateKey,
+    generateKey,
+    OpenPGPKey,
+    reformatKey,
+} from "pmcrypto";
+import { computeKeyPassword, generateKeySalt } from "pm-srp";
 
-import { generateAddressKey } from './addressKeys';
-import { decryptMemberToken, encryptMemberToken, generateMemberToken } from './memberToken';
-import { Member, EncryptionConfig, Address } from '../interfaces';
+import { generateAddressKey } from "./addressKeys";
+import {
+    decryptMemberToken,
+    encryptMemberToken,
+    generateMemberToken,
+} from "./memberToken";
+import { Member, EncryptionConfig, Address } from "../interfaces";
 
 export const getBackupKeyData = async ({
     backupPassword,
@@ -13,8 +23,14 @@ export const getBackupKeyData = async ({
     organizationKey: OpenPGPKey;
 }) => {
     const backupKeySalt = generateKeySalt();
-    const backupKeyPassword = await computeKeyPassword(backupPassword, backupKeySalt);
-    const backupArmoredPrivateKey = await encryptPrivateKey(organizationKey, backupKeyPassword);
+    const backupKeyPassword = await computeKeyPassword(
+        backupPassword,
+        backupKeySalt
+    );
+    const backupArmoredPrivateKey = await encryptPrivateKey(
+        organizationKey,
+        backupKeyPassword
+    );
 
     return {
         backupKeySalt,
@@ -22,7 +38,7 @@ export const getBackupKeyData = async ({
     };
 };
 
-export const ORGANIZATION_USERID = 'not_for_email_use@domain.tld';
+export const ORGANIZATION_USERID = "not_for_email_use@domain.tld";
 
 interface GenerateOrganizationKeysArguments {
     keyPassword: string;
@@ -44,16 +60,26 @@ export const generateOrganizationKeys = async ({
     return {
         privateKey,
         privateKeyArmored,
-        ...(await getBackupKeyData({ backupPassword, organizationKey: privateKey })),
+        ...(await getBackupKeyData({
+            backupPassword,
+            organizationKey: privateKey,
+        })),
     };
 };
 
-export const reformatOrganizationKey = async (privateKey: OpenPGPKey, passphrase: string) => {
-    const { key: reformattedPrivateKey, privateKeyArmored } = await reformatKey({
-        userIds: [{ name: ORGANIZATION_USERID, email: ORGANIZATION_USERID }],
-        passphrase,
-        privateKey,
-    });
+export const reformatOrganizationKey = async (
+    privateKey: OpenPGPKey,
+    passphrase: string
+) => {
+    const { key: reformattedPrivateKey, privateKeyArmored } = await reformatKey(
+        {
+            userIds: [
+                { name: ORGANIZATION_USERID, email: ORGANIZATION_USERID },
+            ],
+            passphrase,
+            privateKey,
+        }
+    );
     await reformattedPrivateKey.decrypt(passphrase);
     return { privateKey: reformattedPrivateKey, privateKeyArmored };
 };
@@ -74,15 +100,21 @@ export const reEncryptOrganizationTokens = ({
     const newOrganizationPublicKey = newOrganizationKey.toPublic();
 
     const getMemberTokens = ({ Keys = [] }: Member, i: number) => {
-        const memberKeys = nonPrivateMembersAddresses[i].reduce((acc, { Keys: AddressKeys }) => {
-            return acc.concat(AddressKeys);
-        }, Keys);
+        const memberKeys = nonPrivateMembersAddresses[i].reduce(
+            (acc, { Keys: AddressKeys }) => {
+                return acc.concat(AddressKeys);
+            },
+            Keys
+        );
 
         return memberKeys.map(async ({ ID, Token }) => {
             if (!Token) {
-                throw new Error('Missing Token');
+                throw new Error("Missing Token");
             }
-            const decryptedToken = await decryptMemberToken(Token, oldOrganizationKey);
+            const decryptedToken = await decryptMemberToken(
+                Token,
+                oldOrganizationKey
+            );
             const { data } = await encryptMessage({
                 data: decryptedToken,
                 privateKeys: newOrganizationKey,
@@ -126,7 +158,10 @@ export const generateMemberAddressKey = async ({
         encryptionConfig,
     });
 
-    const privateKeyArmoredOrganization = await encryptPrivateKey(privateKey, orgKeyToken);
+    const privateKeyArmoredOrganization = await encryptPrivateKey(
+        privateKey,
+        orgKeyToken
+    );
 
     const [activationToken, organizationToken] = await Promise.all([
         encryptMemberToken(memberKeyToken, primaryKey),

@@ -1,9 +1,18 @@
 // BACK-END DATA
-import { BASE_SIZE } from '../constants';
+import { BASE_SIZE } from "../constants";
 
-export const VCARD_KEY_FIELDS = ['key', 'x-pm-mimetype', 'x-pm-encrypt', 'x-pm-sign', 'x-pm-scheme', 'x-pm-tls'];
-export const CLEAR_FIELDS = ['version', 'prodid', 'categories'];
-export const SIGNED_FIELDS = ['version', 'prodid', 'fn', 'uid', 'email'].concat(VCARD_KEY_FIELDS);
+export const VCARD_KEY_FIELDS = [
+    "key",
+    "x-pm-mimetype",
+    "x-pm-encrypt",
+    "x-pm-sign",
+    "x-pm-scheme",
+    "x-pm-tls",
+];
+export const CLEAR_FIELDS = ["version", "prodid", "categories"];
+export const SIGNED_FIELDS = ["version", "prodid", "fn", "uid", "email"].concat(
+    VCARD_KEY_FIELDS
+);
 
 export enum CRYPTO_PROCESSING_TYPES {
     SUCCESS,
@@ -25,25 +34,25 @@ export enum CATEGORIES {
 }
 
 export const OTHER_INFORMATION_FIELDS = [
-    'bday',
-    'anniversary',
-    'gender',
-    'lang',
-    'tz',
-    'geo',
-    'title',
-    'role',
-    'photo',
-    'logo',
-    'org',
-    'member',
-    'note',
-    'url',
+    "bday",
+    "anniversary",
+    "gender",
+    "lang",
+    "tz",
+    "geo",
+    "title",
+    "role",
+    "photo",
+    "logo",
+    "org",
+    "member",
+    "note",
+    "url",
 ];
 
 export enum PGP_SCHEME_TEXT {
-    INLINE = 'PGP/Inline',
-    MIME = 'PGP/MIME',
+    INLINE = "PGP/Inline",
+    MIME = "PGP/MIME",
 }
 
 export enum ADDRESS_COMPONENTS {
@@ -69,6 +78,6 @@ export const MAX_SIMULTANEOUS_CONTACTS_ENCRYPT = 5;
 export const MAX_IMPORT_CONTACTS = 10000;
 export const MAX_IMPORT_CONTACTS_STRING = "10'000";
 export const MAX_IMPORT_FILE_SIZE = 10 * BASE_SIZE ** 2;
-export const MAX_IMPORT_FILE_SIZE_STRING = '10 MB';
+export const MAX_IMPORT_FILE_SIZE_STRING = "10 MB";
 export const MAX_UID_CHARS_DISPLAY = 43;
 export const MAX_FILENAME_CHARS_DISPLAY = 100;

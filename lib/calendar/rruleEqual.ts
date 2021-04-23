@@ -1,29 +1,29 @@
-import { FREQUENCY } from './constants';
+import { FREQUENCY } from "./constants";
 import {
     VcalDateOrDateTimeValue,
     VcalDays,
     VcalDaysKeys,
     VcalRruleProperty,
     VcalRrulePropertyValue,
-} from '../interfaces/calendar/VcalModel';
-import { shallowEqual } from '../helpers/array';
-import isDeepEqual from '../helpers/isDeepEqual';
-import { omit } from '../helpers/object';
-import { toUTCDate } from '../date/timezone';
-import { isSameDay } from '../date-fns-utc';
-import { getRruleValue } from './rrule';
-import { withRruleWkst } from './rruleWkst';
-import { dayToNumericDay } from './vcalConverter';
+} from "../interfaces/calendar/VcalModel";
+import { shallowEqual } from "../helpers/array";
+import isDeepEqual from "../helpers/isDeepEqual";
+import { omit } from "../helpers/object";
+import { toUTCDate } from "../date/timezone";
+import { isSameDay } from "../date-fns-utc";
+import { getRruleValue } from "./rrule";
+import { withRruleWkst } from "./rruleWkst";
+import { dayToNumericDay } from "./vcalConverter";
 
 const maybeArrayComparisonKeys = [
-    'byday',
-    'bymonthday',
-    'bymonth',
-    'bysecond',
-    'byminute',
-    'byhour',
-    'byyearday',
-    'byweekno',
+    "byday",
+    "bymonthday",
+    "bymonth",
+    "bysecond",
+    "byminute",
+    "byhour",
+    "byyearday",
+    "byweekno",
 ] as const;
 
 const isSingleValue = <T>(arg: T | T[] | undefined) => {
@@ -36,29 +36,40 @@ const isSingleValue = <T>(arg: T | T[] | undefined) => {
 /**
  * Remove redundant properties for a given RRULE
  */
-const getNormalizedRrule = (rrule: VcalRrulePropertyValue, wkstCalendar = VcalDays.MO) => {
-    const { freq, count, interval, byday, bymonth, bymonthday, wkst: wkstRrule } = rrule;
+const getNormalizedRrule = (
+    rrule: VcalRrulePropertyValue,
+    wkstCalendar = VcalDays.MO
+) => {
+    const {
+        freq,
+        count,
+        interval,
+        byday,
+        bymonth,
+        bymonthday,
+        wkst: wkstRrule,
+    } = rrule;
     const wkst = wkstRrule ? dayToNumericDay(wkstRrule) : wkstCalendar;
     const redundantProperties: (keyof VcalRrulePropertyValue)[] = [];
     if (count && count === 1) {
-        redundantProperties.push('count');
+        redundantProperties.push("count");
     }
     if (interval && interval === 1) {
-        redundantProperties.push('interval');
+        redundantProperties.push("interval");
     }
     if (freq === FREQUENCY.WEEKLY) {
         if (isSingleValue(byday)) {
-            redundantProperties.push('byday');
+            redundantProperties.push("byday");
         }
     }
     if (freq === FREQUENCY.MONTHLY) {
         if (isSingleValue(bymonthday)) {
-            redundantProperties.push('bymonthday');
+            redundantProperties.push("bymonthday");
         }
     }
     if (freq === FREQUENCY.YEARLY) {
         if (isSingleValue(byday) && isSingleValue(bymonth)) {
-            redundantProperties.push('byday', 'bymonth');
+            redundantProperties.push("byday", "bymonth");
         }
     }
     return withRruleWkst({ freq, ...omit(rrule, redundantProperties) }, wkst);
@@ -71,18 +82,29 @@ const isMaybeArrayEqual = (oldValue: any | any[], newValue: any | any[]) => {
     return oldValue === newValue;
 };
 
-const isUntilEqual = (oldUntil?: VcalDateOrDateTimeValue, newUntil?: VcalDateOrDateTimeValue) => {
+const isUntilEqual = (
+    oldUntil?: VcalDateOrDateTimeValue,
+    newUntil?: VcalDateOrDateTimeValue
+) => {
     if (!oldUntil && !newUntil) {
         return true;
     }
     // If changing an all-day event into a part-day event the until adds the time part, so ignore that here.
-    return oldUntil && newUntil && isSameDay(toUTCDate(oldUntil), toUTCDate(newUntil));
+    return (
+        oldUntil &&
+        newUntil &&
+        isSameDay(toUTCDate(oldUntil), toUTCDate(newUntil))
+    );
 };
 
 /**
  * Determine if two recurring rules are equal up to re-writing.
  */
-export const getIsRruleEqual = (oldRrule?: VcalRruleProperty, newRrule?: VcalRruleProperty, ignoreWkst = false) => {
+export const getIsRruleEqual = (
+    oldRrule?: VcalRruleProperty,
+    newRrule?: VcalRruleProperty,
+    ignoreWkst = false
+) => {
     const oldValue = getRruleValue(oldRrule);
     const newValue = getRruleValue(newRrule);
     if (ignoreWkst && oldValue && newValue) {
@@ -95,8 +117,14 @@ export const getIsRruleEqual = (oldRrule?: VcalRruleProperty, newRrule?: VcalRru
         const normalizedOldValue = getNormalizedRrule(oldValue);
         const normalizedNewValue = getNormalizedRrule(newValue);
         // Compare array values separately because they can be possibly unsorted...
-        const oldWithoutMaybeArrays = omit(normalizedOldValue, [...maybeArrayComparisonKeys, 'until']);
-        const newWithoutMaybeArrays = omit(normalizedNewValue, [...maybeArrayComparisonKeys, 'until']);
+        const oldWithoutMaybeArrays = omit(normalizedOldValue, [
+            ...maybeArrayComparisonKeys,
+            "until",
+        ]);
+        const newWithoutMaybeArrays = omit(normalizedNewValue, [
+            ...maybeArrayComparisonKeys,
+            "until",
+        ]);
         if (!isDeepEqual(newWithoutMaybeArrays, oldWithoutMaybeArrays)) {
             return false;
         }
@@ -105,7 +133,10 @@ export const getIsRruleEqual = (oldRrule?: VcalRruleProperty, newRrule?: VcalRru
             return false;
         }
         return !maybeArrayComparisonKeys.some((key) => {
-            return !isMaybeArrayEqual(normalizedOldValue[key], normalizedNewValue[key]);
+            return !isMaybeArrayEqual(
+                normalizedOldValue[key],
+                normalizedNewValue[key]
+            );
         });
     }
     return isDeepEqual(oldRrule, newRrule);

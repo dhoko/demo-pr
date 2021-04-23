@@ -1,4 +1,4 @@
-import { move } from '../../helpers/array';
+import { move } from "../../helpers/array";
 
 /**
  * Re-order elements in an array inside a group of arrays

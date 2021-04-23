@@ -6,16 +6,23 @@ import {
     StoredEncryptedEvent,
     VcalVeventComponent,
     EncryptedEvent,
-} from '../../interfaces/calendar';
-import { API_CODES, HOUR } from '../../constants';
-import { splitErrors } from './import';
-import { IMPORT_EVENT_ERROR_TYPE, ImportEventError } from './ImportEventError';
-import { CreateCalendarEventSyncData, syncMultipleEvents } from '../../api/calendars';
-import { createCalendarEvent, getHasSharedEventContent, getHasSharedKeyPacket } from '../serialize';
-import getCreationKeys from '../integration/getCreationKeys';
-import { chunk } from '../../helpers/array';
-import { wait } from '../../helpers/promise';
-import { Api, DecryptedKey } from '../../interfaces';
+} from "../../interfaces/calendar";
+import { API_CODES, HOUR } from "../../constants";
+import { splitErrors } from "./import";
+import { IMPORT_EVENT_ERROR_TYPE, ImportEventError } from "./ImportEventError";
+import {
+    CreateCalendarEventSyncData,
+    syncMultipleEvents,
+} from "../../api/calendars";
+import {
+    createCalendarEvent,
+    getHasSharedEventContent,
+    getHasSharedKeyPacket,
+} from "../serialize";
+import getCreationKeys from "../integration/getCreationKeys";
+import { chunk } from "../../helpers/array";
+import { wait } from "../../helpers/promise";
+import { Api, DecryptedKey } from "../../interfaces";
 
 const { SINGLE_SUCCESS } = API_CODES;
 const BATCH_SIZE = 10;
@@ -31,18 +38,30 @@ const encryptEvent = async (
             eventComponent,
             isCreateEvent: true,
             isSwitchCalendar: false,
-            ...(await getCreationKeys({ addressKeys, newCalendarKeys: calendarKeys })),
+            ...(await getCreationKeys({
+                addressKeys,
+                newCalendarKeys: calendarKeys,
+            })),
         });
         if (!getHasSharedKeyPacket(data) || !getHasSharedEventContent(data)) {
-            throw new Error('Missing shared data');
+            throw new Error("Missing shared data");
         }
         return { data, component: eventComponent };
     } catch (error) {
-        return new ImportEventError(IMPORT_EVENT_ERROR_TYPE.ENCRYPTION_ERROR, uid, 'vevent');
+        return new ImportEventError(
+            IMPORT_EVENT_ERROR_TYPE.ENCRYPTION_ERROR,
+            uid,
+            "vevent"
+        );
     }
 };
 
-const submitEvents = async (events: EncryptedEvent[], calendarID: string, memberID: string, api: Api) => {
+const submitEvents = async (
+    events: EncryptedEvent[],
+    calendarID: string,
+    memberID: string,
+    api: Api
+) => {
     // prepare the events data in the way the API wants it
     const Events = events.map(
         (event): CreateCalendarEventSyncData => ({
@@ -54,7 +73,11 @@ const submitEvents = async (events: EncryptedEvent[], calendarID: string, member
     let responses: SyncMultipleApiResponses[] = [];
     try {
         const { Responses } = await api<SyncMultipleApiResponse>({
-            ...syncMultipleEvents(calendarID, { MemberID: memberID, IsImport: 1, Events }),
+            ...syncMultipleEvents(calendarID, {
+                MemberID: memberID,
+                IsImport: 1,
+                Events,
+            }),
             timeout: HOUR,
             silence: true,
         });
@@ -66,7 +89,9 @@ const submitEvents = async (events: EncryptedEvent[], calendarID: string, member
         }));
     }
 
-    return responses.map((response): StoredEncryptedEvent | ImportEventError => {
+    return responses.map((response):
+        | StoredEncryptedEvent
+        | ImportEventError => {
         const {
             Index,
             Response: { Error: errorMessage, Code },
@@ -79,7 +104,12 @@ const submitEvents = async (events: EncryptedEvent[], calendarID: string, member
         }
         const error = new Error(errorMessage);
         const uid = events[Index]?.component.uid.value;
-        return new ImportEventError(IMPORT_EVENT_ERROR_TYPE.EXTERNAL_ERROR, 'vevent', uid, error);
+        return new ImportEventError(
+            IMPORT_EVENT_ERROR_TYPE.EXTERNAL_ERROR,
+            "vevent",
+            uid,
+            error
+        );
     });
 };
 
@@ -91,7 +121,11 @@ interface ProcessData {
     calendarKeys: DecryptedCalendarKey[];
     api: Api;
     signal: AbortSignal;
-    onProgress: (encrypted: EncryptedEvent[], imported: EncryptedEvent[], errors: ImportEventError[]) => void;
+    onProgress: (
+        encrypted: EncryptedEvent[],
+        imported: EncryptedEvent[],
+        errors: ImportEventError[]
+    ) => void;
 }
 
 export const processInBatches = async ({
@@ -116,7 +150,11 @@ export const processInBatches = async ({
         }
         const batchedEvents = batches[i];
         const [result] = await Promise.all([
-            Promise.all(batchedEvents.map((event) => encryptEvent(event, addressKeys, calendarKeys))),
+            Promise.all(
+                batchedEvents.map((event) =>
+                    encryptEvent(event, addressKeys, calendarKeys)
+                )
+            ),
             wait(100),
         ]);
         const { errors, rest: encrypted } = splitErrors(result);
@@ -125,13 +163,16 @@ export const processInBatches = async ({
         }
         onProgress(encrypted, [], errors);
         if (encrypted.length) {
-            const promise = submitEvents(encrypted, calendarID, memberID, api).then(
-                (result: (StoredEncryptedEvent | ImportEventError)[]) => {
-                    const { errors, rest: importedSuccess } = splitErrors(result);
-                    imported.push(importedSuccess);
-                    onProgress([], importedSuccess, errors);
-                }
-            );
+            const promise = submitEvents(
+                encrypted,
+                calendarID,
+                memberID,
+                api
+            ).then((result: (StoredEncryptedEvent | ImportEventError)[]) => {
+                const { errors, rest: importedSuccess } = splitErrors(result);
+                imported.push(importedSuccess);
+                onProgress([], importedSuccess, errors);
+            });
             promises.push(promise);
         }
     }

@@ -1,9 +1,16 @@
-import { ICAL_ATTENDEE_ROLE, ICAL_ATTENDEE_STATUS } from '../../calendar/constants';
-import { Calendar, CalendarSettings } from './Calendar';
-import { CalendarEvent } from './Event';
-import { VcalAttendeeProperty, VcalOrganizerProperty, VcalVeventComponent } from './VcalModel';
-import { DecryptedKey } from '../Key';
-import { DecryptedCalendarKey } from './CalendarKey';
+import {
+    ICAL_ATTENDEE_ROLE,
+    ICAL_ATTENDEE_STATUS,
+} from "../../calendar/constants";
+import { Calendar, CalendarSettings } from "./Calendar";
+import { CalendarEvent } from "./Event";
+import {
+    VcalAttendeeProperty,
+    VcalOrganizerProperty,
+    VcalVeventComponent,
+} from "./VcalModel";
+import { DecryptedKey } from "../Key";
+import { DecryptedCalendarKey } from "./CalendarKey";
 
 export interface PartstatActions {
     accept: () => Promise<void>;

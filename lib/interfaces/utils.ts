@@ -2,7 +2,8 @@ export type SimpleMap<T> = { [key: string]: T | undefined };
 
 export type LoadingMap = { [key: string]: boolean | undefined };
 
-export type RequireOnly<T, Keys extends keyof T> = Partial<T> & Required<Pick<T, Keys>>;
+export type RequireOnly<T, Keys extends keyof T> = Partial<T> &
+    Required<Pick<T, Keys>>;
 
 export type RequireSome<T, Keys extends keyof T> = T & Required<Pick<T, Keys>>;
 

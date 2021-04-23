@@ -1,28 +1,41 @@
-import { OpenPGPKey, SessionKey } from 'pmcrypto';
-import { AES256 } from '../constants';
-import { Address } from '../interfaces';
+import { OpenPGPKey, SessionKey } from "pmcrypto";
+import { AES256 } from "../constants";
+import { Address } from "../interfaces";
 
-import { SimpleMap } from '../interfaces/utils';
+import { SimpleMap } from "../interfaces/utils";
 import {
     decryptAndVerifyCalendarEvent,
     getDecryptedSessionKey,
     getAggregatedEventVerificationStatus,
     verifySignedCard,
-} from './decrypt';
-import { getSelfAddressData } from './integration/invite';
-import { parse } from './vcal';
-import { unwrap } from './helper';
-import { toInternalAttendee } from './attendees';
-import { CalendarEventData, CalendarEvent, CalendarPersonalEventData } from '../interfaces/calendar';
-import { VcalAttendeeProperty, VcalVeventComponent } from '../interfaces/calendar/VcalModel';
-import { getIsEventComponent } from './vcalHelper';
-import { base64StringToUint8Array } from '../helpers/encoding';
+} from "./decrypt";
+import { getSelfAddressData } from "./integration/invite";
+import { parse } from "./vcal";
+import { unwrap } from "./helper";
+import { toInternalAttendee } from "./attendees";
+import {
+    CalendarEventData,
+    CalendarEvent,
+    CalendarPersonalEventData,
+} from "../interfaces/calendar";
+import {
+    VcalAttendeeProperty,
+    VcalVeventComponent,
+} from "../interfaces/calendar/VcalModel";
+import { getIsEventComponent } from "./vcalHelper";
+import { base64StringToUint8Array } from "../helpers/encoding";
 
-export const readSessionKey = (KeyPacket?: string, privateKeys?: OpenPGPKey | OpenPGPKey[]) => {
+export const readSessionKey = (
+    KeyPacket?: string,
+    privateKeys?: OpenPGPKey | OpenPGPKey[]
+) => {
     if (!KeyPacket || !privateKeys) {
         return;
     }
-    return getDecryptedSessionKey(base64StringToUint8Array(KeyPacket), privateKeys);
+    return getDecryptedSessionKey(
+        base64StringToUint8Array(KeyPacket),
+        privateKeys
+    );
 };
 
 /**
@@ -38,9 +51,15 @@ export const readSessionKeys = async ({
     privateKeys?: OpenPGPKey | OpenPGPKey[];
 }) => {
     const sharedsessionKeyPromise = decryptedSharedKeyPacket
-        ? Promise.resolve({ algorithm: AES256, data: base64StringToUint8Array(decryptedSharedKeyPacket) })
+        ? Promise.resolve({
+              algorithm: AES256,
+              data: base64StringToUint8Array(decryptedSharedKeyPacket),
+          })
         : readSessionKey(calendarEvent?.SharedKeyPacket, privateKeys);
-    const calendarSessionKeyPromise = readSessionKey(calendarEvent?.CalendarKeyPacket, privateKeys);
+    const calendarSessionKeyPromise = readSessionKey(
+        calendarEvent?.CalendarKeyPacket,
+        privateKeys
+    );
     return Promise.all([sharedsessionKeyPromise, calendarSessionKeyPromise]);
 };
 
@@ -49,7 +68,10 @@ export const readSessionKeys = async ({
  */
 interface ReadCalendarEventArguments {
     isOrganizer: boolean;
-    event: Pick<CalendarEvent, 'SharedEvents' | 'CalendarEvents' | 'AttendeesEvents' | 'Attendees'>;
+    event: Pick<
+        CalendarEvent,
+        "SharedEvents" | "CalendarEvents" | "AttendeesEvents" | "Attendees"
+    >;
     publicKeysMap: SimpleMap<OpenPGPKey | OpenPGPKey[]>;
     sharedSessionKey?: SessionKey;
     calendarSessionKey?: SessionKey;
@@ -58,28 +80,66 @@ interface ReadCalendarEventArguments {
 
 export const readCalendarEvent = async ({
     isOrganizer,
-    event: { SharedEvents = [], CalendarEvents = [], AttendeesEvents = [], Attendees = [] },
+    event: {
+        SharedEvents = [],
+        CalendarEvents = [],
+        AttendeesEvents = [],
+        Attendees = [],
+    },
     publicKeysMap,
     sharedSessionKey,
     calendarSessionKey,
     addresses,
 }: ReadCalendarEventArguments) => {
     const decryptedEventsResults = await Promise.all([
-        Promise.all(SharedEvents.map((e) => decryptAndVerifyCalendarEvent(e, publicKeysMap, sharedSessionKey))),
-        Promise.all(CalendarEvents.map((e) => decryptAndVerifyCalendarEvent(e, publicKeysMap, calendarSessionKey))),
-        Promise.all(AttendeesEvents.map((e) => decryptAndVerifyCalendarEvent(e, publicKeysMap, sharedSessionKey))),
+        Promise.all(
+            SharedEvents.map((e) =>
+                decryptAndVerifyCalendarEvent(
+                    e,
+                    publicKeysMap,
+                    sharedSessionKey
+                )
+            )
+        ),
+        Promise.all(
+            CalendarEvents.map((e) =>
+                decryptAndVerifyCalendarEvent(
+                    e,
+                    publicKeysMap,
+                    calendarSessionKey
+                )
+            )
+        ),
+        Promise.all(
+            AttendeesEvents.map((e) =>
+                decryptAndVerifyCalendarEvent(
+                    e,
+                    publicKeysMap,
+                    sharedSessionKey
+                )
+            )
+        ),
     ]);
     const [
         decryptedSharedEvents,
         decryptedCalendarEvents,
         decryptedAttendeesEvents,
-    ] = decryptedEventsResults.map((decryptedEvents) => decryptedEvents.map(({ data }) => data));
+    ] = decryptedEventsResults.map((decryptedEvents) =>
+        decryptedEvents.map(({ data }) => data)
+    );
     const verificationStatusArray = decryptedEventsResults
-        .map((decryptedEvents) => decryptedEvents.map(({ verificationStatus }) => verificationStatus))
+        .map((decryptedEvents) =>
+            decryptedEvents.map(({ verificationStatus }) => verificationStatus)
+        )
         .flat();
-    const verificationStatus = getAggregatedEventVerificationStatus(verificationStatusArray);
+    const verificationStatus = getAggregatedEventVerificationStatus(
+        verificationStatusArray
+    );
 
-    const vevent = [...decryptedSharedEvents, ...decryptedCalendarEvents].reduce<VcalVeventComponent>((acc, event) => {
+    const vevent = [
+        ...decryptedSharedEvents,
+        ...decryptedCalendarEvents,
+    ].reduce<VcalVeventComponent>((acc, event) => {
         if (!event) {
             return acc;
         }
@@ -90,7 +150,9 @@ export const readCalendarEvent = async ({
         return { ...acc, ...parsedComponent };
     }, {} as VcalVeventComponent);
 
-    const veventAttendees = decryptedAttendeesEvents.reduce<VcalAttendeeProperty[]>((acc, event) => {
+    const veventAttendees = decryptedAttendeesEvents.reduce<
+        VcalAttendeeProperty[]
+    >((acc, event) => {
         if (!event) {
             return acc;
         }
@@ -101,14 +163,20 @@ export const readCalendarEvent = async ({
         return acc.concat(toInternalAttendee(parsedComponent, Attendees));
     }, []);
 
-    const veventWithAttendees = veventAttendees.length ? { ...vevent, attendee: veventAttendees } : vevent;
+    const veventWithAttendees = veventAttendees.length
+        ? { ...vevent, attendee: veventAttendees }
+        : vevent;
     const selfAddressData = getSelfAddressData({
         isOrganizer,
         organizer: vevent.organizer,
         attendees: veventAttendees,
         addresses,
     });
-    return { veventComponent: veventWithAttendees, verificationStatus, selfAddressData };
+    return {
+        veventComponent: veventWithAttendees,
+        verificationStatus,
+        selfAddressData,
+    };
 };
 
 export const readPersonalPart = async (
@@ -116,16 +184,26 @@ export const readPersonalPart = async (
     publicKeys: OpenPGPKey | OpenPGPKey[]
 ) => {
     if (!Signature) {
-        throw new Error('Personal part should always be signed');
+        throw new Error("Personal part should always be signed");
     }
-    const { data, verificationStatus } = await verifySignedCard(Data, Signature, publicKeys);
-    return { veventComponent: parse(unwrap(data)) as VcalVeventComponent, verificationStatus };
+    const { data, verificationStatus } = await verifySignedCard(
+        Data,
+        Signature,
+        publicKeys
+    );
+    return {
+        veventComponent: parse(unwrap(data)) as VcalVeventComponent,
+        verificationStatus,
+    };
 };
 
 export const getPersonalPartMap = ({ PersonalEvent = [] }: CalendarEvent) => {
-    return PersonalEvent.reduce<{ [key: string]: CalendarPersonalEventData }>((acc, result) => {
-        const { MemberID } = result;
-        acc[MemberID] = result;
-        return acc;
-    }, {});
+    return PersonalEvent.reduce<{ [key: string]: CalendarPersonalEventData }>(
+        (acc, result) => {
+            const { MemberID } = result;
+            acc[MemberID] = result;
+            return acc;
+        },
+        {}
+    );
 };

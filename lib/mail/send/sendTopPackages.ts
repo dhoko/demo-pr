@@ -1,12 +1,17 @@
 /**
  * Currently this is basically a copy of sendSubPackages from the mail repo. TO BE IMPROVED
  */
-import { MIME_TYPES, PACKAGE_TYPE } from '../../constants';
-import isTruthy from '../../helpers/isTruthy';
-import { AttachmentDirect, PackageDirect, PackageStatus, SendPreferences } from '../../interfaces/mail/crypto';
-import { Message } from '../../interfaces/mail/Message';
-import { RequireOnly, SimpleMap } from '../../interfaces/utils';
-import { constructMime } from './helpers';
+import { MIME_TYPES, PACKAGE_TYPE } from "../../constants";
+import isTruthy from "../../helpers/isTruthy";
+import {
+    AttachmentDirect,
+    PackageDirect,
+    PackageStatus,
+    SendPreferences,
+} from "../../interfaces/mail/crypto";
+import { Message } from "../../interfaces/mail/Message";
+import { RequireOnly, SimpleMap } from "../../interfaces/utils";
+import { constructMime } from "./helpers";
 
 const { PLAINTEXT, DEFAULT, MIME } = MIME_TYPES;
 
@@ -15,7 +20,7 @@ const { PLAINTEXT, DEFAULT, MIME } = MIME_TYPES;
  * Build the multipart/alternate MIME entity containing both the HTML and plain text entities.
  */
 const generateMimePackage = (
-    message: RequireOnly<Message, 'Body'>,
+    message: RequireOnly<Message, "Body">,
     attachmentData: { attachment: AttachmentDirect; data: string }
 ): PackageDirect => ({
     Addresses: {},
@@ -23,13 +28,17 @@ const generateMimePackage = (
     Body: constructMime(message.Body, attachmentData),
 });
 
-const generatePlainTextPackage = (message: RequireOnly<Message, 'Body'>): PackageDirect => ({
+const generatePlainTextPackage = (
+    message: RequireOnly<Message, "Body">
+): PackageDirect => ({
     Addresses: {},
     MIMEType: PLAINTEXT,
     Body: message.Body,
 });
 
-const generateHTMLPackage = (message: RequireOnly<Message, 'Body'>): PackageDirect => ({
+const generateHTMLPackage = (
+    message: RequireOnly<Message, "Body">
+): PackageDirect => ({
     Addresses: {},
     MIMEType: DEFAULT,
     // We NEVER upconvert, if the user wants html: plaintext is actually fine as well
@@ -46,7 +55,7 @@ export const generateTopPackages = ({
     sendPreferencesMap,
     attachmentData,
 }: {
-    message: RequireOnly<Message, 'Body'>;
+    message: RequireOnly<Message, "Body">;
     sendPreferencesMap: SimpleMap<SendPreferences>;
     attachmentData: { attachment: AttachmentDirect; data: string };
 }): SimpleMap<PackageDirect> => {
@@ -54,12 +63,18 @@ export const generateTopPackages = ({
         .filter(isTruthy)
         .reduce(
             (packages, { encrypt, sign, pgpScheme, mimeType }) => ({
-                [PLAINTEXT]: packages[PLAINTEXT] || mimeType === MIME_TYPES.PLAINTEXT,
+                [PLAINTEXT]:
+                    packages[PLAINTEXT] || mimeType === MIME_TYPES.PLAINTEXT,
                 [DEFAULT]:
                     packages[DEFAULT] ||
                     mimeType === DEFAULT ||
-                    (pgpScheme === PACKAGE_TYPE.SEND_PGP_MIME && !encrypt && !sign),
-                [MIME]: packages[MIME] || (pgpScheme === PACKAGE_TYPE.SEND_PGP_MIME && (encrypt || sign)),
+                    (pgpScheme === PACKAGE_TYPE.SEND_PGP_MIME &&
+                        !encrypt &&
+                        !sign),
+                [MIME]:
+                    packages[MIME] ||
+                    (pgpScheme === PACKAGE_TYPE.SEND_PGP_MIME &&
+                        (encrypt || sign)),
             }),
             {
                 [PLAINTEXT]: false,
@@ -68,7 +83,9 @@ export const generateTopPackages = ({
             } as PackageStatus
         );
 
-    const demandedPackages = Object.values(MIME_TYPES).filter((k) => packagesStatus[k]);
+    const demandedPackages = Object.values(MIME_TYPES).filter(
+        (k) => packagesStatus[k]
+    );
 
     const packages: SimpleMap<PackageDirect> = {};
 

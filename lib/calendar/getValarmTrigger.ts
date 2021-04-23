@@ -1,15 +1,15 @@
-import { NOTIFICATION_UNITS, NOTIFICATION_WHEN } from './constants';
-import { transformBeforeAt } from './trigger';
-import { NotificationModel } from '../interfaces/calendar/Notification';
+import { NOTIFICATION_UNITS, NOTIFICATION_WHEN } from "./constants";
+import { transformBeforeAt } from "./trigger";
+import { NotificationModel } from "../interfaces/calendar/Notification";
 
 const getValarmTriggerUnit = (unit: NOTIFICATION_UNITS) => {
     return (
         {
-            [NOTIFICATION_UNITS.WEEK]: 'weeks',
-            [NOTIFICATION_UNITS.DAY]: 'days',
-            [NOTIFICATION_UNITS.HOURS]: 'hours',
-            [NOTIFICATION_UNITS.MINUTES]: 'minutes',
-        }[unit] || 'days'
+            [NOTIFICATION_UNITS.WEEK]: "weeks",
+            [NOTIFICATION_UNITS.DAY]: "days",
+            [NOTIFICATION_UNITS.HOURS]: "hours",
+            [NOTIFICATION_UNITS.MINUTES]: "minutes",
+        }[unit] || "days"
     );
 };
 
@@ -74,11 +74,17 @@ const getPartDayValarmTrigger = ({
     };
 };
 
-export const getValarmTrigger = ({ isAllDay, unit, when, value, at }: NotificationModel) => {
+export const getValarmTrigger = ({
+    isAllDay,
+    unit,
+    when,
+    value,
+    at,
+}: NotificationModel) => {
     const isNegative = when === NOTIFICATION_WHEN.BEFORE;
     if (isAllDay) {
         if (!at) {
-            throw new Error('Missing at');
+            throw new Error("Missing at");
         }
         return getAllDayValarmTrigger({ isNegative, unit, value, at });
     }

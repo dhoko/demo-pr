@@ -3,7 +3,7 @@ import {
     ICAL_ATTENDEE_RSVP,
     ICAL_ATTENDEE_STATUS,
     ICAL_EVENT_STATUS,
-} from '../../calendar/constants';
+} from "../../calendar/constants";
 
 export enum VcalDays {
     SU,
@@ -37,7 +37,7 @@ export type VcalDateOrDateTimeValue = VcalDateValue | VcalDateTimeValue;
 
 export interface VcalDateTimeProperty {
     parameters?: {
-        type?: 'date-time';
+        type?: "date-time";
         tzid?: string;
     };
     value: VcalDateTimeValue;
@@ -45,21 +45,29 @@ export interface VcalDateTimeProperty {
 
 export interface VcalDateProperty {
     parameters: {
-        type: 'date';
+        type: "date";
     };
     value: VcalDateValue;
 }
 
 export interface VcalFloatingDateTimeProperty {
     parameters?: {
-        type?: 'date-time';
+        type?: "date-time";
     };
     value: VcalDateTimeValue;
 }
 
-export type VcalDateOrDateTimeProperty = VcalDateProperty | VcalDateTimeProperty;
+export type VcalDateOrDateTimeProperty =
+    | VcalDateProperty
+    | VcalDateTimeProperty;
 
-export type VcalRruleFreqValue = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | undefined | string;
+export type VcalRruleFreqValue =
+    | "DAILY"
+    | "WEEKLY"
+    | "MONTHLY"
+    | "YEARLY"
+    | undefined
+    | string;
 export interface VcalRrulePropertyValue {
     freq: VcalRruleFreqValue;
     count?: number;
@@ -93,12 +101,14 @@ export interface VcalDurationValue {
 export interface VcalTriggerRelativeProperty {
     value: VcalDurationValue;
     parameters?: {
-        type?: 'duration';
+        type?: "duration";
         related?: string;
     };
 }
 
-export type VcalTriggerProperty = VcalTriggerRelativeProperty | VcalDateTimeProperty;
+export type VcalTriggerProperty =
+    | VcalTriggerRelativeProperty
+    | VcalDateTimeProperty;
 
 export interface VcalUidProperty {
     value: string;
@@ -125,7 +135,7 @@ interface VcalDurationProperty {
 }
 
 export interface VcalValarmComponent<T = VcalTriggerProperty> {
-    component: 'valarm';
+    component: "valarm";
     action: VcalStringProperty;
     trigger: T;
     duration?: VcalDurationProperty;
@@ -149,7 +159,7 @@ export interface VcalOrganizerPropertyParameters {
     cn?: string;
     dir?: string;
     language?: string;
-    'sent-by'?: string;
+    "sent-by"?: string;
     email?: string;
 }
 
@@ -162,16 +172,17 @@ export interface VcalStatusProperty {
     value: ICAL_EVENT_STATUS | string;
 }
 
-export interface VcalAttendeePropertyParameters extends VcalOrganizerPropertyParameters {
+export interface VcalAttendeePropertyParameters
+    extends VcalOrganizerPropertyParameters {
     cn?: string;
     cutype?: string;
     member?: string;
     role?: ICAL_ATTENDEE_ROLE | string;
     partstat?: ICAL_ATTENDEE_STATUS | string;
     rsvp?: ICAL_ATTENDEE_RSVP | string;
-    'delegated-from'?: string;
-    'delegated-to'?: string;
-    'x-pm-token'?: string;
+    "delegated-from"?: string;
+    "delegated-to"?: string;
+    "x-pm-token"?: string;
 }
 
 export interface VcalAttendeeProperty {
@@ -180,32 +191,37 @@ export interface VcalAttendeeProperty {
 }
 
 export interface VcalAttendeePropertyWithCn extends VcalAttendeeProperty {
-    parameters: VcalAttendeePropertyParameters & Required<Pick<VcalAttendeePropertyParameters, 'cn'>>;
+    parameters: VcalAttendeePropertyParameters &
+        Required<Pick<VcalAttendeePropertyParameters, "cn">>;
 }
 
 export interface VcalAttendeePropertyWithPartstat extends VcalAttendeeProperty {
-    parameters: VcalAttendeePropertyParameters & Required<Pick<VcalAttendeePropertyParameters, 'partstat'>>;
+    parameters: VcalAttendeePropertyParameters &
+        Required<Pick<VcalAttendeePropertyParameters, "partstat">>;
 }
 
 export interface VcalAttendeePropertyWithRole extends VcalAttendeeProperty {
-    parameters: VcalAttendeePropertyParameters & Required<Pick<VcalAttendeePropertyParameters, 'role'>>;
+    parameters: VcalAttendeePropertyParameters &
+        Required<Pick<VcalAttendeePropertyParameters, "role">>;
 }
 
 export interface VcalAttendeePropertyWithToken extends VcalAttendeeProperty {
-    parameters: VcalAttendeePropertyParameters & Required<Pick<VcalAttendeePropertyParameters, 'x-pm-token'>>;
+    parameters: VcalAttendeePropertyParameters &
+        Required<Pick<VcalAttendeePropertyParameters, "x-pm-token">>;
 }
 
-export type VcalPmAttendee = VcalAttendeePropertyWithCn & VcalAttendeePropertyWithToken;
+export type VcalPmAttendee = VcalAttendeePropertyWithCn &
+    VcalAttendeePropertyWithToken;
 
 export interface VcalVeventComponent {
-    component: 'vevent';
+    component: "vevent";
     components?: VcalValarmComponent[]; // Not complete. Can be other components.
     uid: VcalUidProperty;
     dtstamp: VcalDateTimeProperty;
     dtstart: VcalDateOrDateTimeProperty;
     dtend?: VcalDateOrDateTimeProperty;
     rrule?: VcalRruleProperty;
-    'recurrence-id'?: VcalDateOrDateTimeProperty;
+    "recurrence-id"?: VcalDateOrDateTimeProperty;
     exdate?: VcalDateOrDateTimeProperty[];
     organizer?: VcalOrganizerProperty;
     attendee?: VcalAttendeeProperty[];
@@ -219,45 +235,46 @@ export interface VcalVeventComponent {
     sequence?: VcalNumberProperty;
     status?: VcalStatusProperty;
     created?: VcalDateTimeProperty;
-    'last-modified'?: VcalDateTimeProperty;
+    "last-modified"?: VcalDateTimeProperty;
     transp?: VcalStringProperty;
     url?: VcalStringProperty;
     attach?: VcalStringWithParamsProperty[];
     categories?: VcalStringWithParamsProperty[];
     comment?: VcalStringWithParamsProperty[];
     contact?: VcalStringWithParamsProperty[];
-    'request-status'?: VcalStringArrayProperty[];
-    'related-to'?: VcalStringWithParamsProperty[];
+    "request-status"?: VcalStringArrayProperty[];
+    "related-to"?: VcalStringWithParamsProperty[];
     resources?: VcalStringWithParamsProperty[];
     rdate?: VcalDateTimeProperty[];
-    'x-pm-session-key'?: VcalStringProperty;
-    'x-pm-shared-event-id'?: VcalStringProperty;
+    "x-pm-session-key"?: VcalStringProperty;
+    "x-pm-shared-event-id"?: VcalStringProperty;
 }
 
-export interface VcalPmVeventComponent extends Omit<VcalVeventComponent, 'attendee'> {
+export interface VcalPmVeventComponent
+    extends Omit<VcalVeventComponent, "attendee"> {
     attendee?: VcalAttendeePropertyWithToken[];
 }
 
 export interface VcalVtodoComponent {
-    component: 'vtodo';
+    component: "vtodo";
     components?: VcalValarmComponent[]; // Not complete. Can be other components.
     uid: VcalUidProperty;
 }
 
 export interface VcalVjournalComponent {
-    component: 'vjournal';
+    component: "vjournal";
     components?: VcalValarmComponent[]; // Not complete. Can be other components.
     uid: VcalUidProperty;
 }
 
 export interface VcalVfreebusyComponent {
-    component: 'vfreebusy';
+    component: "vfreebusy";
     components?: VcalValarmComponent[]; // Not complete. Can be other components.
     uid: VcalUidProperty;
 }
 
 export interface VcalVtimezoneComponent {
-    component: 'vtimezone';
+    component: "vtimezone";
     tzid: VcalStringProperty;
 }
 
@@ -281,5 +298,5 @@ export interface VcalVcalendar {
     version: VcalStringProperty;
     calscale?: VcalStringProperty;
     method?: VcalStringProperty;
-    'x-wr-timezone'?: VcalStringProperty;
+    "x-wr-timezone"?: VcalStringProperty;
 }

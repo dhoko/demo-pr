@@ -1,16 +1,19 @@
-import { createApiError } from './ApiError';
+import { createApiError } from "./ApiError";
 
 const appendQueryParams = (url: URL, params: { [key: string]: any }) => {
     Object.keys(params).forEach((key) => {
         const value = params[key];
-        if (typeof value === 'undefined') {
+        if (typeof value === "undefined") {
             return;
         }
         url.searchParams.append(key, value);
     });
 };
 
-export const createUrl = (urlString: string, params: { [key: string]: any } = {}) => {
+export const createUrl = (
+    urlString: string,
+    params: { [key: string]: any } = {}
+) => {
     const url = new URL(urlString, window.location.origin);
     appendQueryParams(url, params);
     return url;
@@ -29,12 +32,12 @@ export const checkStatus = (response: Response, config: any) => {
             return {};
         })
         .then((data) => {
-            throw createApiError('StatusCodeError', response, config, data);
+            throw createApiError("StatusCodeError", response, config, data);
         });
 };
 
 export const getDateHeader = (headers: Headers) => {
-    const dateHeader = headers.get('date');
+    const dateHeader = headers.get("date");
     if (!dateHeader) {
         return;
     }
@@ -57,15 +60,15 @@ export const serializeData = (data: any, input: string) => {
     if (!data) {
         return {};
     }
-    if (input === 'json') {
+    if (input === "json") {
         return {
             body: JSON.stringify(data),
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
         };
     }
-    if (input === 'form') {
+    if (input === "form") {
         return {
             body: serializeFormData(data),
         };

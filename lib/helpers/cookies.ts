@@ -1,8 +1,8 @@
-import isTruthy from './isTruthy';
+import isTruthy from "./isTruthy";
 
 export const getCookies = (): string[] => {
     try {
-        return document.cookie.split(';').map((item) => item.trim());
+        return document.cookie.split(";").map((item) => item.trim());
     } catch (e) {
         return [];
     }
@@ -31,16 +31,19 @@ export const setCookie = ({
     path,
     cookieDomain,
 }: SetCookieArguments) => {
-    const cookieValue = maybeCookieValue === undefined ? '' : maybeCookieValue;
+    const cookieValue = maybeCookieValue === undefined ? "" : maybeCookieValue;
 
     let expirationDate = maybeExpirationDate;
 
-    if (expirationDate === 'max') {
+    if (expirationDate === "max") {
         /* https://en.wikipedia.org/wiki/Year_2038_problem */
         expirationDate = new Date(2147483647000).toUTCString();
     }
 
-    expirationDate = maybeCookieValue === undefined ? new Date(0).toUTCString() : expirationDate;
+    expirationDate =
+        maybeCookieValue === undefined
+            ? new Date(0).toUTCString()
+            : expirationDate;
 
     document.cookie = [
         `${cookieName}=${cookieValue}`,
@@ -49,5 +52,5 @@ export const setCookie = ({
         path && `path=${path}`,
     ]
         .filter(isTruthy)
-        .join(';');
+        .join(";");
 };

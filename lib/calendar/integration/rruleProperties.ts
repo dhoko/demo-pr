@@ -1,9 +1,13 @@
-import { VcalDateOrDateTimeValue, VcalDateTimeValue, VcalDays } from '../../interfaces/calendar/VcalModel';
-import { END_TYPE, MONTHLY_TYPE } from '../constants';
-import { getDayAndSetpos, getIsStandardBydayArray } from '../rrule';
-import { dayToNumericDay, propertyToUTCDate } from '../vcalConverter';
-import { convertUTCDateTimeToZone, fromUTCDate } from '../../date/timezone';
-import { unique } from '../../helpers/array';
+import {
+    VcalDateOrDateTimeValue,
+    VcalDateTimeValue,
+    VcalDays,
+} from "../../interfaces/calendar/VcalModel";
+import { END_TYPE, MONTHLY_TYPE } from "../constants";
+import { getDayAndSetpos, getIsStandardBydayArray } from "../rrule";
+import { dayToNumericDay, propertyToUTCDate } from "../vcalConverter";
+import { convertUTCDateTimeToZone, fromUTCDate } from "../../date/timezone";
+import { unique } from "../../helpers/array";
 
 export const getEndType = (count?: number, until?: VcalDateOrDateTimeValue) => {
     // count and until cannot occur at the same time (see https://tools.ietf.org/html/rfc5545#page-37)
@@ -16,17 +20,25 @@ export const getEndType = (count?: number, until?: VcalDateOrDateTimeValue) => {
     return END_TYPE.NEVER;
 };
 
-export const getMonthType = (byday?: string | string[], bysetpos?: number | number[]) => {
-    if (typeof byday === 'string' && !Array.isArray(bysetpos)) {
+export const getMonthType = (
+    byday?: string | string[],
+    bysetpos?: number | number[]
+) => {
+    if (typeof byday === "string" && !Array.isArray(bysetpos)) {
         const { setpos } = getDayAndSetpos(byday, bysetpos);
         if (setpos) {
-            return setpos > 0 ? MONTHLY_TYPE.ON_NTH_DAY : MONTHLY_TYPE.ON_MINUS_NTH_DAY;
+            return setpos > 0
+                ? MONTHLY_TYPE.ON_NTH_DAY
+                : MONTHLY_TYPE.ON_MINUS_NTH_DAY;
         }
     }
     return MONTHLY_TYPE.ON_MONTH_DAY;
 };
 
-export const getUntilDate = (until?: VcalDateOrDateTimeValue, startTzid?: string) => {
+export const getUntilDate = (
+    until?: VcalDateOrDateTimeValue,
+    startTzid?: string
+) => {
     if (!until) {
         return undefined;
     }
@@ -36,7 +48,9 @@ export const getUntilDate = (until?: VcalDateOrDateTimeValue, startTzid?: string
     }
     const utcDate = propertyToUTCDate({ value: until as VcalDateTimeValue });
     const localDate = convertUTCDateTimeToZone(fromUTCDate(utcDate), startTzid);
-    return new Date(Date.UTC(localDate.year, localDate.month - 1, localDate.day));
+    return new Date(
+        Date.UTC(localDate.year, localDate.month - 1, localDate.day)
+    );
 };
 
 export const getWeeklyDays = (byday?: string | string[]) => {
@@ -47,7 +61,9 @@ export const getWeeklyDays = (byday?: string | string[]) => {
     if (!getIsStandardBydayArray(bydayArray)) {
         return [];
     }
-    const bydayArraySafe = bydayArray.map(dayToNumericDay).filter((value): value is VcalDays => value !== undefined);
+    const bydayArraySafe = bydayArray
+        .map(dayToNumericDay)
+        .filter((value): value is VcalDays => value !== undefined);
     // Ensure the start date is included in the list
     return unique(bydayArraySafe);
 };

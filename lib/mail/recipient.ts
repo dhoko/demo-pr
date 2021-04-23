@@ -1,5 +1,5 @@
-import { Recipient } from '../interfaces';
-import { ContactEmail } from '../interfaces/contacts';
+import { Recipient } from "../interfaces";
+import { ContactEmail } from "../interfaces/contacts";
 
 export const REGEX_RECIPIENT = /(.*?)\s*<([^>]*)>/;
 
@@ -19,7 +19,10 @@ export const inputToRecipient = (input: string) => {
         Address: trimmedInput,
     };
 };
-export const contactToRecipient = (contact: ContactEmail, groupPath?: string) => ({
+export const contactToRecipient = (
+    contact: ContactEmail,
+    groupPath?: string
+) => ({
     Name: contact.Name,
     Address: contact.Email,
     ContactID: contact.ContactID,
@@ -32,15 +35,20 @@ export const majorToRecipient = (email: string) => ({
 });
 
 export const recipientToInput = (recipient: Recipient): string => {
-    if (recipient.Address && recipient.Name && recipient.Address !== recipient.Name) {
+    if (
+        recipient.Address &&
+        recipient.Name &&
+        recipient.Address !== recipient.Name
+    ) {
         return `${recipient.Name} <${recipient.Address}>`;
     }
 
     if (recipient.Address === recipient.Name) {
-        return recipient.Address || '';
+        return recipient.Address || "";
     }
 
     return `${recipient.Name} ${recipient.Address}`;
 };
 
-export const contactToInput = (contact: ContactEmail): string => recipientToInput(contactToRecipient(contact));
+export const contactToInput = (contact: ContactEmail): string =>
+    recipientToInput(contactToRecipient(contact));

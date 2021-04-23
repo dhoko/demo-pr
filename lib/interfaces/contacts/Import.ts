@@ -5,11 +5,11 @@ import {
     ContactProperties,
     ContactProperty,
     ContactValue,
-} from './Contact';
+} from "./Contact";
 
-import { ImportContactError } from '../../contacts/errors/ImportContactError';
-import { ImportFatalError } from '../../contacts/errors/ImportFatalError';
-import { ImportFileError } from '../../contacts/errors/ImportFileError';
+import { ImportContactError } from "../../contacts/errors/ImportContactError";
+import { ImportFatalError } from "../../contacts/errors/ImportFatalError";
+import { ImportFileError } from "../../contacts/errors/ImportFileError";
 
 export enum IMPORT_STEPS {
     ATTACHING,
@@ -28,8 +28,8 @@ export enum IMPORT_GROUPS_ACTION {
 }
 
 export enum EXTENSION {
-    CSV = 'csv',
-    VCF = 'vcf',
+    CSV = "csv",
+    VCF = "vcf",
 }
 
 export type ACCEPTED_EXTENSIONS = EXTENSION.CSV | EXTENSION.VCF;

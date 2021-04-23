@@ -1,20 +1,35 @@
-import { getKeys, OpenPGPKey } from 'pmcrypto';
-import { API_CUSTOM_ERROR_CODES } from '../../errors';
-import { noop } from '../../helpers/function';
-import { Api, ApiKeysConfig } from '../../interfaces';
+import { getKeys, OpenPGPKey } from "pmcrypto";
+import { API_CUSTOM_ERROR_CODES } from "../../errors";
+import { noop } from "../../helpers/function";
+import { Api, ApiKeysConfig } from "../../interfaces";
 
-import { getPublicKeys } from '../keys';
+import { getPublicKeys } from "../keys";
 
-const { KEY_GET_ADDRESS_MISSING, KEY_GET_DOMAIN_MISSING_MX, KEY_GET_INPUT_INVALID } = API_CUSTOM_ERROR_CODES;
-const EMAIL_ERRORS = [KEY_GET_ADDRESS_MISSING, KEY_GET_DOMAIN_MISSING_MX, KEY_GET_INPUT_INVALID];
+const {
+    KEY_GET_ADDRESS_MISSING,
+    KEY_GET_DOMAIN_MISSING_MX,
+    KEY_GET_INPUT_INVALID,
+} = API_CUSTOM_ERROR_CODES;
+const EMAIL_ERRORS = [
+    KEY_GET_ADDRESS_MISSING,
+    KEY_GET_DOMAIN_MISSING_MX,
+    KEY_GET_INPUT_INVALID,
+];
 
 /**
  * Ask the API for public keys for a given email address. The response will contain keys both
  * for internal users and for external users with WKD keys
  */
-const getPublicKeysEmailHelper = async (api: Api, Email: string, silence = false): Promise<ApiKeysConfig> => {
+const getPublicKeysEmailHelper = async (
+    api: Api,
+    Email: string,
+    silence = false
+): Promise<ApiKeysConfig> => {
     try {
-        const { Keys = [], ...rest } = await api({ ...getPublicKeys({ Email }), silence });
+        const { Keys = [], ...rest } = await api({
+            ...getPublicKeys({ Email }),
+            silence,
+        });
         const publicKeys = (await Promise.all(
             Keys.map(({ PublicKey }) => {
                 return getKeys(PublicKey)

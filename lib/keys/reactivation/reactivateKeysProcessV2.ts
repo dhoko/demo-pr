@@ -1,16 +1,38 @@
-import { OpenPGPKey } from 'pmcrypto';
-import { Api, User as tsUser, Address as tsAddress, DecryptedKey, Address, ActiveKey } from '../../interfaces';
-import { KeyReactivationData, KeyReactivationRecord, OnKeyReactivationCallback } from './interface';
-import { getPrimaryKey } from '../getPrimaryKey';
-import { USER_KEY_USERID } from '../userKeys';
-import { getAddressReactivationPayload, getReactivatedAddressesKeys } from './reactivateKeyHelper';
-import { reactivateUserKeyRouteV2, reactiveLegacyAddressKeyRouteV2 } from '../../api/keys';
-import { getHasMigratedAddressKey } from '../keyMigration';
-import { getDecryptedAddressKeys } from '../getDecryptedAddressKeys';
-import { getSignedKeyList } from '../signedKeyList';
-import { generateAddressKeyTokens, reformatAddressKey } from '../addressKeys';
-import { getActiveKeyObject, getActiveKeys, getPrimaryFlag, getReactivatedKeyFlag } from '../getActiveKeys';
-import { SimpleMap } from '../../interfaces/utils';
+import { OpenPGPKey } from "pmcrypto";
+import {
+    Api,
+    User as tsUser,
+    Address as tsAddress,
+    DecryptedKey,
+    Address,
+    ActiveKey,
+} from "../../interfaces";
+import {
+    KeyReactivationData,
+    KeyReactivationRecord,
+    OnKeyReactivationCallback,
+} from "./interface";
+import { getPrimaryKey } from "../getPrimaryKey";
+import { USER_KEY_USERID } from "../userKeys";
+import {
+    getAddressReactivationPayload,
+    getReactivatedAddressesKeys,
+} from "./reactivateKeyHelper";
+import {
+    reactivateUserKeyRouteV2,
+    reactiveLegacyAddressKeyRouteV2,
+} from "../../api/keys";
+import { getHasMigratedAddressKey } from "../keyMigration";
+import { getDecryptedAddressKeys } from "../getDecryptedAddressKeys";
+import { getSignedKeyList } from "../signedKeyList";
+import { generateAddressKeyTokens, reformatAddressKey } from "../addressKeys";
+import {
+    getActiveKeyObject,
+    getActiveKeys,
+    getPrimaryFlag,
+    getReactivatedKeyFlag,
+} from "../getActiveKeys";
+import { SimpleMap } from "../../interfaces/utils";
 
 interface ReactivateUserKeysArguments {
     addressRecordsInV2Format: KeyReactivationRecord[];
@@ -33,7 +55,9 @@ export const reactivateUserKeys = async ({
     onReactivation,
     keyPassword,
 }: ReactivateUserKeysArguments) => {
-    const keyReactivationDataMap = addressRecordsInV2Format.reduce<SimpleMap<KeyReactivationData>>((acc, record) => {
+    const keyReactivationDataMap = addressRecordsInV2Format.reduce<
+        SimpleMap<KeyReactivationData>
+    >((acc, record) => {
         record.keysToReactivate.forEach((keyData) => {
             acc[keyData.Key.ID] = keyData;
         });
@@ -52,31 +76,42 @@ export const reactivateUserKeys = async ({
             const email = USER_KEY_USERID;
 
             if (!decryptedPrivateKey) {
-                throw new Error('Missing key');
+                throw new Error("Missing key");
             }
 
-            const { privateKey: reformattedPrivateKey, privateKeyArmored } = await reformatAddressKey({
+            const {
+                privateKey: reformattedPrivateKey,
+                privateKeyArmored,
+            } = await reformatAddressKey({
                 email,
                 passphrase: keyPassword,
                 privateKey: decryptedPrivateKey,
             });
 
-            const newActiveKey = await getActiveKeyObject(reformattedPrivateKey, {
-                ID,
-                primary: getPrimaryFlag(mutableActiveKeys),
-            });
+            const newActiveKey = await getActiveKeyObject(
+                reformattedPrivateKey,
+                {
+                    ID,
+                    primary: getPrimaryFlag(mutableActiveKeys),
+                }
+            );
             const updatedActiveKeys = [...mutableActiveKeys, newActiveKey];
 
-            const reactivatedAddressKeysResult = await getReactivatedAddressesKeys({
-                addresses,
-                oldUserKeys: mutableActiveKeys,
-                newUserKeys: updatedActiveKeys,
-                user,
-                keyPassword,
-            });
-            const addressReactivationPayload = await getAddressReactivationPayload(reactivatedAddressKeysResult);
+            const reactivatedAddressKeysResult = await getReactivatedAddressesKeys(
+                {
+                    addresses,
+                    oldUserKeys: mutableActiveKeys,
+                    newUserKeys: updatedActiveKeys,
+                    user,
+                    keyPassword,
+                }
+            );
+            const addressReactivationPayload = await getAddressReactivationPayload(
+                reactivatedAddressKeysResult
+            );
             mutableAddresses = mutableAddresses.map((address) => {
-                const updatedSignedKeyList = addressReactivationPayload.SignedKeyLists[address.ID];
+                const updatedSignedKeyList =
+                    addressReactivationPayload.SignedKeyLists[address.ID];
                 if (updatedSignedKeyList) {
                     return {
                         ...address,
@@ -95,14 +130,14 @@ export const reactivateUserKeys = async ({
 
             mutableActiveKeys = updatedActiveKeys;
 
-            onReactivation(id, 'ok');
+            onReactivation(id, "ok");
 
             // Notify all the address keys that got reactivated from this user key
             reactivatedAddressKeysResult.forEach(({ reactivatedKeys }) => {
                 reactivatedKeys?.forEach(({ ID }) => {
                     const reactivationData = keyReactivationDataMap[ID];
                     if (reactivationData) {
-                        onReactivation(reactivationData.id, 'ok');
+                        onReactivation(reactivationData.id, "ok");
                         reactivatedAddressKeysMap[reactivationData.id] = true;
                     }
                 });
@@ -115,7 +150,7 @@ export const reactivateUserKeys = async ({
     addressRecordsInV2Format.forEach(({ keysToReactivate }) => {
         keysToReactivate.forEach(({ id, privateKey }) => {
             if (!reactivatedAddressKeysMap[id] && !privateKey) {
-                onReactivation(id, new Error('User key inactivate'));
+                onReactivation(id, new Error("User key inactivate"));
             }
         });
     });
@@ -152,21 +187,31 @@ export const reactivateAddressKeysV2 = async ({
             const email = address.Email;
 
             if (!decryptedPrivateKey) {
-                throw new Error('Missing key');
+                throw new Error("Missing key");
             }
 
-            const { token, encryptedToken, signature } = await generateAddressKeyTokens(userKey);
-            const { privateKey: reformattedPrivateKey, privateKeyArmored } = await reformatAddressKey({
+            const {
+                token,
+                encryptedToken,
+                signature,
+            } = await generateAddressKeyTokens(userKey);
+            const {
+                privateKey: reformattedPrivateKey,
+                privateKeyArmored,
+            } = await reformatAddressKey({
                 email,
                 passphrase: token,
                 privateKey: decryptedPrivateKey,
             });
 
-            const newActiveKey = await getActiveKeyObject(reformattedPrivateKey, {
-                ID,
-                primary: getPrimaryFlag(mutableActiveKeys),
-                flags: getReactivatedKeyFlag(Flags),
-            });
+            const newActiveKey = await getActiveKeyObject(
+                reformattedPrivateKey,
+                {
+                    ID,
+                    primary: getPrimaryFlag(mutableActiveKeys),
+                    flags: getReactivatedKeyFlag(Flags),
+                }
+            );
             const updatedActiveKeys = [...mutableActiveKeys, newActiveKey];
             await api(
                 reactiveLegacyAddressKeyRouteV2({
@@ -180,7 +225,7 @@ export const reactivateAddressKeysV2 = async ({
 
             mutableActiveKeys = updatedActiveKeys;
 
-            onReactivation(id, 'ok');
+            onReactivation(id, "ok");
         } catch (e) {
             onReactivation(id, e);
         }
@@ -224,10 +269,12 @@ const reactivateKeysProcessV2 = async ({
             }
             if (address) {
                 const keysInV2Format = keysToReactivate.filter(
-                    ({ privateKey, Key }) => !privateKey && getHasMigratedAddressKey(Key)
+                    ({ privateKey, Key }) =>
+                        !privateKey && getHasMigratedAddressKey(Key)
                 );
                 const keysInLegacyFormatOrWithBackup = keysToReactivate.filter(
-                    ({ privateKey, Key }) => privateKey || !getHasMigratedAddressKey(Key)
+                    ({ privateKey, Key }) =>
+                        privateKey || !getHasMigratedAddressKey(Key)
                 );
 
                 if (keysInV2Format.length) {
@@ -249,14 +296,22 @@ const reactivateKeysProcessV2 = async ({
             return acc;
         },
 
-        { addressRecordsInV2Format: [], addressRecordsInLegacyFormatOrWithBackup: [], userRecord: undefined }
+        {
+            addressRecordsInV2Format: [],
+            addressRecordsInLegacyFormatOrWithBackup: [],
+            userRecord: undefined,
+        }
     );
 
     let userKeys = oldUserKeys;
     let addresses = oldAddresses;
     if (userRecord) {
         try {
-            const activeUserKeys = await getActiveKeys(null, user.Keys, userKeys);
+            const activeUserKeys = await getActiveKeys(
+                null,
+                user.Keys,
+                userKeys
+            );
             const userKeysReactivationResult = await reactivateUserKeys({
                 api,
                 user,
@@ -270,7 +325,9 @@ const reactivateKeysProcessV2 = async ({
             userKeys = userKeysReactivationResult.userKeys;
             addresses = userKeysReactivationResult.addresses;
         } catch (e) {
-            userRecord.keysToReactivate.forEach(({ id }) => onReactivation(id, e));
+            userRecord.keysToReactivate.forEach(({ id }) =>
+                onReactivation(id, e)
+            );
             addressRecordsInV2Format.forEach(({ keysToReactivate }) => {
                 keysToReactivate.forEach(({ id }) => onReactivation(id, e));
             });
@@ -279,22 +336,31 @@ const reactivateKeysProcessV2 = async ({
 
     const primaryPrivateUserKey = getPrimaryKey(userKeys)?.privateKey;
 
-    for (const { address: oldAddress, keysToReactivate } of addressRecordsInLegacyFormatOrWithBackup) {
+    for (const {
+        address: oldAddress,
+        keysToReactivate,
+    } of addressRecordsInLegacyFormatOrWithBackup) {
         try {
-            const address = addresses.find(({ ID: otherID }) => oldAddress?.ID === otherID);
+            const address = addresses.find(
+                ({ ID: otherID }) => oldAddress?.ID === otherID
+            );
             if (!address || !primaryPrivateUserKey) {
-                throw new Error('Missing dependency');
+                throw new Error("Missing dependency");
             }
 
             const addressKeys = await getDecryptedAddressKeys({
                 address,
                 addressKeys: address.Keys,
                 user,
-                keyPassword: '',
+                keyPassword: "",
                 userKeys,
             });
 
-            const activeAddressKeys = await getActiveKeys(address.SignedKeyList, address.Keys, addressKeys);
+            const activeAddressKeys = await getActiveKeys(
+                address.SignedKeyList,
+                address.Keys,
+                addressKeys
+            );
 
             await reactivateAddressKeysV2({
                 api,

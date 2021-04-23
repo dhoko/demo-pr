@@ -1,18 +1,18 @@
-import { CLIENT_ID_KEYS } from '../constants';
-import { HTTP_ERROR_CODES } from '../errors';
+import { CLIENT_ID_KEYS } from "../constants";
+import { HTTP_ERROR_CODES } from "../errors";
 
 export const PASSWORD_WRONG_ERROR = 8002;
 
 export const auth = (data: any) => ({
-    method: 'post',
-    url: 'auth',
+    method: "post",
+    url: "auth",
     data,
     ignoreHandler: [HTTP_ERROR_CODES.TOO_MANY_REQUESTS],
 });
 
 export const auth2FA = ({ totp, u2f }: any) => ({
-    method: 'post',
-    url: 'auth/2fa',
+    method: "post",
+    url: "auth/2fa",
     data: {
         TwoFactorCode: totp,
         U2F: u2f,
@@ -20,14 +20,14 @@ export const auth2FA = ({ totp, u2f }: any) => ({
 });
 
 export const authJwt = (data: { Token: String; ClientSecret?: String }) => ({
-    method: 'post',
-    url: 'auth/jwt',
+    method: "post",
+    url: "auth/jwt",
     data,
 });
 
 export const revoke = () => ({
-    method: 'delete',
-    url: 'auth',
+    method: "delete",
+    url: "auth",
 });
 
 interface RefreshArgs {
@@ -36,8 +36,8 @@ interface RefreshArgs {
 }
 export const setRefreshCookies = (data?: RefreshArgs) => {
     const config = {
-        method: 'post',
-        url: 'auth/refresh',
+        method: "post",
+        url: "auth/refresh",
     };
     if (!data) {
         return config;
@@ -45,10 +45,10 @@ export const setRefreshCookies = (data?: RefreshArgs) => {
     return {
         ...config,
         data: {
-            ResponseType: 'token',
-            GrantType: 'refresh_token',
+            ResponseType: "token",
+            GrantType: "refresh_token",
             RefreshToken: data.RefreshToken,
-            RedirectURI: data.RedirectURI || 'https://protonmail.com',
+            RedirectURI: data.RedirectURI || "https://protonmail.com",
         },
     };
 };
@@ -59,13 +59,18 @@ interface CookiesArgs {
     State: string;
     RedirectURI?: string;
 }
-export const setCookies = ({ UID, RefreshToken, State, RedirectURI = 'https://protonmail.com' }: CookiesArgs) => ({
-    method: 'post',
-    url: 'auth/cookies',
+export const setCookies = ({
+    UID,
+    RefreshToken,
+    State,
+    RedirectURI = "https://protonmail.com",
+}: CookiesArgs) => ({
+    method: "post",
+    url: "auth/cookies",
     data: {
         UID,
-        ResponseType: 'token',
-        GrantType: 'refresh_token',
+        ResponseType: "token",
+        GrantType: "refresh_token",
         RefreshToken,
         RedirectURI,
         State,
@@ -73,12 +78,12 @@ export const setCookies = ({ UID, RefreshToken, State, RedirectURI = 'https://pr
 });
 
 export const getLocalKey = () => ({
-    method: 'get',
-    url: 'auth/sessions/local/key',
+    method: "get",
+    url: "auth/sessions/local/key",
 });
 export const setLocalKey = (Key: string) => ({
-    method: 'put',
-    url: 'auth/sessions/local/key',
+    method: "put",
+    url: "auth/sessions/local/key",
     data: {
         Key,
     },
@@ -90,48 +95,48 @@ export const pushForkSession = (data: {
     Selector?: string;
     UserCode?: string;
 }) => ({
-    method: 'post',
-    url: 'auth/sessions/forks',
+    method: "post",
+    url: "auth/sessions/forks",
     data,
 });
 
 export const pullForkSession = (selector: string) => ({
-    method: 'get',
+    method: "get",
     url: `auth/sessions/forks/${selector}`,
 });
 
 export const getLocalSessions = () => ({
-    method: 'get',
+    method: "get",
     url: `auth/sessions/local`,
 });
 
 export const getInfo = (Username?: string) => ({
-    method: 'post',
-    url: 'auth/info',
+    method: "post",
+    url: "auth/info",
     data: Username ? { Username } : undefined,
 });
 
 export const getModulus = () => ({
-    method: 'get',
-    url: 'auth/modulus',
+    method: "get",
+    url: "auth/modulus",
 });
 
 export const querySessions = () => ({
-    method: 'get',
-    url: 'auth/sessions',
+    method: "get",
+    url: "auth/sessions",
 });
 
 export const revokeOtherSessions = () => ({
-    method: 'delete',
-    url: 'auth/sessions',
+    method: "delete",
+    url: "auth/sessions",
 });
 
 export const revokeSession = (UID: string | number) => ({
-    method: 'delete',
+    method: "delete",
     url: `auth/sessions/${UID}`,
 });
 
 export const queryScopes = () => ({
-    method: 'get',
-    url: 'auth/scopes',
+    method: "get",
+    url: "auth/scopes",
 });

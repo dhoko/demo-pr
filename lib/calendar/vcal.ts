@@ -1,10 +1,10 @@
 /**
  * This file needs to be improved in terms of typing. They were rushed due to time constraints.
  */
-import ICAL from 'ical.js';
+import ICAL from "ical.js";
 
-import { PROPERTIES, UNIQUE_PROPERTIES } from './vcalDefinition';
-import { DAY, HOUR, MINUTE, SECOND, WEEK } from '../constants';
+import { PROPERTIES, UNIQUE_PROPERTIES } from "./vcalDefinition";
+import { DAY, HOUR, MINUTE, SECOND, WEEK } from "../constants";
 import {
     VcalCalendarComponent,
     VcalDateOrDateTimeValue,
@@ -12,10 +12,16 @@ import {
     VcalDateValue,
     VcalDurationValue,
     VcalRrulePropertyValue,
-} from '../interfaces/calendar';
+} from "../interfaces/calendar";
 
-const getIcalDateValue = (value: any, tzid: string | undefined, isDate: boolean) => {
-    const icalTimezone = value.isUTC ? ICAL.Timezone.utcTimezone : ICAL.Timezone.localTimezone;
+const getIcalDateValue = (
+    value: any,
+    tzid: string | undefined,
+    isDate: boolean
+) => {
+    const icalTimezone = value.isUTC
+        ? ICAL.Timezone.utcTimezone
+        : ICAL.Timezone.localTimezone;
     const icalData = {
         year: value.year,
         month: value.month,
@@ -31,9 +37,13 @@ const getIcalDateValue = (value: any, tzid: string | undefined, isDate: boolean)
 const getIcalPeriodValue = (value: any, tzid: string | undefined) => {
     return ICAL.Period.fromData({
         // periods must be of date-time
-        start: value.start ? getIcalDateValue(value.start, tzid, false) : undefined,
+        start: value.start
+            ? getIcalDateValue(value.start, tzid, false)
+            : undefined,
         end: value.end ? getIcalDateValue(value.end, tzid, false) : undefined,
-        duration: value.duration ? ICAL.Duration.fromData(value.duration) : undefined,
+        duration: value.duration
+            ? ICAL.Duration.fromData(value.duration)
+            : undefined,
     });
 };
 
@@ -45,26 +55,30 @@ const getIcalUntilValue = (value?: any) => {
     if (!value) {
         return;
     }
-    return getIcalDateValue(value, '', typeof value.hours === 'undefined');
+    return getIcalDateValue(value, "", typeof value.hours === "undefined");
 };
 
-export const internalValueToIcalValue = (type: string, value: any, { tzid }: { tzid?: string } = {}) => {
+export const internalValueToIcalValue = (
+    type: string,
+    value: any,
+    { tzid }: { tzid?: string } = {}
+) => {
     if (Array.isArray(value)) {
         return value;
     }
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
         return value;
     }
-    if (type === 'date' || type === 'date-time') {
-        return getIcalDateValue(value, tzid, type === 'date');
+    if (type === "date" || type === "date-time") {
+        return getIcalDateValue(value, tzid, type === "date");
     }
-    if (type === 'duration') {
+    if (type === "duration") {
         return getIcalDurationValue(value);
     }
-    if (type === 'period') {
+    if (type === "period") {
         return getIcalPeriodValue(value, tzid);
     }
-    if (type === 'recur') {
+    if (type === "recur") {
         if (!value.until) {
             return ICAL.Recur.fromData(value);
         }
@@ -88,7 +102,7 @@ export const getInternalDateTimeValue = (value: any): VcalDateTimeValue => {
         hours: value.hour,
         minutes: value.minute,
         seconds: value.second,
-        isUTC: value.zone.tzid === 'UTC',
+        isUTC: value.zone.tzid === "UTC",
     };
 };
 
@@ -107,7 +121,9 @@ const getInternalUntil = (value?: any): VcalDateOrDateTimeValue | undefined => {
     if (!value) {
         return;
     }
-    return value.icaltype === 'date' ? getInternalDateValue(value) : getInternalDateTimeValue(value);
+    return value.icaltype === "date"
+        ? getInternalDateValue(value)
+        : getInternalDateTimeValue(value);
 };
 
 const getInternalRecur = (value?: any): VcalRrulePropertyValue | undefined => {
@@ -131,19 +147,19 @@ export const icalValueToInternalValue = (type: string, value: any) => {
     if (Array.isArray(value)) {
         return value;
     }
-    if (typeof value === 'string' || type === 'integer') {
+    if (typeof value === "string" || type === "integer") {
         return value;
     }
-    if (type === 'date') {
+    if (type === "date") {
         return getInternalDateValue(value);
     }
-    if (type === 'date-time') {
+    if (type === "date-time") {
         return getInternalDateTimeValue(value);
     }
-    if (type === 'duration') {
+    if (type === "duration") {
         return getInternalDurationValue(value);
     }
-    if (type === 'period') {
+    if (type === "period") {
         const result: any = {};
         if (value.start) {
             result.start = getInternalDateTimeValue(value.start);
@@ -156,7 +172,7 @@ export const icalValueToInternalValue = (type: string, value: any) => {
         }
         return result;
     }
-    if (type === 'recur') {
+    if (type === "recur") {
         return getInternalRecur(value);
     }
     return value.toString();
@@ -177,9 +193,15 @@ const getProperty = (name: string, { value, parameters }: any) => {
     const type = specificType || property.type;
 
     if (property.isMultiValue && Array.isArray(value)) {
-        property.setValues(value.map((val) => internalValueToIcalValue(type, val, restParameters)));
+        property.setValues(
+            value.map((val) =>
+                internalValueToIcalValue(type, val, restParameters)
+            )
+        );
     } else {
-        property.setValue(internalValueToIcalValue(type, value, restParameters));
+        property.setValue(
+            internalValueToIcalValue(type, value, restParameters)
+        );
     }
 
     Object.keys(restParameters).forEach((key) => {
@@ -208,7 +230,10 @@ const addInternalProperties = (component: any, properties: any) => {
 const fromInternalComponent = (properties: any) => {
     const { component: name, components, ...restProperties } = properties;
 
-    const component = addInternalProperties(new ICAL.Component(name), restProperties);
+    const component = addInternalProperties(
+        new ICAL.Component(name),
+        restProperties
+    );
 
     if (Array.isArray(components)) {
         components.forEach((otherComponent) => {
@@ -251,7 +276,9 @@ const fromIcalProperties = (properties = []) => {
         }
 
         const { type } = property;
-        const values = property.getValues().map((value: any) => icalValueToInternalValue(type, value));
+        const values = property
+            .getValues()
+            .map((value: any) => icalValueToInternalValue(type, value));
 
         const parameters = getParameters(type, property);
         const propertyAsObject = {
@@ -269,8 +296,11 @@ const fromIcalProperties = (properties = []) => {
         }
 
         // Exdate can be both an array and multivalue, force it to only be an array
-        if (name === 'exdate') {
-            const normalizedValues = values.map((value: any) => ({ ...propertyAsObject, value }));
+        if (name === "exdate") {
+            const normalizedValues = values.map((value: any) => ({
+                ...propertyAsObject,
+                value,
+            }));
 
             acc[name] = acc[name].concat(normalizedValues);
         } else {
@@ -286,44 +316,54 @@ export const fromIcalComponent = (component: any) => {
     return {
         component: component.name,
         ...(components.length && { components }),
-        ...fromIcalProperties(component ? component.getAllProperties() : undefined),
+        ...fromIcalProperties(
+            component ? component.getAllProperties() : undefined
+        ),
     };
 };
 
-export const fromIcalComponentWithErrors = (component: any): VcalCalendarComponent => {
-    const components = component.getAllSubcomponents().map((subcomponent: any) => {
-        try {
-            return fromIcalComponentWithErrors(subcomponent);
-        } catch (error) {
-            return { error, icalComponent: subcomponent };
-        }
-    });
+export const fromIcalComponentWithErrors = (
+    component: any
+): VcalCalendarComponent => {
+    const components = component
+        .getAllSubcomponents()
+        .map((subcomponent: any) => {
+            try {
+                return fromIcalComponentWithErrors(subcomponent);
+            } catch (error) {
+                return { error, icalComponent: subcomponent };
+            }
+        });
     return {
         component: component.name,
         ...(components.length && { components }),
-        ...fromIcalProperties(component ? component.getAllProperties() : undefined),
+        ...fromIcalProperties(
+            component ? component.getAllProperties() : undefined
+        ),
     } as VcalCalendarComponent;
 };
 
 /**
  * Parse vCalendar String and return a component
  */
-export const parse = (vcal = ''): VcalCalendarComponent => {
+export const parse = (vcal = ""): VcalCalendarComponent => {
     if (!vcal) {
         return {} as VcalCalendarComponent;
     }
-    return fromIcalComponent(new ICAL.Component(ICAL.parse(vcal))) as VcalCalendarComponent;
+    return fromIcalComponent(
+        new ICAL.Component(ICAL.parse(vcal))
+    ) as VcalCalendarComponent;
 };
 
 /**
  * If a vcalendar ics does not have the proper enclosing, add it
  */
-export const reformatVcalEnclosing = (vcal = '') => {
+export const reformatVcalEnclosing = (vcal = "") => {
     let sanitized = vcal;
-    if (!sanitized.startsWith('BEGIN:VCALENDAR')) {
+    if (!sanitized.startsWith("BEGIN:VCALENDAR")) {
         sanitized = `BEGIN:VCALENDAR\r\n${sanitized}`;
     }
-    if (!sanitized.endsWith('END:VCALENDAR')) {
+    if (!sanitized.endsWith("END:VCALENDAR")) {
         sanitized = `${sanitized}\r\nEND:VCALENDAR`;
     }
     return sanitized;
@@ -332,9 +372,9 @@ export const reformatVcalEnclosing = (vcal = '') => {
 /**
  * Naively try to reformat badly formatted line breaks in a vcalendar string
  */
-const reformatLineBreaks = (vcal = '') => {
-    const crlf = '\r\n';
-    const lines = vcal.includes(crlf) ? vcal.split(crlf) : vcal.split('\n');
+const reformatLineBreaks = (vcal = "") => {
+    const crlf = "\r\n";
+    const lines = vcal.includes(crlf) ? vcal.split(crlf) : vcal.split("\n");
     return lines.reduce((acc, line) => {
         // extract the vcal field in this line through a regex
         const fieldMatch = line.match(/(\w+-?\w*)(?::|;)/);
@@ -342,18 +382,22 @@ const reformatLineBreaks = (vcal = '') => {
             return `${acc}\\n${line}`;
         }
         const field = fieldMatch[1].toLowerCase();
-        if (PROPERTIES.has(field) || field.startsWith('x-') || ['begin', 'end'].includes(field)) {
+        if (
+            PROPERTIES.has(field) ||
+            field.startsWith("x-") ||
+            ["begin", "end"].includes(field)
+        ) {
             return acc ? `${acc}\r\n${line}` : line;
         }
         return `${acc}\\n${line}`;
-    }, '');
+    }, "");
 };
 
 /**
  * Same as the parse function, but catching errors
  */
 export const parseWithErrors = (
-    vcal = '',
+    vcal = "",
     retry = { retryLineBreaks: true, retryEnclosing: true }
 ): VcalCalendarComponent => {
     const { retryLineBreaks, retryEnclosing } = retry;
@@ -361,30 +405,46 @@ export const parseWithErrors = (
         if (!vcal) {
             return {} as VcalCalendarComponent;
         }
-        return fromIcalComponentWithErrors(new ICAL.Component(ICAL.parse(vcal)));
+        return fromIcalComponentWithErrors(
+            new ICAL.Component(ICAL.parse(vcal))
+        );
     } catch (e) {
         // try to recover from line break errors
-        if (e.message.toLowerCase().includes('invalid line (no token ";" or ":")') && retryLineBreaks) {
+        if (
+            e.message
+                .toLowerCase()
+                .includes('invalid line (no token ";" or ":")') &&
+            retryLineBreaks
+        ) {
             const reformattedVcal = reformatLineBreaks(vcal);
-            return parseWithErrors(reformattedVcal, { ...retry, retryLineBreaks: false });
+            return parseWithErrors(reformattedVcal, {
+                ...retry,
+                retryLineBreaks: false,
+            });
         }
         // try to recover from enclosing errors
-        if (e.message.toLowerCase().includes('invalid ical body') && retryEnclosing) {
+        if (
+            e.message.toLowerCase().includes("invalid ical body") &&
+            retryEnclosing
+        ) {
             const reformattedVcal = reformatVcalEnclosing(vcal);
-            return parseWithErrors(reformattedVcal, { ...retry, retryEnclosing: false });
+            return parseWithErrors(reformattedVcal, {
+                ...retry,
+                retryEnclosing: false,
+            });
         }
         throw e;
     }
 };
 
-export const fromRruleString = (rrule = '') => {
+export const fromRruleString = (rrule = "") => {
     return getInternalRecur(ICAL.Recur.fromString(rrule));
 };
 
 /**
  * Parse a trigger string (e.g. '-PT15M') and return an object indicating its duration
  */
-export const fromTriggerString = (trigger = '') => {
+export const fromTriggerString = (trigger = "") => {
     return getInternalDurationValue(ICAL.Duration.fromString(trigger));
 };
 
@@ -404,13 +464,19 @@ const durationToMilliseconds = ({
     seconds = 0,
     milliseconds = 0,
 }) => {
-    const lapse = weeks * WEEK + days * DAY + hours * HOUR + minutes * MINUTE + seconds * SECOND + milliseconds;
+    const lapse =
+        weeks * WEEK +
+        days * DAY +
+        hours * HOUR +
+        minutes * MINUTE +
+        seconds * SECOND +
+        milliseconds;
     return isNegative ? -lapse : lapse;
 };
 
 /**
  * Parse a trigger string (e.g. '-PT15M') and return its duration in milliseconds
  */
-export const getMillisecondsFromTriggerString = (trigger = '') => {
+export const getMillisecondsFromTriggerString = (trigger = "") => {
     return durationToMilliseconds(fromTriggerString(trigger));
 };

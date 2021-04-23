@@ -1,4 +1,4 @@
-import startOfDay from './startOfDay';
+import startOfDay from "./startOfDay";
 
 const MILLISECONDS_IN_DAY = 86400000;
 

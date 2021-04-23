@@ -1,12 +1,16 @@
-import { KeyImportData, OnKeyImportCallback } from './interface';
-import { Address, Api, DecryptedKey } from '../../interfaces';
-import { reformatAddressKey } from '../addressKeys';
-import { getSignedKeyList } from '../signedKeyList';
-import reactivateKeysProcessLegacy from '../reactivation/reactivateKeysProcessLegacy';
-import { createAddressKeyRoute } from '../../api/keys';
-import { getInactiveKeys } from '../getInactiveKeys';
-import { getActiveKeyObject, getActiveKeys, getPrimaryFlag } from '../getActiveKeys';
-import { getFilteredImportRecords } from './helper';
+import { KeyImportData, OnKeyImportCallback } from "./interface";
+import { Address, Api, DecryptedKey } from "../../interfaces";
+import { reformatAddressKey } from "../addressKeys";
+import { getSignedKeyList } from "../signedKeyList";
+import reactivateKeysProcessLegacy from "../reactivation/reactivateKeysProcessLegacy";
+import { createAddressKeyRoute } from "../../api/keys";
+import { getInactiveKeys } from "../getInactiveKeys";
+import {
+    getActiveKeyObject,
+    getActiveKeys,
+    getPrimaryFlag,
+} from "../getActiveKeys";
+import { getFilteredImportRecords } from "./helper";
 
 export interface ImportKeysProcessLegacyArguments {
     api: Api;
@@ -25,17 +29,21 @@ const importKeysProcessLegacy = async ({
     address,
     addressKeys,
 }: ImportKeysProcessLegacyArguments) => {
-    const activeKeys = await getActiveKeys(address.SignedKeyList, address.Keys, addressKeys);
+    const activeKeys = await getActiveKeys(
+        address.SignedKeyList,
+        address.Keys,
+        addressKeys
+    );
     const inactiveKeys = await getInactiveKeys(address.Keys, activeKeys);
 
-    const [keysToReactivate, keysToImport, existingKeys] = getFilteredImportRecords(
-        keyImportRecords,
-        activeKeys,
-        inactiveKeys
-    );
+    const [
+        keysToReactivate,
+        keysToImport,
+        existingKeys,
+    ] = getFilteredImportRecords(keyImportRecords, activeKeys, inactiveKeys);
 
     existingKeys.forEach((keyImportRecord) => {
-        onImport(keyImportRecord.id, new Error('Key already active'));
+        onImport(keyImportRecord.id, new Error("Key already active"));
     });
 
     let mutableActiveKeys = activeKeys;
@@ -44,16 +52,22 @@ const importKeysProcessLegacy = async ({
         try {
             const { privateKey } = keyImportRecord;
 
-            const { privateKey: reformattedPrivateKey, privateKeyArmored } = await reformatAddressKey({
+            const {
+                privateKey: reformattedPrivateKey,
+                privateKeyArmored,
+            } = await reformatAddressKey({
                 email: address.Email,
                 passphrase: keyPassword,
                 privateKey,
             });
 
-            const newActiveKey = await getActiveKeyObject(reformattedPrivateKey, {
-                ID: 'tmp',
-                primary: getPrimaryFlag(mutableActiveKeys),
-            });
+            const newActiveKey = await getActiveKeyObject(
+                reformattedPrivateKey,
+                {
+                    ID: "tmp",
+                    primary: getPrimaryFlag(mutableActiveKeys),
+                }
+            );
             const updatedActiveKeys = [...mutableActiveKeys, newActiveKey];
             const SignedKeyList = await getSignedKeyList(updatedActiveKeys);
 
@@ -70,7 +84,7 @@ const importKeysProcessLegacy = async ({
 
             mutableActiveKeys = updatedActiveKeys;
 
-            onImport(keyImportRecord.id, 'ok');
+            onImport(keyImportRecord.id, "ok");
         } catch (e) {
             onImport(keyImportRecord.id, e);
         }

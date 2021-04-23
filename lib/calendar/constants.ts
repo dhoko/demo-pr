@@ -1,5 +1,5 @@
-import { APPS, BASE_SIZE } from '../constants';
-import { getAppName } from '../apps/helper';
+import { APPS, BASE_SIZE } from "../constants";
+import { getAppName } from "../apps/helper";
 
 export const CALENDAR_APP_NAME = getAppName(APPS.PROTONCALENDAR);
 
@@ -39,17 +39,21 @@ export enum CALENDAR_FLAGS {
 }
 
 export enum ICAL_METHOD {
-    PUBLISH = 'PUBLISH',
-    REQUEST = 'REQUEST',
-    REPLY = 'REPLY',
-    CANCEL = 'CANCEL',
-    COUNTER = 'COUNTER',
-    DECLINECOUNTER = 'DECLINECOUNTER',
-    ADD = 'ADD',
-    REFRESH = 'REFRESH',
+    PUBLISH = "PUBLISH",
+    REQUEST = "REQUEST",
+    REPLY = "REPLY",
+    CANCEL = "CANCEL",
+    COUNTER = "COUNTER",
+    DECLINECOUNTER = "DECLINECOUNTER",
+    ADD = "ADD",
+    REFRESH = "REFRESH",
 }
 
-export const ICAL_METHODS_ATTENDEE = [ICAL_METHOD.REPLY, ICAL_METHOD.COUNTER, ICAL_METHOD.REFRESH];
+export const ICAL_METHODS_ATTENDEE = [
+    ICAL_METHOD.REPLY,
+    ICAL_METHOD.COUNTER,
+    ICAL_METHOD.REFRESH,
+];
 export const ICAL_METHODS_ORGANIZER = [
     ICAL_METHOD.REQUEST,
     ICAL_METHOD.CANCEL,
@@ -58,28 +62,28 @@ export const ICAL_METHODS_ORGANIZER = [
 ];
 
 export enum ICAL_EVENT_STATUS {
-    TENTATIVE = 'TENTATIVE',
-    CONFIRMED = 'CONFIRMED',
-    CANCELLED = 'CANCELLED',
+    TENTATIVE = "TENTATIVE",
+    CONFIRMED = "CONFIRMED",
+    CANCELLED = "CANCELLED",
 }
 
 export enum ICAL_ATTENDEE_RSVP {
-    TRUE = 'TRUE',
-    FALSE = 'FALSE',
+    TRUE = "TRUE",
+    FALSE = "FALSE",
 }
 
 export enum ICAL_ATTENDEE_ROLE {
-    REQUIRED = 'REQ-PARTICIPANT', // Indicates a participant whose participation is required
-    OPTIONAL = 'OPT-PARTICIPANT', // Indicates a participant whose participation is optional
-    NON = 'NON-PARTICIPANT', // Indicates a participant who is copied for information purposes only
+    REQUIRED = "REQ-PARTICIPANT", // Indicates a participant whose participation is required
+    OPTIONAL = "OPT-PARTICIPANT", // Indicates a participant whose participation is optional
+    NON = "NON-PARTICIPANT", // Indicates a participant who is copied for information purposes only
 }
 
 export enum ICAL_ATTENDEE_STATUS {
-    NEEDS_ACTION = 'NEEDS-ACTION',
-    ACCEPTED = 'ACCEPTED',
-    DECLINED = 'DECLINED',
-    TENTATIVE = 'TENTATIVE',
-    DELEGATED = 'DELEGATED',
+    NEEDS_ACTION = "NEEDS-ACTION",
+    ACCEPTED = "ACCEPTED",
+    DECLINED = "DECLINED",
+    TENTATIVE = "TENTATIVE",
+    DELEGATED = "DELEGATED",
 }
 
 export enum ATTENDEE_STATUS_API {
@@ -103,21 +107,29 @@ export const MAX_LENGTHS = {
 
 export const MINIMUM_DATE = new Date(1970, 0, 1);
 export const MINIMUM_DATE_UTC = new Date(
-    Date.UTC(MINIMUM_DATE.getFullYear(), MINIMUM_DATE.getMonth(), MINIMUM_DATE.getDate())
+    Date.UTC(
+        MINIMUM_DATE.getFullYear(),
+        MINIMUM_DATE.getMonth(),
+        MINIMUM_DATE.getDate()
+    )
 );
 export const MAXIMUM_DATE = new Date(2037, 11, 31);
 export const MAXIMUM_DATE_UTC = new Date(
-    Date.UTC(MAXIMUM_DATE.getFullYear(), MAXIMUM_DATE.getMonth(), MAXIMUM_DATE.getDate())
+    Date.UTC(
+        MAXIMUM_DATE.getFullYear(),
+        MAXIMUM_DATE.getMonth(),
+        MAXIMUM_DATE.getDate()
+    )
 );
 
 export enum FREQUENCY {
-    ONCE = 'ONCE',
-    DAILY = 'DAILY',
-    WEEKLY = 'WEEKLY',
-    MONTHLY = 'MONTHLY',
-    YEARLY = 'YEARLY',
-    CUSTOM = 'CUSTOM',
-    OTHER = 'OTHER',
+    ONCE = "ONCE",
+    DAILY = "DAILY",
+    WEEKLY = "WEEKLY",
+    MONTHLY = "MONTHLY",
+    YEARLY = "YEARLY",
+    CUSTOM = "CUSTOM",
+    OTHER = "OTHER",
 }
 
 export const FREQUENCY_INTERVALS_MAX = {
@@ -151,18 +163,18 @@ export enum YEARLY_TYPE {
 }
 
 export enum END_TYPE {
-    NEVER = 'NEVER',
-    AFTER_N_TIMES = 'COUNT',
-    UNTIL = 'UNTIL',
+    NEVER = "NEVER",
+    AFTER_N_TIMES = "COUNT",
+    UNTIL = "UNTIL",
 }
 
-export const ICAL_EXTENSIONS = ['ics', 'ical', 'ifb', 'icalendar'];
-export const ICAL_MIME_TYPE = 'text/calendar';
+export const ICAL_EXTENSIONS = ["ics", "ical", "ifb", "icalendar"];
+export const ICAL_MIME_TYPE = "text/calendar";
 
 export const DEFAULT_CALENDAR = {
-    name: 'My calendar',
-    color: '#657ee4',
-    description: '',
+    name: "My calendar",
+    color: "#657ee4",
+    description: "",
 };
 
 export enum VIEWS {
@@ -175,8 +187,8 @@ export enum VIEWS {
 }
 
 export enum NOTIFICATION_WHEN {
-    BEFORE = '-',
-    AFTER = '',
+    BEFORE = "-",
+    AFTER = "",
 }
 
 export enum NOTIFICATION_UNITS {
@@ -196,8 +208,8 @@ export const NOTIFICATION_UNITS_MAX = {
 export const DEFAULT_EVENT_DURATION = 30;
 
 export const COLORS = {
-    BLACK: '#000',
-    WHITE: '#FFF',
+    BLACK: "#000",
+    WHITE: "#FFF",
 };
 
 export const MAX_DEFAULT_NOTIFICATIONS = 5;
@@ -222,21 +234,21 @@ export enum RECURRING_TYPES {
 export const MAX_IMPORT_EVENTS = 15000;
 export const MAX_IMPORT_EVENTS_STRING = "15'000";
 export const MAX_IMPORT_FILE_SIZE = 10 * BASE_SIZE ** 2;
-export const MAX_IMPORT_FILE_SIZE_STRING = '10 MB';
+export const MAX_IMPORT_FILE_SIZE_STRING = "10 MB";
 export const MAX_UID_CHARS_DISPLAY = 43;
 export const MAX_FILENAME_CHARS_DISPLAY = 100;
 export const IMPORT_CALENDAR_FAQ_URL =
-    'https://protonmail.com/support/knowledge-base/import-calendar-to-protoncalendar';
+    "https://protonmail.com/support/knowledge-base/import-calendar-to-protoncalendar";
 
-export const TITLE_INPUT_ID = 'event-title-input';
-export const FREQUENCY_INPUT_ID = 'event-frequency-input';
-export const LOCATION_INPUT_ID = 'event-location-input';
-export const NOTIFICATION_INPUT_ID = 'event-notification-input';
-export const CALENDAR_INPUT_ID = 'event-calendar-input';
-export const DESCRIPTION_INPUT_ID = 'event-description-input';
-export const ALL_DAY_INPUT_ID = 'event-allday-input';
-export const DATE_INPUT_ID = 'event-date-input';
-export const PARTICIPANTS_INPUT_ID = 'event-participants-input';
+export const TITLE_INPUT_ID = "event-title-input";
+export const FREQUENCY_INPUT_ID = "event-frequency-input";
+export const LOCATION_INPUT_ID = "event-location-input";
+export const NOTIFICATION_INPUT_ID = "event-notification-input";
+export const CALENDAR_INPUT_ID = "event-calendar-input";
+export const DESCRIPTION_INPUT_ID = "event-description-input";
+export const ALL_DAY_INPUT_ID = "event-allday-input";
+export const DATE_INPUT_ID = "event-date-input";
+export const PARTICIPANTS_INPUT_ID = "event-participants-input";
 
 export enum IMPORT_ERROR_TYPE {
     NO_FILE_SELECTED,
@@ -252,28 +264,40 @@ export enum IMPORT_ERROR_TYPE {
 }
 
 export const SHARED_SIGNED_FIELDS = [
-    'uid',
-    'dtstamp',
-    'dtstart',
-    'dtend',
-    'recurrence-id',
-    'rrule',
-    'exdate',
-    'organizer',
-    'sequence',
+    "uid",
+    "dtstamp",
+    "dtstart",
+    "dtend",
+    "recurrence-id",
+    "rrule",
+    "exdate",
+    "organizer",
+    "sequence",
 ] as const;
-export const SHARED_ENCRYPTED_FIELDS = ['uid', 'dtstamp', 'created', 'description', 'summary', 'location'] as const;
+export const SHARED_ENCRYPTED_FIELDS = [
+    "uid",
+    "dtstamp",
+    "created",
+    "description",
+    "summary",
+    "location",
+] as const;
 
-export const CALENDAR_SIGNED_FIELDS = ['uid', 'dtstamp', 'status', 'transp'] as const;
-export const CALENDAR_ENCRYPTED_FIELDS = ['uid', 'dtstamp', 'comment'] as const;
+export const CALENDAR_SIGNED_FIELDS = [
+    "uid",
+    "dtstamp",
+    "status",
+    "transp",
+] as const;
+export const CALENDAR_ENCRYPTED_FIELDS = ["uid", "dtstamp", "comment"] as const;
 
-export const USER_SIGNED_FIELDS = ['uid', 'dtstamp'] as const;
+export const USER_SIGNED_FIELDS = ["uid", "dtstamp"] as const;
 export const USER_ENCRYPTED_FIELDS = [] as const;
 
 export const ATTENDEES_SIGNED_FIELDS = [] as const;
-export const ATTENDEES_ENCRYPTED_FIELDS = ['uid', 'attendee'] as const;
+export const ATTENDEES_ENCRYPTED_FIELDS = ["uid", "attendee"] as const;
 
-export const REQUIRED_SET = new Set(['uid', 'dtstamp'] as const);
+export const REQUIRED_SET = new Set(["uid", "dtstamp"] as const);
 
 // Set of taken keys to put the rest
 export const TAKEN_KEYS = [

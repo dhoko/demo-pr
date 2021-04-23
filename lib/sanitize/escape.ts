@@ -5,17 +5,17 @@
  * - background:url&lpar;
  * - etc.
  */
-const CSS_URL = '((url)(\\(|&(#40|#x00028|lpar);))';
-const REGEXP_URL_ATTR = new RegExp(CSS_URL, 'gi');
+const CSS_URL = "((url)(\\(|&(#40|#x00028|lpar);))";
+const REGEXP_URL_ATTR = new RegExp(CSS_URL, "gi");
 
 export const escape = (string: string) => {
     const UNESCAPE_HTML_REGEX = /[&<>"']/g;
     const HTML_ESCAPES = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
     };
 
     return string.replace(UNESCAPE_HTML_REGEX, HTML_ESCAPES as any);
@@ -24,11 +24,11 @@ export const escape = (string: string) => {
 export const unescape = (string: string) => {
     const ESCAPED_HTML_REGEX = /&(?:amp|lt|gt|quot|#39);/g;
     const HTML_UNESCAPES = {
-        '&amp;': '&',
-        '&lt;': '<',
-        '&gt;': '>',
-        '&quot;': '"',
-        '&#39;': "'",
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&quot;": '"',
+        "&#39;": "'",
     };
 
     return string.replace(ESCAPED_HTML_REGEX, HTML_UNESCAPES as any);
@@ -54,10 +54,19 @@ export const unescapeCSSEncoding = (str: string) => {
      */
     const namedUnescaped = unescape(str);
     // lodash doesn't unescape &#160; or &#xA0; sequences, we have to do this manually:
-    const decUnescaped = namedUnescaped.replace(UNESCAPE_HTML_DEC_REGEX, handleEscape(10));
-    const hexUnescaped = decUnescaped.replace(UNESCAPE_HTML_HEX_REGEX, handleEscape(16));
+    const decUnescaped = namedUnescaped.replace(
+        UNESCAPE_HTML_DEC_REGEX,
+        handleEscape(10)
+    );
+    const hexUnescaped = decUnescaped.replace(
+        UNESCAPE_HTML_HEX_REGEX,
+        handleEscape(16)
+    );
     // unescape css backslash sequences
-    const strUnescapedHex = hexUnescaped.replace(UNESCAPE_CSS_ESCAPES_REGEX, handleEscape(16));
+    const strUnescapedHex = hexUnescaped.replace(
+        UNESCAPE_CSS_ESCAPES_REGEX,
+        handleEscape(16)
+    );
 
     return strUnescapedHex.replace(OTHER_ESC, (_, char) => char);
 };
@@ -74,7 +83,9 @@ export const escapeURLinStyle = (style: string) => {
     const unescapedEncoding = unescapeCSSEncoding(style);
     const escapeFlag = unescapedEncoding !== style;
 
-    const escapedStyle = unescapedEncoding.replace(/\\r/g, 'r').replace(REGEXP_URL_ATTR, 'proton-url(');
+    const escapedStyle = unescapedEncoding
+        .replace(/\\r/g, "r")
+        .replace(REGEXP_URL_ATTR, "proton-url(");
 
     if (escapedStyle === unescapedEncoding) {
         // nothing escaped: just return input

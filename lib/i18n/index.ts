@@ -1,5 +1,5 @@
 /* eslint-disable import/no-mutable-exports,prefer-destructuring */
-import { enUSLocale } from './dateFnLocales';
+import { enUSLocale } from "./dateFnLocales";
 
 /**
  * The locales are exported as mutable exports:
@@ -9,9 +9,9 @@ import { enUSLocale } from './dateFnLocales';
 export let dateLocale = enUSLocale;
 export let defaultDateLocale = enUSLocale;
 export let browserDateLocale = enUSLocale;
-export let dateLocaleCode = 'en_US';
-export let localeCode = 'en_US';
-export let languageCode = 'en';
+export let dateLocaleCode = "en_US";
+export let localeCode = "en_US";
+export let languageCode = "en";
 
 export const setLocales = ({
     localeCode: newLocaleCode = localeCode,

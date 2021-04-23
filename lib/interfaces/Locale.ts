@@ -1,5 +1,5 @@
-import { LocaleData } from 'ttag';
-import { Locale } from 'date-fns';
+import { LocaleData } from "ttag";
+import { Locale } from "date-fns";
 
 export interface TtagLocaleMap {
     [key: string]: () => Promise<LocaleData>;

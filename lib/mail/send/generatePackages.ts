@@ -1,10 +1,14 @@
-import { OpenPGPKey } from 'pmcrypto';
-import { AttachmentDirect, PackageDirect, SendPreferences } from '../../interfaces/mail/crypto';
-import { Attachment, Message } from '../../interfaces/mail/Message';
-import { RequireOnly, SimpleMap } from '../../interfaces/utils';
-import { encryptPackages } from './sendEncrypt';
-import { attachSubPackages } from './sendSubPackages';
-import { generateTopPackages } from './sendTopPackages';
+import { OpenPGPKey } from "pmcrypto";
+import {
+    AttachmentDirect,
+    PackageDirect,
+    SendPreferences,
+} from "../../interfaces/mail/crypto";
+import { Attachment, Message } from "../../interfaces/mail/Message";
+import { RequireOnly, SimpleMap } from "../../interfaces/utils";
+import { encryptPackages } from "./sendEncrypt";
+import { attachSubPackages } from "./sendSubPackages";
+import { generateTopPackages } from "./sendTopPackages";
 
 const generatePackages = async ({
     message,
@@ -15,7 +19,7 @@ const generatePackages = async ({
     publicKeys,
     privateKeys,
 }: {
-    message: RequireOnly<Message, 'Body' | 'MIMEType'>;
+    message: RequireOnly<Message, "Body" | "MIMEType">;
     emails: string[];
     sendPreferencesMap: SimpleMap<SendPreferences>;
     attachments: Attachment[];

@@ -8,9 +8,9 @@
  * Examples of RFC rules violated in the wild:
  * * Local parts should have a maximum length of 64 octets
  */
-import isTruthy from './isTruthy';
-import { MAJOR_DOMAINS } from '../constants';
-import { Recipient } from '../interfaces';
+import isTruthy from "./isTruthy";
+import { MAJOR_DOMAINS } from "../constants";
+import { Recipient } from "../interfaces";
 
 export enum CANONIZE_SCHEME {
     DEFAULT,
@@ -32,11 +32,13 @@ export const validateLocalPart = (localPart: string) => {
         const quotedText = uncommentedPart.slice(1, -1);
         const chunks = quotedText
             .split('\\"')
-            .map((chunk) => chunk.split('\\\\'))
+            .map((chunk) => chunk.split("\\\\"))
             .flat();
         return !chunks.some((chunk) => /"|\\/.test(chunk));
     }
-    return !/[^a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]|^\.|\.$|\.\./.test(uncommentedPart);
+    return !/[^a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]|^\.|\.$|\.\./.test(
+        uncommentedPart
+    );
 };
 
 /**
@@ -52,7 +54,7 @@ export const validateDomain = (domain: string) => {
     if (/\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\]/.test(domain)) {
         return true;
     }
-    const dnsLabels = domain.toLowerCase().split('.').filter(isTruthy);
+    const dnsLabels = domain.toLowerCase().split(".").filter(isTruthy);
     if (dnsLabels.length < 2) {
         return false;
     }
@@ -69,9 +71,9 @@ export const validateDomain = (domain: string) => {
  * Split an email into local part plus domain.
  */
 export const getEmailParts = (email: string) => {
-    const endIdx = email.lastIndexOf('@');
+    const endIdx = email.lastIndexOf("@");
     if (endIdx === -1) {
-        return [email, ''];
+        return [email, ""];
     }
     return [email.slice(0, endIdx), email.slice(endIdx + 1)];
 };
@@ -88,17 +90,17 @@ export const validateEmailAddress = (email: string) => {
     return validateLocalPart(localPart) && validateDomain(domain);
 };
 
-const removePlusAliasLocalPart = (localPart = '') => {
-    const [cleanLocalPart] = localPart.split('+');
+const removePlusAliasLocalPart = (localPart = "") => {
+    const [cleanLocalPart] = localPart.split("+");
     return cleanLocalPart;
 };
 
 /**
  * Add plus alias part for an email
  */
-export const addPlusAlias = (email = '', plus = '') => {
-    const atIndex = email.indexOf('@');
-    const plusIndex = email.indexOf('+');
+export const addPlusAlias = (email = "", plus = "") => {
+    const atIndex = email.indexOf("@");
+    const plusIndex = email.indexOf("+");
 
     if (atIndex === -1 || plusIndex > -1) {
         return email;
@@ -115,19 +117,26 @@ export const addPlusAlias = (email = '', plus = '') => {
  * Emails that have the same canonical form end up in the same inbox
  * See https://confluence.protontech.ch/display/MBE/Canonize+email+addresses
  */
-export const canonizeEmail = (email: string, scheme = CANONIZE_SCHEME.DEFAULT) => {
+export const canonizeEmail = (
+    email: string,
+    scheme = CANONIZE_SCHEME.DEFAULT
+) => {
     const [localPart, domain] = getEmailParts(email);
-    const at = email[email.length - domain.length - 1] === '@' ? '@' : '';
+    const at = email[email.length - domain.length - 1] === "@" ? "@" : "";
     if (scheme === CANONIZE_SCHEME.PROTON) {
         const cleanLocalPart = removePlusAliasLocalPart(localPart);
-        const normalizedLocalPart = cleanLocalPart.replace(/[._-]/g, '').toLowerCase();
+        const normalizedLocalPart = cleanLocalPart
+            .replace(/[._-]/g, "")
+            .toLowerCase();
         const normalizedDomain = domain.toLowerCase();
 
         return `${normalizedLocalPart}${at}${normalizedDomain}`;
     }
     if (scheme === CANONIZE_SCHEME.GMAIL) {
         const cleanLocalPart = removePlusAliasLocalPart(localPart);
-        const normalizedLocalPart = cleanLocalPart.replace(/[.]/g, '').toLowerCase();
+        const normalizedLocalPart = cleanLocalPart
+            .replace(/[.]/g, "")
+            .toLowerCase();
         const normalizedDomain = domain.toLowerCase();
 
         return `${normalizedLocalPart}${at}${normalizedDomain}`;
@@ -143,7 +152,8 @@ export const canonizeEmail = (email: string, scheme = CANONIZE_SCHEME.DEFAULT) =
     return email.toLowerCase();
 };
 
-export const canonizeInternalEmail = (email: string) => canonizeEmail(email, CANONIZE_SCHEME.PROTON);
+export const canonizeInternalEmail = (email: string) =>
+    canonizeEmail(email, CANONIZE_SCHEME.PROTON);
 
 /**
  * Canonize an email by guessing the scheme that should be applied
@@ -153,14 +163,25 @@ export const canonizeInternalEmail = (email: string) => canonizeEmail(email, CAN
 export const canonizeEmailByGuess = (email: string) => {
     const [, domain] = getEmailParts(email);
     const normalizedDomain = domain.toLowerCase();
-    if (['protonmail.com', 'protonmail.ch', 'pm.me'].includes(normalizedDomain)) {
+    if (
+        ["protonmail.com", "protonmail.ch", "pm.me"].includes(normalizedDomain)
+    ) {
         return canonizeEmail(email, CANONIZE_SCHEME.PROTON);
     }
-    if (['gmail.com', 'googlemail.com', 'google.com'].includes(normalizedDomain)) {
+    if (
+        ["gmail.com", "googlemail.com", "google.com"].includes(normalizedDomain)
+    ) {
         return canonizeEmail(email, CANONIZE_SCHEME.GMAIL);
     }
     if (
-        ['hotmail.com', 'hotmail.co.uk', 'hotmail.fr', 'outlook.com', 'yandex.ru', 'mail.ru'].includes(normalizedDomain)
+        [
+            "hotmail.com",
+            "hotmail.co.uk",
+            "hotmail.fr",
+            "outlook.com",
+            "yandex.ru",
+            "mail.ru",
+        ].includes(normalizedDomain)
     ) {
         return canonizeEmail(email, CANONIZE_SCHEME.PLUS);
     }
@@ -168,7 +189,7 @@ export const canonizeEmailByGuess = (email: string) => {
 };
 
 const extractStringItems = (str: string) => {
-    return str.split(',').filter(isTruthy);
+    return str.split(",").filter(isTruthy);
 };
 
 /**
@@ -187,24 +208,28 @@ const decodeURISafe = (str: string) => {
  * Extract "to address" and headers from a mailto URL https://tools.ietf.org/html/rfc6068
  */
 export const parseMailtoURL = (mailtoURL: string, decode = true) => {
-    const mailtoString = 'mailto:';
-    const toString = 'to=';
+    const mailtoString = "mailto:";
+    const toString = "to=";
     if (!mailtoURL.toLowerCase().startsWith(mailtoString)) {
-        throw new Error('Malformed mailto URL');
+        throw new Error("Malformed mailto URL");
     }
     const url = mailtoURL.substring(mailtoString.length);
-    const [tos, hfields = ''] = url.split('?');
-    const addressTos = extractStringItems(tos).map((to) => (decode ? decodeURISafe(to) : to));
-    const headers = hfields.split('&').filter(isTruthy);
+    const [tos, hfields = ""] = url.split("?");
+    const addressTos = extractStringItems(tos).map((to) =>
+        decode ? decodeURISafe(to) : to
+    );
+    const headers = hfields.split("&").filter(isTruthy);
     const headerTos = headers
-        .filter((header) => header.toLowerCase().startsWith('to='))
-        .map((headerTo) => extractStringItems(headerTo.substring(toString.length)))
+        .filter((header) => header.toLowerCase().startsWith("to="))
+        .map((headerTo) =>
+            extractStringItems(headerTo.substring(toString.length))
+        )
         .flat()
         .map((to) => (decode ? decodeURISafe(to) : to));
     return { to: [...addressTos, ...headerTos] };
 };
 
-export const buildMailTo = (email = '') => `mailto:${email}`;
+export const buildMailTo = (email = "") => `mailto:${email}`;
 
 export const getEmailTo = (str: string, decode?: boolean): string => {
     try {
@@ -219,7 +244,7 @@ export const getEmailTo = (str: string, decode?: boolean): string => {
 
 export const majorDomainsMatcher = (inputValue: string) => {
     const [localPart, domainPart] = getEmailParts(inputValue);
-    if (!localPart || typeof domainPart !== 'string') {
+    if (!localPart || typeof domainPart !== "string") {
         return [];
     }
     return MAJOR_DOMAINS.map((domain) => {

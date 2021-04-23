@@ -1,9 +1,13 @@
-import { c } from 'ttag';
-import { hasBit } from '../../helpers/bitset';
-import { readSessionKeys } from '../deserialize';
-import { splitKeys, getPrimaryKey } from '../../keys';
-import { CalendarEvent, DecryptedCalendarKey, CalendarKeyFlags } from '../../interfaces/calendar';
-import { DecryptedKey } from '../../interfaces';
+import { c } from "ttag";
+import { hasBit } from "../../helpers/bitset";
+import { readSessionKeys } from "../deserialize";
+import { splitKeys, getPrimaryKey } from "../../keys";
+import {
+    CalendarEvent,
+    DecryptedCalendarKey,
+    CalendarKeyFlags,
+} from "../../interfaces/calendar";
+import { DecryptedKey } from "../../interfaces";
 
 interface GetCreationKeysArguments {
     Event?: CalendarEvent;
@@ -21,15 +25,24 @@ export const getCreationKeys = async ({
     decryptedSharedKeyPacket,
 }: GetCreationKeysArguments) => {
     const primaryAddressKey = getPrimaryKey(addressKeys);
-    const primaryPrivateAddressKey = primaryAddressKey ? primaryAddressKey.privateKey : undefined;
+    const primaryPrivateAddressKey = primaryAddressKey
+        ? primaryAddressKey.privateKey
+        : undefined;
     if (!primaryPrivateAddressKey) {
-        throw new Error(c('Error').t`Address primary private key not found`);
+        throw new Error(c("Error").t`Address primary private key not found`);
     }
 
-    const { privateKey: primaryPrivateCalendarKey, publicKey: primaryPublicCalendarKey } =
-        newCalendarKeys.find(({ Key: { Flags } }) => hasBit(Flags, CalendarKeyFlags.PRIMARY)) || {};
+    const {
+        privateKey: primaryPrivateCalendarKey,
+        publicKey: primaryPublicCalendarKey,
+    } =
+        newCalendarKeys.find(({ Key: { Flags } }) =>
+            hasBit(Flags, CalendarKeyFlags.PRIMARY)
+        ) || {};
     if (!primaryPrivateCalendarKey || !primaryPublicCalendarKey) {
-        throw new Error(c('Error').t`Calendar primary private key is not decrypted`);
+        throw new Error(
+            c("Error").t`Calendar primary private key is not decrypted`
+        );
     }
 
     const decryptionKeys = oldCalendarKeys || newCalendarKeys;

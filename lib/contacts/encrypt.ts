@@ -1,13 +1,22 @@
-import { OpenPGPKey, encryptMessage, signMessage } from 'pmcrypto';
-import { c } from 'ttag';
+import { OpenPGPKey, encryptMessage, signMessage } from "pmcrypto";
+import { c } from "ttag";
 
-import { generateProtonWebUID } from '../helpers/uid';
-import { toICAL } from './vcard';
-import { hasCategories, sanitizeProperties, addPref, addGroup } from './properties';
-import { KeyPair, DecryptedKey } from '../interfaces';
-import { Contact, ContactCard, ContactProperties } from '../interfaces/contacts/Contact';
-import { CONTACT_CARD_TYPE } from '../constants';
-import { CLEAR_FIELDS, SIGNED_FIELDS } from './constants';
+import { generateProtonWebUID } from "../helpers/uid";
+import { toICAL } from "./vcard";
+import {
+    hasCategories,
+    sanitizeProperties,
+    addPref,
+    addGroup,
+} from "./properties";
+import { KeyPair, DecryptedKey } from "../interfaces";
+import {
+    Contact,
+    ContactCard,
+    ContactProperties,
+} from "../interfaces/contacts/Contact";
+import { CONTACT_CARD_TYPE } from "../constants";
+import { CLEAR_FIELDS, SIGNED_FIELDS } from "./constants";
 
 const { CLEAR_TEXT, ENCRYPTED_AND_SIGNED, SIGNED } = CONTACT_CARD_TYPE;
 
@@ -63,43 +72,56 @@ export const prepareCards = (
     publicKeys: OpenPGPKey[]
 ): Promise<ContactCard[]> => {
     const promises = [];
-    const { toEncryptAndSign = [], toSign = [], toClearText = [] } = splitProperties(properties);
+    const {
+        toEncryptAndSign = [],
+        toSign = [],
+        toClearText = [],
+    } = splitProperties(properties);
 
     if (toEncryptAndSign.length > 0) {
         const data = toICAL(toEncryptAndSign).toString();
 
         promises.push(
-            encryptMessage({ data, publicKeys, privateKeys, armor: true, detached: true }).then(
-                ({ data: Data, signature: Signature }) => {
-                    const card: ContactCard = {
-                        Type: ENCRYPTED_AND_SIGNED,
-                        Data,
-                        Signature,
-                    };
-                    return card;
-                }
-            )
+            encryptMessage({
+                data,
+                publicKeys,
+                privateKeys,
+                armor: true,
+                detached: true,
+            }).then(({ data: Data, signature: Signature }) => {
+                const card: ContactCard = {
+                    Type: ENCRYPTED_AND_SIGNED,
+                    Data,
+                    Signature,
+                };
+                return card;
+            })
         );
     }
 
     if (toSign.length > 0) {
-        const hasUID = toSign.some((property) => property.field === 'uid');
-        const hasFN = toSign.some((property) => property.field === 'fn');
+        const hasUID = toSign.some((property) => property.field === "uid");
+        const hasFN = toSign.some((property) => property.field === "fn");
 
         if (!hasUID) {
             const defaultUID = generateProtonWebUID();
-            toSign.push({ field: 'uid', value: defaultUID });
+            toSign.push({ field: "uid", value: defaultUID });
         }
 
         if (!hasFN) {
-            const defaultFN = c('Default display name vcard').t`Unknown`;
-            toSign.push({ field: 'fn', value: defaultFN });
+            const defaultFN = c("Default display name vcard").t`Unknown`;
+            toSign.push({ field: "fn", value: defaultFN });
         }
 
         const data = toICAL(toSign).toString();
 
         promises.push(
-            signMessage({ data, privateKeys, armor: true, detached: true }).then(({ signature: Signature }) => {
+            signMessage({
+                data,
+                privateKeys,
+                armor: true,
+                detached: true,
+            }).then(({ signature: Signature }) => {
                 const card: ContactCard = {
                     Type: SIGNED,
                     Data: data,
@@ -132,7 +154,7 @@ export const prepareCards = (
 export const prepareContact = async (
     properties: ContactProperties,
     { privateKey, publicKey }: KeyPair
-): Promise<Pick<Contact, 'Cards'>> => {
+): Promise<Pick<Contact, "Cards">> => {
     const sanitized = sanitizeProperties(properties);
     const withPref = addPref(sanitized);
     const withGroup = addGroup(withPref);
@@ -149,13 +171,16 @@ export const prepareContact = async (
 export const prepareContacts = async (
     contacts: ContactProperties[] = [],
     { privateKey, publicKey }: DecryptedKey
-): Promise<Pick<Contact, 'Cards'>[]> => {
-    const promises = contacts.reduce<Promise<Pick<Contact, 'Cards'>>[]>((acc, properties) => {
-        if (privateKey && publicKey) {
-            acc.push(prepareContact(properties, { privateKey, publicKey }));
-        }
-        return acc;
-    }, []);
+): Promise<Pick<Contact, "Cards">[]> => {
+    const promises = contacts.reduce<Promise<Pick<Contact, "Cards">>[]>(
+        (acc, properties) => {
+            if (privateKey && publicKey) {
+                acc.push(prepareContact(properties, { privateKey, publicKey }));
+            }
+            return acc;
+        },
+        []
+    );
 
     return Promise.all(promises);
 };

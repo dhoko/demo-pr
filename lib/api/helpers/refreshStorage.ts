@@ -1,5 +1,5 @@
-import { encodeBase64URL } from '../../helpers/encoding';
-import { getItem, setItem, removeItem } from '../../helpers/storage';
+import { encodeBase64URL } from "../../helpers/encoding";
+import { getItem, setItem, removeItem } from "../../helpers/storage";
 
 const getKey = (UID: string) => {
     return encodeBase64URL(`r-${UID}`);
@@ -11,7 +11,7 @@ export const setLastRefreshDate = (UID: string, now: Date) => {
 
 export const getLastRefreshDate = (UID: string) => {
     const oldString = getItem(getKey(UID));
-    const parsed = Number.parseInt(oldString || '', 10);
+    const parsed = Number.parseInt(oldString || "", 10);
     const date = new Date(parsed);
     return Number.isNaN(+date) ? undefined : date;
 };

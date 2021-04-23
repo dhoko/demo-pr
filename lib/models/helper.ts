@@ -1,13 +1,16 @@
-import { STATUS } from './cache';
-import { Api } from '../interfaces';
-import { Cache } from '../helpers/cache';
+import { STATUS } from "./cache";
+import { Api } from "../interfaces";
+import { Cache } from "../helpers/cache";
 
 interface Args {
     api: Api;
     cache: Cache<string, any>;
     useCache?: boolean;
 }
-export const loadModels = async (models: any[] = [], { api, cache, useCache = true }: Args): Promise<any[]> => {
+export const loadModels = async (
+    models: any[] = [],
+    { api, cache, useCache = true }: Args
+): Promise<any[]> => {
     const result = await Promise.all(
         models.map((model) => {
             // Special case to not re-fetch the model if it exists. This can happen for

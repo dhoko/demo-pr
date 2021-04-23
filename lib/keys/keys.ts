@@ -1,9 +1,11 @@
-import { decryptPrivateKey, OpenPGPKey, getKeys } from 'pmcrypto';
-import { computeKeyPassword, generateKeySalt } from 'pm-srp';
+import { decryptPrivateKey, OpenPGPKey, getKeys } from "pmcrypto";
+import { computeKeyPassword, generateKeySalt } from "pm-srp";
 
-import { Key, KeyPair, KeySalt as tsKeySalt } from '../interfaces';
+import { Key, KeyPair, KeySalt as tsKeySalt } from "../interfaces";
 
-export const generateKeySaltAndPassphrase = async (password: string): Promise<{ salt: string; passphrase: string }> => {
+export const generateKeySaltAndPassphrase = async (
+    password: string
+): Promise<{ salt: string; passphrase: string }> => {
     const salt = generateKeySalt();
     return {
         salt,
@@ -16,9 +18,13 @@ export const generateKeySaltAndPassphrase = async (password: string): Promise<{ 
  * @param Keys - Keys as received from the API
  * @param KeySalts - KeySalts as received from the API
  */
-export const getPrimaryKeyWithSalt = (Keys: Key[] = [], KeySalts: tsKeySalt[] = []) => {
+export const getPrimaryKeyWithSalt = (
+    Keys: Key[] = [],
+    KeySalts: tsKeySalt[] = []
+) => {
     const { PrivateKey, ID } = Keys.find(({ Primary }) => Primary === 1) || {};
-    const { KeySalt } = KeySalts.find(({ ID: keySaltID }) => ID === keySaltID) || {};
+    const { KeySalt } =
+        KeySalts.find(({ ID: keySaltID }) => ID === keySaltID) || {};
 
     // Not verifying that KeySalt exists because of old auth versions.
     return {
@@ -50,7 +56,9 @@ export const decryptPrivateKeyWithSalt = async ({
     keySalt?: string;
     PrivateKey: string;
 }) => {
-    const keyPassword = keySalt ? await computeKeyPassword(password, keySalt) : password;
+    const keyPassword = keySalt
+        ? await computeKeyPassword(password, keySalt)
+        : password;
     return decryptPrivateKey(PrivateKey, keyPassword);
 };
 
@@ -61,7 +69,9 @@ export const getOldUserIDEmailHelper = (privateKey: OpenPGPKey) => {
     return email;
 };
 
-export const getOldUserIDEmail = async (PrivateKey: string): Promise<string> => {
+export const getOldUserIDEmail = async (
+    PrivateKey: string
+): Promise<string> => {
     const [privateKey] = await getKeys(PrivateKey);
     return getOldUserIDEmailHelper(privateKey);
 };

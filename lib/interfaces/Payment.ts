@@ -1,4 +1,4 @@
-import { PAYMENT_METHOD_TYPES } from '../constants';
+import { PAYMENT_METHOD_TYPES } from "../constants";
 
 export interface PaymentMethodStatus {
     Card: boolean;
@@ -27,7 +27,9 @@ export type PaymentMethod =
     | {
           Order: number;
           ID: string;
-          Type: PAYMENT_METHOD_TYPES.PAYPAL | PAYMENT_METHOD_TYPES.PAYPAL_CREDIT;
+          Type:
+              | PAYMENT_METHOD_TYPES.PAYPAL
+              | PAYMENT_METHOD_TYPES.PAYPAL_CREDIT;
           Details: PayPalDetails;
       }
     | {

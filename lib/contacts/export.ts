@@ -1,16 +1,20 @@
-import { toICAL } from './vcard';
-import downloadFile from '../helpers/downloadFile';
-import { Contact, ContactCard, ContactProperties } from '../interfaces/contacts/Contact';
-import { Api, DecryptedKey } from '../interfaces';
-import { API_SAFE_INTERVAL, QUERY_EXPORT_MAX_PAGESIZE } from './constants';
-import { wait } from '../helpers/promise';
-import { getContact, queryContactExport } from '../api/contacts';
-import { splitKeys } from '../keys';
-import { prepareContact } from './decrypt';
+import { toICAL } from "./vcard";
+import downloadFile from "../helpers/downloadFile";
+import {
+    Contact,
+    ContactCard,
+    ContactProperties,
+} from "../interfaces/contacts/Contact";
+import { Api, DecryptedKey } from "../interfaces";
+import { API_SAFE_INTERVAL, QUERY_EXPORT_MAX_PAGESIZE } from "./constants";
+import { wait } from "../helpers/promise";
+import { getContact, queryContactExport } from "../api/contacts";
+import { splitKeys } from "../keys";
+import { prepareContact } from "./decrypt";
 
 export const getFileName = (properties: ContactProperties) => {
     const name = properties
-        .filter(({ field }) => ['fn', 'email'].includes(field))
+        .filter(({ field }) => ["fn", "email"].includes(field))
         .map(({ value }) => (Array.isArray(value) ? value[0] : value))[0];
 
     return `${name}.vcf`;
@@ -23,21 +27,27 @@ export const getFileName = (properties: ContactProperties) => {
 export const singleExport = (properties: ContactProperties) => {
     const fileName = getFileName(properties);
     const vcard = toICAL(properties).toString();
-    const blob = new Blob([vcard], { type: 'data:text/plain;charset=utf-8;' });
+    const blob = new Blob([vcard], { type: "data:text/plain;charset=utf-8;" });
 
     downloadFile(blob, fileName);
 };
 
-export const exportContact = async (cards: ContactCard[], userKeys: DecryptedKey[]) => {
+export const exportContact = async (
+    cards: ContactCard[],
+    userKeys: DecryptedKey[]
+) => {
     const { publicKeys, privateKeys } = splitKeys(userKeys);
 
-    const { properties = [], errors = [] } = await prepareContact({ Cards: cards } as Contact, {
-        publicKeys,
-        privateKeys,
-    });
+    const { properties = [], errors = [] } = await prepareContact(
+        { Cards: cards } as Contact,
+        {
+            publicKeys,
+            privateKeys,
+        }
+    );
 
     if (errors.length) {
-        throw new Error('Error decrypting contact');
+        throw new Error("Error decrypting contact");
     }
 
     return { properties, vcard: toICAL(properties).toString() };
@@ -47,7 +57,11 @@ export const exportContact = async (cards: ContactCard[], userKeys: DecryptedKey
  * Exports contacts including api request and decryption
  * Beware it requires all contacts in //, don't use this for more than 10 contacts
  */
-export const exportContacts = (contactIDs: string[], userKeys: DecryptedKey[], api: Api) =>
+export const exportContacts = (
+    contactIDs: string[],
+    userKeys: DecryptedKey[],
+    api: Api
+) =>
     Promise.all(
         contactIDs.map(async (contactID) => {
             const {
@@ -76,7 +90,11 @@ export const exportContactsFromLabel = async (
 
     for (let i = 0; i < apiCalls; i++) {
         const { Contacts: contacts } = (await apiWithAbort(
-            queryContactExport({ LabelID: labelID, Page: i, PageSize: QUERY_EXPORT_MAX_PAGESIZE })
+            queryContactExport({
+                LabelID: labelID,
+                Page: i,
+                PageSize: QUERY_EXPORT_MAX_PAGESIZE,
+            })
         )) as { Contacts: Contact[] };
 
         for (const { Cards, ID } of contacts) {

@@ -1,6 +1,6 @@
-import { encodeUtf8Base64, decodeUtf8Base64 } from 'pmcrypto';
+import { encodeUtf8Base64, decodeUtf8Base64 } from "pmcrypto";
 
-import { MAILBOX_PASSWORD_KEY, UID_KEY, LOCAL_ID_KEY } from '../constants';
+import { MAILBOX_PASSWORD_KEY, UID_KEY, LOCAL_ID_KEY } from "../constants";
 
 interface Arguments {
     set: (key: string, value: any) => void;
@@ -21,7 +21,7 @@ const createAuthenticationStore = ({ set, get }: Arguments) => {
     const getPassword = () => {
         const value = get(MAILBOX_PASSWORD_KEY);
         if (value === undefined) {
-            return '';
+            return "";
         }
         return decodeUtf8Base64(value);
     };

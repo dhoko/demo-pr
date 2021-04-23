@@ -1,5 +1,5 @@
-import { REGEX_IMAGE_EXTENSION } from '../constants';
-import { toBase64 } from './file';
+import { REGEX_IMAGE_EXTENSION } from "../constants";
+import { toBase64 } from "./file";
 
 /**
  * Convert url to Image
@@ -7,7 +7,7 @@ import { toBase64 } from './file';
 export const toImage = (url: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
         if (!url) {
-            return reject(new Error('url required'));
+            return reject(new Error("url required"));
         }
         const image = new Image();
         image.onload = () => {
@@ -22,8 +22,8 @@ export const toImage = (url: string): Promise<HTMLImageElement> => {
          * An error will be thrown if the requested resource hasn't specified an appropriate CORS policy
          * See https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
          */
-        image.crossOrigin = 'anonymous';
-        image.referrerPolicy = 'no-referrer';
+        image.crossOrigin = "anonymous";
+        image.referrerPolicy = "no-referrer";
         image.src = url;
     });
 };
@@ -64,7 +64,7 @@ export const resizeImage = async ({
     original,
     maxWidth = 0,
     maxHeight = 0,
-    finalMimeType = 'image/jpeg',
+    finalMimeType = "image/jpeg",
     encoderOptions = 1,
     bigResize = false,
 }: ResizeImageProps) => {
@@ -72,8 +72,11 @@ export const resizeImage = async ({
     // Resize the image
     let { width, height } = image;
 
-    const canvas = document.createElement('canvas');
-    const [widthRatio, heightRatio] = [maxWidth && width / maxWidth, maxHeight && height / maxHeight].map(Number);
+    const canvas = document.createElement("canvas");
+    const [widthRatio, heightRatio] = [
+        maxWidth && width / maxWidth,
+        maxHeight && height / maxHeight,
+    ].map(Number);
 
     if (widthRatio <= 1 && heightRatio <= 1) {
         return image.src;
@@ -92,7 +95,7 @@ export const resizeImage = async ({
     canvas.width = width;
     canvas.height = height;
     // eslint-disable-next-line no-unused-expressions
-    canvas.getContext('2d')?.drawImage(image, 0, 0, width, height);
+    canvas.getContext("2d")?.drawImage(image, 0, 0, width, height);
 
     return canvas.toDataURL(finalMimeType, encoderOptions);
 };
@@ -100,9 +103,9 @@ export const resizeImage = async ({
 /**
  * Extract the mime and base64 str from a base64 image.
  */
-const extractBase64Image = (str = '') => {
-    const [mimeInfo = '', base64 = ''] = (str || '').split(',');
-    const [, mime = ''] = mimeInfo.match(/:(.*?);/) || [];
+const extractBase64Image = (str = "") => {
+    const [mimeInfo = "", base64 = ""] = (str || "").split(",");
+    const [, mime = ""] = mimeInfo.match(/:(.*?);/) || [];
     return { mime, base64 };
 };
 
@@ -122,7 +125,7 @@ const toUint8Array = (base64str: string) => {
 /**
  * Convert a data URL to a Blob Object
  */
-export const toFile = (base64str: string, filename = 'file') => {
+export const toFile = (base64str: string, filename = "file") => {
     const { base64, mime } = extractBase64Image(base64str);
     return new File([toUint8Array(base64)], filename, { type: mime });
 };
@@ -138,8 +141,17 @@ export const toBlob = (base64str: string) => {
 /**
  * Down size image to reach the max size limit
  */
-export const downSize = async (base64str: string, maxSize: number, mimeType = 'image/jpeg', encoderOptions = 1) => {
-    const process = async (source: string, maxWidth: number, maxHeight: number): Promise<string> => {
+export const downSize = async (
+    base64str: string,
+    maxSize: number,
+    mimeType = "image/jpeg",
+    encoderOptions = 1
+) => {
+    const process = async (
+        source: string,
+        maxWidth: number,
+        maxHeight: number
+    ): Promise<string> => {
         const resized = await resizeImage({
             original: source,
             maxWidth,
@@ -153,7 +165,11 @@ export const downSize = async (base64str: string, maxSize: number, mimeType = 'i
             return resized;
         }
 
-        return process(resized, Math.round(maxWidth * 0.9), Math.round(maxHeight * 0.9));
+        return process(
+            resized,
+            Math.round(maxWidth * 0.9),
+            Math.round(maxHeight * 0.9)
+        );
     };
 
     const { height, width } = await toImage(base64str);
@@ -163,12 +179,12 @@ export const downSize = async (base64str: string, maxSize: number, mimeType = 'i
 /**
  * Returns true if the URL is an inline embedded image.
  */
-export const isInlineEmbedded = (src = '') => src.startsWith('data:');
+export const isInlineEmbedded = (src = "") => src.startsWith("data:");
 
 /**
  * Returns true if the URL is an embedded image.
  */
-export const isEmbedded = (src = '') => src.startsWith('cid:');
+export const isEmbedded = (src = "") => src.startsWith("cid:");
 
 /**
  * Resize image file
@@ -181,7 +197,7 @@ export const resize = async (fileImage: File, maxSize: number) => {
 /**
  * Prepare image source to be display
  */
-export const formatImage = (value = '') => {
+export const formatImage = (value = "") => {
     if (!value) {
         return value;
     }
@@ -190,7 +206,7 @@ export const formatImage = (value = '') => {
         return value;
     }
 
-    if (value.startsWith('data:')) {
+    if (value.startsWith("data:")) {
         return value;
     }
 

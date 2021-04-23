@@ -1,6 +1,10 @@
-import { transformBeforeAt } from './trigger';
-import { NOTIFICATION_UNITS, NOTIFICATION_WHEN, SETTINGS_NOTIFICATION_TYPE } from './constants';
-import { NotificationModel, VcalDurationValue } from '../interfaces/calendar';
+import { transformBeforeAt } from "./trigger";
+import {
+    NOTIFICATION_UNITS,
+    NOTIFICATION_WHEN,
+    SETTINGS_NOTIFICATION_TYPE,
+} from "./constants";
+import { NotificationModel, VcalDurationValue } from "../interfaces/calendar";
 
 const getInt = (value: any) => parseInt(value, 10) || 0;
 
@@ -13,12 +17,21 @@ interface TriggerToModelShared {
     minutes: number;
 }
 
-const allDayTriggerToModel = ({ type, when, weeks, days, hours, minutes }: TriggerToModelShared) => {
+const allDayTriggerToModel = ({
+    type,
+    when,
+    weeks,
+    days,
+    hours,
+    minutes,
+}: TriggerToModelShared) => {
     const isNegative = when === NOTIFICATION_WHEN.BEFORE;
 
     const at = new Date(2000, 0, 1, hours, minutes);
     const modifiedAt = isNegative ? transformBeforeAt(at) : at;
-    const modifyNegativeDay = isNegative && (modifiedAt.getHours() > 0 || modifiedAt.getMinutes() > 0);
+    const modifyNegativeDay =
+        isNegative &&
+        (modifiedAt.getHours() > 0 || modifiedAt.getMinutes() > 0);
 
     const [value, unit] = (() => {
         // Transform for example -P1W6DT10H10M into 2 weeks at...
@@ -43,7 +56,14 @@ const allDayTriggerToModel = ({ type, when, weeks, days, hours, minutes }: Trigg
     };
 };
 
-const partDayTriggerToModel = ({ type, when, weeks, days, hours, minutes }: TriggerToModelShared) => {
+const partDayTriggerToModel = ({
+    type,
+    when,
+    weeks,
+    days,
+    hours,
+    minutes,
+}: TriggerToModelShared) => {
     const [value, unit] = (() => {
         if (weeks) {
             return [weeks, NOTIFICATION_UNITS.WEEK];
@@ -76,15 +96,23 @@ export const triggerToModel = ({
     isAllDay,
     type,
     // eslint-disable-next-line no-unused-vars
-    trigger: { weeks = 0, days = 0, hours = 0, minutes = 0, isNegative = false },
-}: TriggerToModel): Omit<NotificationModel, 'id'> => {
+    trigger: {
+        weeks = 0,
+        days = 0,
+        hours = 0,
+        minutes = 0,
+        isNegative = false,
+    },
+}: TriggerToModel): Omit<NotificationModel, "id"> => {
     const parsedTrigger = {
         weeks: getInt(weeks),
         days: getInt(days),
         hours: getInt(hours),
         minutes: getInt(minutes),
     };
-    const when = isNegative ? NOTIFICATION_WHEN.BEFORE : NOTIFICATION_WHEN.AFTER;
+    const when = isNegative
+        ? NOTIFICATION_WHEN.BEFORE
+        : NOTIFICATION_WHEN.AFTER;
     if (isAllDay) {
         return allDayTriggerToModel({ type, when, ...parsedTrigger });
     }
@@ -92,5 +120,7 @@ export const triggerToModel = ({
 };
 
 export const getDeviceNotifications = (notifications: NotificationModel[]) => {
-    return notifications.filter(({ type }) => type === SETTINGS_NOTIFICATION_TYPE.DEVICE);
+    return notifications.filter(
+        ({ type }) => type === SETTINGS_NOTIFICATION_TYPE.DEVICE
+    );
 };

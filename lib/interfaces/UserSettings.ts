@@ -1,4 +1,4 @@
-import { DENSITY } from '../constants';
+import { DENSITY } from "../constants";
 
 export enum SETTINGS_PASSWORD_MODE {
     ONE_PASSWORD_MODE = 1,
@@ -57,7 +57,7 @@ export interface UserSettings {
         Mode: SETTINGS_PASSWORD_MODE;
         ExpirationTime: number; // If set, after this time force password change
     };
-    '2FA': {
+    "2FA": {
         Enabled: number; // 0 for disabled, 1 for OTP, 2 for U2F, 3 for both
         Allowed: number; // 0 for disabled, 1 for OTP, 2 for U2F, 3 for both
         ExpirationTime: number; // If set, after this time force add 2FA

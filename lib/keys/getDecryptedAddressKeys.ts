@@ -1,11 +1,18 @@
-import { decryptPrivateKey, OpenPGPKey } from 'pmcrypto';
+import { decryptPrivateKey, OpenPGPKey } from "pmcrypto";
 
-import isTruthy from '../helpers/isTruthy';
-import { Address, DecryptedKey, Key as tsKey, KeyPair, KeysPair, User } from '../interfaces';
-import { decryptMemberToken } from './memberToken';
-import { splitKeys } from './keys';
-import { getAddressKeyToken } from './addressKeys';
-import { MEMBER_PRIVATE } from '../constants';
+import isTruthy from "../helpers/isTruthy";
+import {
+    Address,
+    DecryptedKey,
+    Key as tsKey,
+    KeyPair,
+    KeysPair,
+    User,
+} from "../interfaces";
+import { decryptMemberToken } from "./memberToken";
+import { splitKeys } from "./keys";
+import { getAddressKeyToken } from "./addressKeys";
+import { MEMBER_PRIVATE } from "../constants";
 
 interface GetDecryptedAddressKeyArguments {
     user: User;
@@ -16,12 +23,21 @@ interface GetDecryptedAddressKeyArguments {
 
 const getAddressKeyPassword = (
     { Activation, Token, Signature }: tsKey,
-    { user, userKeys, keyPassword, organizationKey }: GetDecryptedAddressKeyArguments
+    {
+        user,
+        userKeys,
+        keyPassword,
+        organizationKey,
+    }: GetDecryptedAddressKeyArguments
 ) => {
     const primaryPrivateUserKey = userKeys.privateKeys[0];
     const { OrganizationPrivateKey, Private } = user;
 
-    if (!OrganizationPrivateKey && Private === MEMBER_PRIVATE.READABLE && primaryPrivateUserKey) {
+    if (
+        !OrganizationPrivateKey &&
+        Private === MEMBER_PRIVATE.READABLE &&
+        primaryPrivateUserKey
+    ) {
         // Since the activation process is asynchronous, allow the private key to get decrypted already here so that it can be used
         if (Activation) {
             return decryptMemberToken(Activation, primaryPrivateUserKey);
@@ -41,12 +57,21 @@ const getAddressKeyPassword = (
     return keyPassword;
 };
 
-const getDecryptedAddressKey = async (addressKey: tsKey, options: GetDecryptedAddressKeyArguments) => {
+const getDecryptedAddressKey = async (
+    addressKey: tsKey,
+    options: GetDecryptedAddressKeyArguments
+) => {
     try {
         const { ID, PrivateKey } = addressKey;
 
-        const addressKeyPassword = await getAddressKeyPassword(addressKey, options);
-        const privateKey = await decryptPrivateKey(PrivateKey, addressKeyPassword);
+        const addressKeyPassword = await getAddressKeyPassword(
+            addressKey,
+            options
+        );
+        const privateKey = await decryptPrivateKey(
+            PrivateKey,
+            addressKeyPassword
+        );
         return {
             ID,
             privateKey,
@@ -78,7 +103,9 @@ export const getDecryptedAddressKeys = async ({
     const { OrganizationPrivateKey } = user;
 
     const organizationKey = OrganizationPrivateKey
-        ? await decryptPrivateKey(OrganizationPrivateKey, keyPassword).catch(() => undefined)
+        ? await decryptPrivateKey(OrganizationPrivateKey, keyPassword).catch(
+              () => undefined
+          )
         : undefined;
 
     const userKeysPair = splitKeys(userKeys);

@@ -1,6 +1,6 @@
-import { CYCLE, PLAN_TYPES, PLANS, ADDON_NAMES } from '../constants';
+import { CYCLE, PLAN_TYPES, PLANS, ADDON_NAMES } from "../constants";
 
-export type Currency = 'EUR' | 'CHF' | 'USD';
+export type Currency = "EUR" | "CHF" | "USD";
 export type Cycle = CYCLE.MONTHLY | CYCLE.YEARLY | CYCLE.TWO_YEARS;
 
 export interface Pricing {
@@ -9,7 +9,13 @@ export interface Pricing {
     [CYCLE.TWO_YEARS]: number;
 }
 
-export type MaxKeys = 'MaxDomains' | 'MaxAddresses' | 'MaxSpace' | 'MaxMembers' | 'MaxVPN' | 'MaxTier';
+export type MaxKeys =
+    | "MaxDomains"
+    | "MaxAddresses"
+    | "MaxSpace"
+    | "MaxMembers"
+    | "MaxVPN"
+    | "MaxTier";
 
 export interface Plan {
     ID: string;

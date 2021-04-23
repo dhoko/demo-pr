@@ -10,18 +10,18 @@ import {
     SessionKey,
     OpenPGPKey,
     encryptSessionKey,
-} from 'pmcrypto';
-import { enums } from 'openpgp';
-import { hasBit } from '../../helpers/bitset';
-import { uint8ArrayToBase64String } from '../../helpers/encoding';
-import { identity } from '../../helpers/function';
-import isTruthy from '../../helpers/isTruthy';
-import { PackageDirect } from '../../interfaces/mail/crypto';
-import { Message, Attachment } from '../../interfaces/mail/Message';
-import { RequireOnly, SimpleMap } from '../../interfaces/utils';
-import { AES256, MIME_TYPES, PACKAGE_TYPE } from '../../constants';
+} from "pmcrypto";
+import { enums } from "openpgp";
+import { hasBit } from "../../helpers/bitset";
+import { uint8ArrayToBase64String } from "../../helpers/encoding";
+import { identity } from "../../helpers/function";
+import isTruthy from "../../helpers/isTruthy";
+import { PackageDirect } from "../../interfaces/mail/crypto";
+import { Message, Attachment } from "../../interfaces/mail/Message";
+import { RequireOnly, SimpleMap } from "../../interfaces/utils";
+import { AES256, MIME_TYPES, PACKAGE_TYPE } from "../../constants";
 
-import { getSessionKey } from './attachments';
+import { getSessionKey } from "./attachments";
 
 interface AttachmentKeys {
     Attachment: Attachment;
@@ -71,18 +71,20 @@ const encryptAttachmentKeys = async ({
         return;
     }
 
-    const promises = Object.values(pack.Addresses || {}).map(async (address) => {
-        if (!address?.PublicKey) {
-            return;
+    const promises = Object.values(pack.Addresses || {}).map(
+        async (address) => {
+            if (!address?.PublicKey) {
+                return;
+            }
+
+            const keys = await encryptKeyPacket({
+                sessionKeys: attachmentKeys.map(({ SessionKey }) => SessionKey),
+                publicKeys: [address.PublicKey],
+            });
+
+            address.AttachmentKeyPackets = keys;
         }
-
-        const keys = await encryptKeyPacket({
-            sessionKeys: attachmentKeys.map(({ SessionKey }) => SessionKey),
-            publicKeys: [address.PublicKey],
-        });
-
-        address.AttachmentKeyPackets = keys;
-    });
+    );
 
     if (hasBit(pack.Type, PACKAGE_TYPE.SEND_CLEAR)) {
         const AttachmentKeys: { Key: string; Algorithm: string }[] = [];
@@ -119,12 +121,12 @@ const encryptDraftBodyPackage = async ({
     privateKeys: OpenPGPKey[];
     publicKeys: OpenPGPKey[];
     publicKeysList: OpenPGPKey[];
-    message: RequireOnly<Message, 'Body' | 'MIMEType'>;
+    message: RequireOnly<Message, "Body" | "MIMEType">;
 }) => {
     const cleanPublicKeys = [...publicKeys, ...publicKeysList].filter(identity);
 
     const { data, sessionKey } = await encryptMessage({
-        data: pack.Body || '',
+        data: pack.Body || "",
         publicKeys: cleanPublicKeys,
         privateKeys,
         returnSessionKey: true,
@@ -161,16 +163,24 @@ const encryptBodyPackage = async ({
     privateKeys: OpenPGPKey[];
     publicKeys: OpenPGPKey[];
     publicKeysList: OpenPGPKey[];
-    message: RequireOnly<Message, 'Body' | 'MIMEType'>;
+    message: RequireOnly<Message, "Body" | "MIMEType">;
 }) => {
     // we need to encrypt the draft body as well
-    await encryptDraftBodyPackage({ pack, publicKeys, privateKeys, publicKeysList, message });
+    await encryptDraftBodyPackage({
+        pack,
+        publicKeys,
+        privateKeys,
+        publicKeysList,
+        message,
+    });
     const cleanPublicKeys = publicKeysList.filter(identity);
 
     const { data, sessionKey } = await encryptMessage({
-        data: pack.Body || '',
+        data: pack.Body || "",
         publicKeys: cleanPublicKeys,
-        sessionKey: cleanPublicKeys.length ? undefined : await generateSessionKeyHelper(),
+        sessionKey: cleanPublicKeys.length
+            ? undefined
+            : await generateSessionKeyHelper(),
         privateKeys,
         returnSessionKey: true,
         compression: enums.compression.zip,
@@ -193,13 +203,18 @@ const encryptBody = async ({
     pack: PackageDirect;
     privateKeys: OpenPGPKey[];
     publicKeys: OpenPGPKey[];
-    message: RequireOnly<Message, 'Body' | 'MIMEType'>;
+    message: RequireOnly<Message, "Body" | "MIMEType">;
 }): Promise<void> => {
     const addressKeys = Object.keys(pack.Addresses || {}).filter(isTruthy);
     const addresses = Object.values(pack.Addresses || {}).filter(isTruthy);
-    const publicKeysList = addresses.map(({ PublicKey }) => PublicKey as OpenPGPKey);
+    const publicKeysList = addresses.map(
+        ({ PublicKey }) => PublicKey as OpenPGPKey
+    );
 
-    const encryptPack = message.MIMEType === pack.MIMEType ? encryptDraftBodyPackage : encryptBodyPackage;
+    const encryptPack =
+        message.MIMEType === pack.MIMEType
+            ? encryptDraftBodyPackage
+            : encryptBodyPackage;
 
     const { keys, encrypted, sessionKey } = await encryptPack({
         pack,
@@ -242,19 +257,24 @@ const encryptPackage = async ({
     publicKeys: OpenPGPKey[];
     privateKeys: OpenPGPKey[];
     attachmentKeys: AttachmentKeys[];
-    message: RequireOnly<Message, 'Body' | 'MIMEType'>;
+    message: RequireOnly<Message, "Body" | "MIMEType">;
 }): Promise<PackageDirect> => {
     await Promise.all([
         encryptBody({ pack, publicKeys, privateKeys, message }),
         encryptAttachmentKeys({ pack, attachmentKeys }),
     ]);
 
-    Object.values(pack.Addresses || {}).forEach((address: any) => delete address.PublicKey);
+    Object.values(pack.Addresses || {}).forEach(
+        (address: any) => delete address.PublicKey
+    );
 
     return pack;
 };
 
-const getAttachmentKeys = async (attachments: Attachment[], privateKeys: OpenPGPKey[]): Promise<AttachmentKeys[]> =>
+const getAttachmentKeys = async (
+    attachments: Attachment[],
+    privateKeys: OpenPGPKey[]
+): Promise<AttachmentKeys[]> =>
     Promise.all(
         attachments.map(async (attachment) => ({
             Attachment: attachment,
@@ -276,12 +296,20 @@ export const encryptPackages = async ({
     attachments: Attachment[];
     privateKeys: OpenPGPKey[];
     publicKeys: OpenPGPKey[];
-    message: RequireOnly<Message, 'Body' | 'MIMEType'>;
+    message: RequireOnly<Message, "Body" | "MIMEType">;
 }): Promise<SimpleMap<PackageDirect>> => {
     const attachmentKeys = await getAttachmentKeys(attachments, privateKeys);
     const packageList = Object.values(packages) as PackageDirect[];
     await Promise.all(
-        packageList.map((pack) => encryptPackage({ pack, privateKeys, publicKeys, attachmentKeys, message }))
+        packageList.map((pack) =>
+            encryptPackage({
+                pack,
+                privateKeys,
+                publicKeys,
+                attachmentKeys,
+                message,
+            })
+        )
     );
 
     return packages;

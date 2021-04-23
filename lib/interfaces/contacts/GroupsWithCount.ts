@@ -1,4 +1,4 @@
-import { ContactGroup } from './Contact';
+import { ContactGroup } from "./Contact";
 
 export interface GroupsWithCount extends ContactGroup {
     count: number;

@@ -1,17 +1,20 @@
-import { uint8ArrayToString, base64StringToUint8Array } from './encoding';
+import { uint8ArrayToString, base64StringToUint8Array } from "./encoding";
 
 /**
  * Convert file to encoded base 64 string
  */
-export const toBase64 = async (file: File, isValid: (file: File) => boolean = () => true) => {
+export const toBase64 = async (
+    file: File,
+    isValid: (file: File) => boolean = () => true
+) => {
     if (file && !isValid(file)) {
-        throw new Error('Invalid file format');
+        throw new Error("Invalid file format");
     }
     return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = ({ target }) => {
             if (!target?.result) {
-                return reject(new Error('Invalid file'));
+                return reject(new Error("Invalid file"));
             }
             resolve(target.result as string);
         };
@@ -29,7 +32,7 @@ export const readFileAsBuffer = (file: File) => {
         const reader = new FileReader();
         reader.onload = ({ target }) => {
             if (!target?.result) {
-                return reject(new Error('Invalid file'));
+                return reject(new Error("Invalid file"));
             }
             resolve(target.result as ArrayBuffer);
         };
@@ -47,7 +50,7 @@ export const readFileAsString = (file: File, encoding?: string) => {
         const reader = new FileReader();
         reader.onload = ({ target }) => {
             if (!target?.result) {
-                return reject(new Error('Invalid file'));
+                return reject(new Error("Invalid file"));
             }
             resolve(target.result as string);
         };
@@ -74,8 +77,8 @@ export const readFileAsBinaryString = async (file: File) => {
 export const blobURLtoBlob = (url: string) => {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', url);
-        xhr.responseType = 'blob';
+        xhr.open("GET", url);
+        xhr.responseType = "blob";
         xhr.onerror = reject;
         xhr.onload = () => {
             if (xhr.status === 200) {
@@ -90,14 +93,14 @@ export const blobURLtoBlob = (url: string) => {
 /**
  * Read the base64 portion of a data url.
  */
-export const readDataUrl = (url = '') => {
-    const error = 'The given url is not a data url.';
+export const readDataUrl = (url = "") => {
+    const error = "The given url is not a data url.";
 
-    if (url.substring(0, 5) !== 'data:') {
+    if (url.substring(0, 5) !== "data:") {
         throw new Error(error);
     }
 
-    const [, base64] = url.split(',');
+    const [, base64] = url.split(",");
     if (!base64) {
         throw new Error(error);
     }
@@ -108,10 +111,10 @@ export const readDataUrl = (url = '') => {
 /**
  * Split a filename into [name, extension]
  */
-export const splitExtension = (filename = '') => {
-    const endIdx = filename.lastIndexOf('.');
+export const splitExtension = (filename = "") => {
+    const endIdx = filename.lastIndexOf(".");
     if (endIdx === -1) {
-        return [filename, ''];
+        return [filename, ""];
     }
     return [filename.slice(0, endIdx), filename.slice(endIdx + 1)];
 };

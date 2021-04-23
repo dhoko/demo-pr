@@ -1,14 +1,14 @@
-import ICAL from 'ical.js';
-import { readFileAsString } from '../helpers/file';
-import isTruthy from '../helpers/isTruthy';
-import { ContactProperties, ContactProperty } from '../interfaces/contacts';
-import { addPref, hasPref, sortByPref } from './properties';
-import { getValue } from './property';
+import ICAL from "ical.js";
+import { readFileAsString } from "../helpers/file";
+import isTruthy from "../helpers/isTruthy";
+import { ContactProperties, ContactProperty } from "../interfaces/contacts";
+import { addPref, hasPref, sortByPref } from "./properties";
+import { getValue } from "./property";
 
-export const ONE_OR_MORE_MUST_BE_PRESENT = '1*';
-export const EXACTLY_ONE_MUST_BE_PRESENT = '1';
-export const EXACTLY_ONE_MAY_BE_PRESENT = '*1';
-export const ONE_OR_MORE_MAY_BE_PRESENT = '*';
+export const ONE_OR_MORE_MUST_BE_PRESENT = "1*";
+export const EXACTLY_ONE_MUST_BE_PRESENT = "1";
+export const EXACTLY_ONE_MAY_BE_PRESENT = "*1";
+export const ONE_OR_MORE_MAY_BE_PRESENT = "*";
 
 export const PROPERTIES: { [key: string]: { cardinality: string } } = {
     fn: { cardinality: ONE_OR_MORE_MUST_BE_PRESENT },
@@ -46,22 +46,27 @@ export const PROPERTIES: { [key: string]: { cardinality: string } } = {
     caluri: { cardinality: ONE_OR_MORE_MAY_BE_PRESENT },
 };
 
-export const isCustomField = (field = '') => field.startsWith('x-');
+export const isCustomField = (field = "") => field.startsWith("x-");
 
 /**
  * Parse vCard string and return contact properties model as an array
  */
-export const parse = (vcard = ''): ContactProperties => {
+export const parse = (vcard = ""): ContactProperties => {
     const comp = new ICAL.Component(ICAL.parse(vcard));
     const properties = comp.getAllProperties() as any[];
 
     const sortedProperties = properties
         .reduce<ContactProperty[]>((acc, property) => {
-            const splitProperty = property.name.split('.');
-            const field = splitProperty[1] ? splitProperty[1] : splitProperty[0];
-            const type = property.getParameter('type');
-            const prefValue = property.getParameter('pref');
-            const pref = typeof prefValue === 'string' && hasPref(field) ? +prefValue : undefined;
+            const splitProperty = property.name.split(".");
+            const field = splitProperty[1]
+                ? splitProperty[1]
+                : splitProperty[0];
+            const type = property.getParameter("type");
+            const prefValue = property.getParameter("pref");
+            const pref =
+                typeof prefValue === "string" && hasPref(field)
+                    ? +prefValue
+                    : undefined;
 
             // Ignore invalid field
             if (!field) {
@@ -76,7 +81,13 @@ export const parse = (vcard = ''): ContactProperties => {
             }
 
             const group = splitProperty[1] ? splitProperty[0] : undefined;
-            const prop = { pref, field, group, type, value: getValue(property, field) };
+            const prop = {
+                pref,
+                field,
+                group,
+                type,
+                value: getValue(property, field),
+            };
 
             acc.push(prop);
 
@@ -92,38 +103,51 @@ export const parse = (vcard = ''): ContactProperties => {
  */
 export const toICAL = (properties: ContactProperties = []) => {
     // make sure version (we enforce 4.0) is the first property; otherwise invalid vcards can be generated
-    const versionLessProperties = properties.filter(({ field }) => field !== 'version');
+    const versionLessProperties = properties.filter(
+        ({ field }) => field !== "version"
+    );
 
-    const comp = new ICAL.Component('vcard');
-    const versionProperty = new ICAL.Property('version');
-    versionProperty.setValue('4.0');
+    const comp = new ICAL.Component("vcard");
+    const versionProperty = new ICAL.Property("version");
+    versionProperty.setValue("4.0");
     comp.addProperty(versionProperty);
 
-    return versionLessProperties.reduce((component, { field, type, pref, value, group }) => {
-        const fieldWithGroup = [group, field].filter(isTruthy).join('.');
-        const property = new ICAL.Property(fieldWithGroup);
-        property.setValue(value);
-        if (type) {
-            property.setParameter('type', type);
-        }
-        if (pref) {
-            property.setParameter('pref', `${pref}`);
-        }
-        component.addProperty(property);
-        return component;
-    }, comp);
+    return versionLessProperties.reduce(
+        (component, { field, type, pref, value, group }) => {
+            const fieldWithGroup = [group, field].filter(isTruthy).join(".");
+            const property = new ICAL.Property(fieldWithGroup);
+            property.setValue(value);
+            if (type) {
+                property.setParameter("type", type);
+            }
+            if (pref) {
+                property.setParameter("pref", `${pref}`);
+            }
+            component.addProperty(property);
+            return component;
+        },
+        comp
+    );
 };
 
 /**
  * Merge multiple contact properties. Order matters
  */
-export const merge = (contacts: ContactProperties[] = []): ContactProperties => {
+export const merge = (
+    contacts: ContactProperties[] = []
+): ContactProperties => {
     return contacts.reduce((acc, properties) => {
         properties.forEach((property) => {
             const { field } = property;
-            const { cardinality = ONE_OR_MORE_MAY_BE_PRESENT } = PROPERTIES[field] || {};
+            const { cardinality = ONE_OR_MORE_MAY_BE_PRESENT } =
+                PROPERTIES[field] || {};
 
-            if ([ONE_OR_MORE_MUST_BE_PRESENT, ONE_OR_MORE_MAY_BE_PRESENT].includes(cardinality)) {
+            if (
+                [
+                    ONE_OR_MORE_MUST_BE_PRESENT,
+                    ONE_OR_MORE_MAY_BE_PRESENT,
+                ].includes(cardinality)
+            ) {
                 acc.push(property);
             } else if (!acc.find(({ field: f }) => f === field)) {
                 acc.push(property);
@@ -136,7 +160,7 @@ export const merge = (contacts: ContactProperties[] = []): ContactProperties => 
 /**
  * Basic test for the validity of a vCard file read as a string
  */
-const isValid = (vcf = ''): boolean => {
+const isValid = (vcf = ""): boolean => {
     const regexMatchBegin = vcf.match(/BEGIN:VCARD/g);
     const regexMatchEnd = vcf.match(/END:VCARD/g);
     if (!regexMatchBegin || !regexMatchEnd) {
@@ -151,7 +175,7 @@ const isValid = (vcf = ''): boolean => {
 export const readVcf = async (file: File): Promise<string> => {
     const vcf = await readFileAsString(file);
     if (!isValid(vcf)) {
-        throw new Error('Error when reading vcf file');
+        throw new Error("Error when reading vcf file");
     }
     return vcf;
 };
@@ -159,8 +183,8 @@ export const readVcf = async (file: File): Promise<string> => {
 /**
  * Extract array of vcards from a string containing several vcards
  */
-export const extractVcards = (vcf = ''): string[] => {
-    const vcards = vcf.split('END:VCARD');
+export const extractVcards = (vcf = ""): string[] => {
+    const vcards = vcf.split("END:VCARD");
     vcards.pop();
     return vcards.map((vcard) => `${vcard.trim()}\r\nEND:VCARD`);
 };

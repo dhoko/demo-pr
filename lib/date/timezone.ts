@@ -1,6 +1,14 @@
-import { listTimeZones, findTimeZone, getZonedTime, getUTCOffset } from 'timezone-support';
-import { DateTime } from '../interfaces/calendar/Date';
-import { MANUAL_TIMEZONE_LINKS, unsupportedTimezoneLinks } from './timezoneDatabase';
+import {
+    listTimeZones,
+    findTimeZone,
+    getZonedTime,
+    getUTCOffset,
+} from "timezone-support";
+import { DateTime } from "../interfaces/calendar/Date";
+import {
+    MANUAL_TIMEZONE_LINKS,
+    unsupportedTimezoneLinks,
+} from "./timezoneDatabase";
 
 export const toLocalDate = ({
     year = 0,
@@ -13,7 +21,14 @@ export const toLocalDate = ({
     return new Date(year, month - 1, day, hours, minutes, seconds);
 };
 
-export const toUTCDate = ({ year = 0, month = 1, day = 0, hours = 0, minutes = 0, seconds = 0 }: Partial<DateTime>) => {
+export const toUTCDate = ({
+    year = 0,
+    month = 1,
+    day = 0,
+    hours = 0,
+    minutes = 0,
+    seconds = 0,
+}: Partial<DateTime>) => {
     return new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
 };
 
@@ -55,7 +70,7 @@ export const getSupportedTimezone = (tzid: string): string | undefined => {
         const offsetRegex = /^\((?:UTC|GMT).*\) (.*)$|^(.*) \((?:UTC|GMT).*\)/i;
         const match = offsetRegex.exec(tzid);
         const strippedTzid = match ? match[1] || match[2] : tzid;
-        const normalizedTzid = strippedTzid.toLowerCase().replace(/\./g, '');
+        const normalizedTzid = strippedTzid.toLowerCase().replace(/\./g, "");
         const timezone = MANUAL_TIMEZONE_LINKS[normalizedTzid];
         return timezone;
     }
@@ -84,8 +99,8 @@ export const getTimezone = () => {
     const ianaTimezones = listTimeZones();
     const timezone = guessTimezone(ianaTimezones);
     // Special case for UTC since the API calls it UTC and not Etc/UTC
-    if (timezone === 'Etc/UTC') {
-        return 'UTC';
+    if (timezone === "Etc/UTC") {
+        return "UTC";
     }
     // If the guessed timezone is undefined, there's not much we can do
     if (!timezone) {
@@ -106,7 +121,7 @@ export const getTimezoneOffset = (nowDate: Date, tzid: string) => {
 
 export const formatTimezoneOffset = (offset: number) => {
     // offset comes with the opposite sign in the timezone-support library
-    const sign = Math.sign(offset) === 1 ? '-' : '+';
+    const sign = Math.sign(offset) === 1 ? "-" : "+";
     const minutes = Math.abs(offset % 60);
     const hours = (Math.abs(offset) - minutes) / 60;
 
@@ -137,15 +152,21 @@ type GetTimeZoneOptions = (
  */
 export const getTimeZoneOptions: GetTimeZoneOptions = (
     date = new Date(),
-    { formatter = ({ utcOffset, name }: FormatterProps) => `${name} (${utcOffset})` } = {}
+    {
+        formatter = ({ utcOffset, name }: FormatterProps) =>
+            `${name} (${utcOffset})`,
+    } = {}
 ) => {
     return (
         listTimeZones()
             // UTC is called Etc/UTC but the API accepts UTC
-            .concat('UTC')
+            .concat("UTC")
             .filter((name) => !unsupportedTimezoneLinks[name])
             .map((name) => {
-                const { abbreviation, offset } = getUTCOffset(date, findTimeZone(name));
+                const { abbreviation, offset } = getUTCOffset(
+                    date,
+                    findTimeZone(name)
+                );
 
                 return {
                     name,
@@ -153,16 +174,24 @@ export const getTimeZoneOptions: GetTimeZoneOptions = (
                     abbreviation,
                 };
             })
-            .sort(({ offset: offsetA, name: nameA }, { offset: offsetB, name: nameB }) => {
-                const diff = offsetA - offsetB;
-                if (diff === 0) {
-                    return nameA.localeCompare(nameB);
+            .sort(
+                (
+                    { offset: offsetA, name: nameA },
+                    { offset: offsetB, name: nameB }
+                ) => {
+                    const diff = offsetA - offsetB;
+                    if (diff === 0) {
+                        return nameA.localeCompare(nameB);
+                    }
+                    return diff;
                 }
-                return diff;
-            })
+            )
             .map(({ name, offset }, i) => {
                 return {
-                    text: formatter({ name, utcOffset: `GMT${formatTimezoneOffset(offset)}` }),
+                    text: formatter({
+                        name,
+                        utcOffset: `GMT${formatTimezoneOffset(offset)}`,
+                    }),
                     value: name,
                     key: i,
                 };
@@ -170,7 +199,13 @@ export const getTimeZoneOptions: GetTimeZoneOptions = (
     );
 };
 
-const findUTCTransitionIndex = ({ unixTime, untils }: { unixTime: number; untils: number[] }) => {
+const findUTCTransitionIndex = ({
+    unixTime,
+    untils,
+}: {
+    unixTime: number;
+    untils: number[];
+}) => {
     const max = untils.length - 1;
     for (let i = 0; i < max; i++) {
         if (unixTime < untils[i]) {
@@ -222,7 +257,11 @@ interface ConvertZonedDateTimeOptions {
     moveAmbiguousForward?: boolean;
     moveInvalidForward?: boolean;
 }
-export const convertZonedDateTimeToUTC = (dateTime: DateTime, tzid: string, options?: ConvertZonedDateTimeOptions) => {
+export const convertZonedDateTimeToUTC = (
+    dateTime: DateTime,
+    tzid: string,
+    options?: ConvertZonedDateTimeOptions
+) => {
     const timezone = findTimeZone(tzid);
     const unixTime = Date.UTC(
         dateTime.year,

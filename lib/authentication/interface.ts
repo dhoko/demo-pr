@@ -26,7 +26,7 @@ export interface AuthResponse {
     PasswordMode: number;
     LocalID: number;
     TwoFactor: number;
-    '2FA': TwoFaResponse;
+    "2FA": TwoFaResponse;
 }
 
 export interface PushForkResponse {
@@ -71,7 +71,7 @@ export interface InfoResponse {
 }
 
 export interface InfoAuthedResponse extends InfoResponse {
-    '2FA': TwoFaResponse;
+    "2FA": TwoFaResponse;
 }
 
 export interface ModulusResponse {

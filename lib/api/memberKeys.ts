@@ -1,4 +1,4 @@
-import { SignedKeyList } from '../interfaces';
+import { SignedKeyList } from "../interfaces";
 
 interface SetupMemberKeyAddressKeyPayload {
     AddressID: string;
@@ -43,9 +43,12 @@ interface SetupMemberKeyPayloadV2 {
     UserKey: SetupMemberKeyUserKeyPayloadV2;
 }
 
-export const setupMemberKeyRoute = ({ MemberID, ...data }: SetupMemberKeyPayload | SetupMemberKeyPayloadV2) => ({
+export const setupMemberKeyRoute = ({
+    MemberID,
+    ...data
+}: SetupMemberKeyPayload | SetupMemberKeyPayloadV2) => ({
     url: `members/${MemberID}/keys/setup`,
-    method: 'post',
+    method: "post",
     data,
 });
 
@@ -60,14 +63,21 @@ interface CreateMemberKeyPayload {
     SignedKeyList: SignedKeyList;
 }
 
-interface CreateMemberKeyPayloadV2 extends Omit<CreateMemberKeyPayload, 'UserKey' | 'MemberKey' | 'Activation'> {
+interface CreateMemberKeyPayloadV2
+    extends Omit<
+        CreateMemberKeyPayload,
+        "UserKey" | "MemberKey" | "Activation"
+    > {
     Signature: string;
     OrgSignature: string;
     PrivateKey: string;
 }
 
-export const createMemberKeyRoute = ({ MemberID, ...data }: CreateMemberKeyPayload | CreateMemberKeyPayloadV2) => ({
+export const createMemberKeyRoute = ({
+    MemberID,
+    ...data
+}: CreateMemberKeyPayload | CreateMemberKeyPayloadV2) => ({
     url: `members/${MemberID}/keys`,
-    method: 'post',
+    method: "post",
     data,
 });

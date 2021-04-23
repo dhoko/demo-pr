@@ -13,13 +13,13 @@ import {
     ICAL_EVENT_STATUS,
     SHARED_SIGNED_FIELDS,
     EVENT_VERIFICATION_STATUS,
-} from '../../calendar/constants';
-import { Address } from '../Address';
-import { VcalRrulePropertyValue, VcalVeventComponent } from './VcalModel';
-import { NotificationModel } from './Notification';
-import { pick } from '../../helpers/object';
-import type { CalendarEventBlobData as ApiCalendarEventBlobData } from '../../api/calendars';
-import { RequireSome } from '../utils';
+} from "../../calendar/constants";
+import { Address } from "../Address";
+import { VcalRrulePropertyValue, VcalVeventComponent } from "./VcalModel";
+import { NotificationModel } from "./Notification";
+import { pick } from "../../helpers/object";
+import type { CalendarEventBlobData as ApiCalendarEventBlobData } from "../../api/calendars";
+import { RequireSome } from "../utils";
 
 export interface CalendarEventData {
     Type: CALENDAR_CARD_TYPE;
@@ -28,7 +28,9 @@ export interface CalendarEventData {
     Author: string;
 }
 
-export type CalendarEventDataMap = { [key in CALENDAR_CARD_TYPE]?: CalendarEventData };
+export type CalendarEventDataMap = {
+    [key in CALENDAR_CARD_TYPE]?: CalendarEventData;
+};
 
 export interface CalendarPersonalEventData extends CalendarEventData {
     MemberID: string;
@@ -74,11 +76,17 @@ export interface CalendarEventMetadata {
     Exdates: number[];
 }
 
-export interface CalendarEvent extends CalendarEventSharedData, CalendarEventBlobData {}
+export interface CalendarEvent
+    extends CalendarEventSharedData,
+        CalendarEventBlobData {}
 
-export interface CalendarEventWithMetadata extends CalendarEvent, CalendarEventMetadata {}
+export interface CalendarEventWithMetadata
+    extends CalendarEvent,
+        CalendarEventMetadata {}
 
-export interface CalendarEventWithoutBlob extends CalendarEventSharedData, CalendarEventMetadata {}
+export interface CalendarEventWithoutBlob
+    extends CalendarEventSharedData,
+        CalendarEventMetadata {}
 
 export interface SyncMultipleApiResponses {
     Index: number;
@@ -194,7 +202,7 @@ export interface EventModelView {
 
 export interface EventModel extends EventModelView {
     // these types will be used in the future, for now only event is used
-    type: 'event' | 'alarm' | 'task';
+    type: "event" | "alarm" | "task";
     calendar: CalendarViewModel;
     calendars: CalendarsModel[];
     member: {
@@ -235,12 +243,16 @@ export interface EventModelReadView extends EventModelView {
     isAllDay: boolean;
 }
 
-const sharedPick = (x: VcalVeventComponent) => pick(x, [...SHARED_SIGNED_FIELDS, 'component']);
+const sharedPick = (x: VcalVeventComponent) =>
+    pick(x, [...SHARED_SIGNED_FIELDS, "component"]);
 export type SharedVcalVeventComponent = ReturnType<typeof sharedPick>;
 
 export interface EncryptedEvent {
     component: VcalVeventComponent;
-    data: RequireSome<ApiCalendarEventBlobData, 'SharedEventContent' | 'SharedKeyPacket'>;
+    data: RequireSome<
+        ApiCalendarEventBlobData,
+        "SharedEventContent" | "SharedKeyPacket"
+    >;
 }
 
 export interface StoredEncryptedEvent extends EncryptedEvent {

@@ -1,8 +1,14 @@
-import { OpenPGPKey } from 'pmcrypto';
-import { Address } from './Address';
-import { CONTACT_MIME_TYPES, CONTACT_PGP_SCHEMES, MIME_TYPES, PGP_SCHEMES, RECIPIENT_TYPES } from '../constants';
-import { MailSettings } from './MailSettings';
-import { Key } from './Key';
+import { OpenPGPKey } from "pmcrypto";
+import { Address } from "./Address";
+import {
+    CONTACT_MIME_TYPES,
+    CONTACT_PGP_SCHEMES,
+    MIME_TYPES,
+    PGP_SCHEMES,
+    RECIPIENT_TYPES,
+} from "../constants";
+import { MailSettings } from "./MailSettings";
+import { Key } from "./Key";
 
 export interface PublicKeyWithPref {
     publicKey: OpenPGPKey;

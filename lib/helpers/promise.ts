@@ -1,4 +1,5 @@
-export const wait = (delay: number) => new Promise<void>((resolve) => setTimeout(resolve, delay));
+export const wait = (delay: number) =>
+    new Promise<void>((resolve) => setTimeout(resolve, delay));
 
 /**
  * Runs each chunk from a chunks array and waits after each one has run (unless it's the last one).

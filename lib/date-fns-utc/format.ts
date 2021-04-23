@@ -1,9 +1,9 @@
 // @ts-ignore
-import longFormatters from 'date-fns/_lib/format/longFormatters';
+import longFormatters from "date-fns/_lib/format/longFormatters";
 // @ts-ignore
-import formatters from 'date-fns/_lib/format/formatters/index';
-import defaultLocale from 'date-fns/locale/en-US';
-import { WeekStartsOn } from './interface';
+import formatters from "date-fns/_lib/format/formatters/index";
+import defaultLocale from "date-fns/locale/en-US";
+import { WeekStartsOn } from "./interface";
 
 /**
  * We copy here (with some refactor) the code for the format function from the 'date-fns' library.
@@ -32,7 +32,7 @@ const unescapedLatinCharacterRegExp = /[a-zA-Z]/;
 const cleanEscapedString = (input: string) => {
     const matcherResult = input.match(escapedStringRegExp);
     if (!matcherResult) {
-        return '';
+        return "";
     }
     return matcherResult[1].replace(doubleQuoteRegExp, "'");
 };
@@ -61,39 +61,60 @@ export interface Options {
 /**
  * Same as the format function from date-fns, but formats in the "UTC timezone"
  */
-const formatUTC = (utcDate: Date, formatString: string, options: Options = {}) => {
+const formatUTC = (
+    utcDate: Date,
+    formatString: string,
+    options: Options = {}
+) => {
     const locale = options.locale || defaultLocale;
     const localeFirstWeekContainsDate = locale.options?.firstWeekContainsDate;
     const defaultFirstWeekContainsDate =
-        localeFirstWeekContainsDate === undefined ? 1 : toInteger(localeFirstWeekContainsDate);
+        localeFirstWeekContainsDate === undefined
+            ? 1
+            : toInteger(localeFirstWeekContainsDate);
     const firstWeekContainsDate =
         options.firstWeekContainsDate === undefined
             ? defaultFirstWeekContainsDate
             : toInteger(options.firstWeekContainsDate);
     const localeWeekStartsOn = locale?.options?.weekStartsOn;
-    const defaultWeekStartsOn = localeWeekStartsOn === undefined ? 0 : toInteger(localeWeekStartsOn);
-    const weekStartsOn = options.weekStartsOn === undefined ? defaultWeekStartsOn : toInteger(options.weekStartsOn);
-    const formatterOptions = { firstWeekContainsDate, weekStartsOn, locale, _originalDate: utcDate };
+    const defaultWeekStartsOn =
+        localeWeekStartsOn === undefined ? 0 : toInteger(localeWeekStartsOn);
+    const weekStartsOn =
+        options.weekStartsOn === undefined
+            ? defaultWeekStartsOn
+            : toInteger(options.weekStartsOn);
+    const formatterOptions = {
+        firstWeekContainsDate,
+        weekStartsOn,
+        locale,
+        _originalDate: utcDate,
+    };
 
-    const longFormatMatchResult = formatString.match(longFormattingTokensRegExp);
+    const longFormatMatchResult = formatString.match(
+        longFormattingTokensRegExp
+    );
     if (!longFormatMatchResult) {
-        return '';
+        return "";
     }
 
     const formattingTokensMatchResult = longFormatMatchResult
         .map((substring) => {
             const firstCharacter = substring[0];
-            if (firstCharacter === 'p' || firstCharacter === 'P') {
+            if (firstCharacter === "p" || firstCharacter === "P") {
                 const longFormatter = longFormatters[firstCharacter];
-                return longFormatter(substring, locale.formatLong, formatterOptions);
+                return longFormatter(
+                    substring,
+                    locale.formatLong,
+                    formatterOptions
+                );
             }
             return substring;
         })
-        .join('')
+        .join("")
         .match(formattingTokensRegExp);
 
     if (!formattingTokensMatchResult) {
-        return '';
+        return "";
     }
 
     return formattingTokensMatchResult
@@ -110,16 +131,23 @@ const formatUTC = (utcDate: Date, formatString: string, options: Options = {}) =
 
             const formatter = formatters[firstCharacter];
             if (formatter) {
-                return formatter(utcDate, substring, locale.localize, formatterOptions);
+                return formatter(
+                    utcDate,
+                    substring,
+                    locale.localize,
+                    formatterOptions
+                );
             }
 
             if (firstCharacter.match(unescapedLatinCharacterRegExp)) {
-                throw new Error(`Format string contains an unescaped latin alphabet character \`${firstCharacter}\``);
+                throw new Error(
+                    `Format string contains an unescaped latin alphabet character \`${firstCharacter}\``
+                );
             }
 
             return substring;
         })
-        .join('');
+        .join("");
 };
 
 export default formatUTC;

@@ -1,22 +1,28 @@
-import { KeyReactivationData } from '../reactivation/interface';
-import { KeyImportData } from './interface';
-import { ActiveKey, InactiveKey } from '../../interfaces';
+import { KeyReactivationData } from "../reactivation/interface";
+import { KeyImportData } from "./interface";
+import { ActiveKey, InactiveKey } from "../../interfaces";
 
 export const getFilteredImportRecords = (
     keyImportRecords: KeyImportData[],
     activeKeys: ActiveKey[],
     inactiveKeys: InactiveKey[]
 ) => {
-    return keyImportRecords.reduce<[KeyReactivationData[], KeyImportData[], KeyImportData[]]>(
+    return keyImportRecords.reduce<
+        [KeyReactivationData[], KeyImportData[], KeyImportData[]]
+    >(
         (acc, keyImportRecord) => {
             const { privateKey: uploadedPrivateKey } = keyImportRecord;
             const fingerprint = uploadedPrivateKey.getFingerprint();
-            const maybeInactiveKey = inactiveKeys.find(({ fingerprint: otherFingerprint }) => {
-                return otherFingerprint === fingerprint;
-            });
-            const maybeActiveKey = activeKeys.find(({ fingerprint: otherFingerprint }) => {
-                return otherFingerprint === fingerprint;
-            });
+            const maybeInactiveKey = inactiveKeys.find(
+                ({ fingerprint: otherFingerprint }) => {
+                    return otherFingerprint === fingerprint;
+                }
+            );
+            const maybeActiveKey = activeKeys.find(
+                ({ fingerprint: otherFingerprint }) => {
+                    return otherFingerprint === fingerprint;
+                }
+            );
             if (maybeActiveKey) {
                 acc[2].push(keyImportRecord);
             } else if (maybeInactiveKey) {

@@ -82,13 +82,17 @@ export const replace = <T>(arr: T[], item: T, replacement: T) => {
 /**
  * Returns difference of two array of strings
  */
-export const diff = <T>(arr1: T[], arr2: T[]) => arr1.filter((a) => !arr2.includes(a));
+export const diff = <T>(arr1: T[], arr2: T[]) =>
+    arr1.filter((a) => !arr2.includes(a));
 
 /**
  * Groups elements in an array by a provided comparison function.
  * E.g. `[1, 1, 2, 3, 3] => [[1, 1], [2], [3, 3]]`
  */
-export const groupWith = <T>(compare: (a: T, b: T) => boolean, arr: T[] = []) => {
+export const groupWith = <T>(
+    compare: (a: T, b: T) => boolean,
+    arr: T[] = []
+) => {
     const { groups } = arr.reduce<{ groups: T[][]; remaining: T[] }>(
         (acc, a) => {
             const { groups, remaining } = acc;
@@ -185,4 +189,5 @@ export const updateItem = <T>(array: T[], index: number, newItem: T) => {
     });
 };
 
-export const removeItem = <T>(array: T[], index: number) => array.filter((oldValue, i) => i !== index);
+export const removeItem = <T>(array: T[], index: number) =>
+    array.filter((oldValue, i) => i !== index);

@@ -1,5 +1,5 @@
-import { Key } from './Key';
-import { USER_ROLES } from '../constants';
+import { Key } from "./Key";
+import { USER_ROLES } from "../constants";
 
 export interface User {
     ID: string;
