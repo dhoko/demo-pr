@@ -1,14 +1,18 @@
-import { OpenPGPKey } from 'pmcrypto';
+import { OpenPGPKey } from "pmcrypto";
 
-import { Address, Api, DecryptedKey } from '../../interfaces';
-import { KeyImportData, OnKeyImportCallback } from './interface';
-import { getActiveKeyObject, getActiveKeys, getPrimaryFlag } from '../getActiveKeys';
-import { getInactiveKeys } from '../getInactiveKeys';
-import { getFilteredImportRecords } from './helper';
-import { generateAddressKeyTokens, reformatAddressKey } from '../addressKeys';
-import { getSignedKeyList } from '../signedKeyList';
-import { createAddressKeyRouteV2 } from '../../api/keys';
-import { reactivateAddressKeysV2 } from '../reactivation/reactivateKeysProcessV2';
+import { Address, Api, DecryptedKey } from "../../interfaces";
+import { KeyImportData, OnKeyImportCallback } from "./interface";
+import {
+    getActiveKeyObject,
+    getActiveKeys,
+    getPrimaryFlag,
+} from "../getActiveKeys";
+import { getInactiveKeys } from "../getInactiveKeys";
+import { getFilteredImportRecords } from "./helper";
+import { generateAddressKeyTokens, reformatAddressKey } from "../addressKeys";
+import { getSignedKeyList } from "../signedKeyList";
+import { createAddressKeyRouteV2 } from "../../api/keys";
+import { reactivateAddressKeysV2 } from "../reactivation/reactivateKeysProcessV2";
 
 export interface ImportKeysProcessV2Arguments {
     api: Api;
@@ -28,17 +32,21 @@ const importKeysProcessV2 = async ({
     addressKeys,
     userKey,
 }: ImportKeysProcessV2Arguments) => {
-    const activeKeys = await getActiveKeys(address.SignedKeyList, address.Keys, addressKeys);
+    const activeKeys = await getActiveKeys(
+        address.SignedKeyList,
+        address.Keys,
+        addressKeys
+    );
     const inactiveKeys = await getInactiveKeys(address.Keys, activeKeys);
 
-    const [keysToReactivate, keysToImport, existingKeys] = getFilteredImportRecords(
-        keyImportRecords,
-        activeKeys,
-        inactiveKeys
-    );
+    const [
+        keysToReactivate,
+        keysToImport,
+        existingKeys,
+    ] = getFilteredImportRecords(keyImportRecords, activeKeys, inactiveKeys);
 
     existingKeys.forEach((keyImportRecord) => {
-        onImport(keyImportRecord.id, new Error('Key already active'));
+        onImport(keyImportRecord.id, new Error("Key already active"));
     });
 
     let mutableActiveKeys = activeKeys;
@@ -47,18 +55,28 @@ const importKeysProcessV2 = async ({
         try {
             const { privateKey } = keyImportRecord;
 
-            const { token, encryptedToken, signature } = await generateAddressKeyTokens(userKey);
+            const {
+                token,
+                encryptedToken,
+                signature,
+            } = await generateAddressKeyTokens(userKey);
 
-            const { privateKey: reformattedPrivateKey, privateKeyArmored } = await reformatAddressKey({
+            const {
+                privateKey: reformattedPrivateKey,
+                privateKeyArmored,
+            } = await reformatAddressKey({
                 email: address.Email,
                 passphrase: token,
                 privateKey,
             });
 
-            const newActiveKey = await getActiveKeyObject(reformattedPrivateKey, {
-                ID: 'tmp',
-                primary: getPrimaryFlag(mutableActiveKeys),
-            });
+            const newActiveKey = await getActiveKeyObject(
+                reformattedPrivateKey,
+                {
+                    ID: "tmp",
+                    primary: getPrimaryFlag(mutableActiveKeys),
+                }
+            );
             const updatedActiveKeys = [...mutableActiveKeys, newActiveKey];
             const SignedKeyList = await getSignedKeyList(updatedActiveKeys);
 
@@ -78,7 +96,7 @@ const importKeysProcessV2 = async ({
 
             mutableActiveKeys = updatedActiveKeys;
 
-            onImport(keyImportRecord.id, 'ok');
+            onImport(keyImportRecord.id, "ok");
         } catch (e) {
             onImport(keyImportRecord.id, e);
         }

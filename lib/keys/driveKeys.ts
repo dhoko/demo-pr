@@ -9,14 +9,14 @@ import {
     SHA256,
     OpenPGPKey,
     SessionKey,
-} from 'pmcrypto';
-import { openpgp } from 'pmcrypto/lib/openpgp';
-import { ReadableStream as PolyfillReadableStream } from 'web-streams-polyfill';
-import { createReadableStreamWrapper } from '@mattiasbuelens/web-streams-adapter';
-import { ENCRYPTION_CONFIGS, ENCRYPTION_TYPES } from '../constants';
-import { generatePassphrase } from './calendarKeys';
-import { createSessionKey, getEncryptedSessionKey } from '../calendar/encrypt';
-import { uint8ArrayToBase64String } from '../helpers/encoding';
+} from "pmcrypto";
+import { openpgp } from "pmcrypto/lib/openpgp";
+import { ReadableStream as PolyfillReadableStream } from "web-streams-polyfill";
+import { createReadableStreamWrapper } from "@mattiasbuelens/web-streams-adapter";
+import { ENCRYPTION_CONFIGS, ENCRYPTION_TYPES } from "../constants";
+import { generatePassphrase } from "./calendarKeys";
+import { createSessionKey, getEncryptedSessionKey } from "../calendar/encrypt";
+import { uint8ArrayToBase64String } from "../helpers/encoding";
 
 const toPolyfillReadable = createReadableStreamWrapper(PolyfillReadableStream);
 
@@ -25,7 +25,10 @@ interface UnsignedEncryptionPayload {
     publicKey: OpenPGPKey;
 }
 
-export const sign = async (data: string | Uint8Array, privateKeys: OpenPGPKey | OpenPGPKey[]) => {
+export const sign = async (
+    data: string | Uint8Array,
+    privateKeys: OpenPGPKey | OpenPGPKey[]
+) => {
     const { signature } = await signMessage({
         data,
         privateKeys,
@@ -35,7 +38,10 @@ export const sign = async (data: string | Uint8Array, privateKeys: OpenPGPKey | 
     return signature;
 };
 
-export const encryptUnsigned = async ({ message, publicKey }: UnsignedEncryptionPayload) => {
+export const encryptUnsigned = async ({
+    message,
+    publicKey,
+}: UnsignedEncryptionPayload) => {
     const { data: encryptedToken } = await encryptMessage({
         data: message,
         publicKeys: publicKey,
@@ -43,7 +49,11 @@ export const encryptUnsigned = async ({ message, publicKey }: UnsignedEncryption
     return encryptedToken as string;
 };
 
-export const encryptName = async (name: string, parentPublicKey: OpenPGPKey, addressPrivateKey: OpenPGPKey) => {
+export const encryptName = async (
+    name: string,
+    parentPublicKey: OpenPGPKey,
+    addressPrivateKey: OpenPGPKey
+) => {
     const { data: Name } = await encryptMessage({
         data: name,
         publicKeys: parentPublicKey,
@@ -53,8 +63,12 @@ export const encryptName = async (name: string, parentPublicKey: OpenPGPKey, add
     return Name;
 };
 
-export const getStreamMessage = (stream: ReadableStream<Uint8Array> | PolyfillReadableStream<Uint8Array>) => {
-    return openpgp.message.read(toPolyfillReadable(stream) as ReadableStream<Uint8Array>);
+export const getStreamMessage = (
+    stream: ReadableStream<Uint8Array> | PolyfillReadableStream<Uint8Array>
+) => {
+    return openpgp.message.read(
+        toPolyfillReadable(stream) as ReadableStream<Uint8Array>
+    );
 };
 
 interface UnsignedDecryptionPayload {
@@ -65,7 +79,10 @@ interface UnsignedDecryptionPayload {
 /**
  * Decrypts unsigned armored message, in the context of drive it's share's passphrase and folder's contents.
  */
-export const decryptUnsigned = async ({ armoredMessage, privateKey }: UnsignedDecryptionPayload) => {
+export const decryptUnsigned = async ({
+    armoredMessage,
+    privateKey,
+}: UnsignedDecryptionPayload) => {
     const { data: decryptedMessage } = await decryptMessage({
         message: await getMessage(armoredMessage),
         privateKeys: privateKey,
@@ -77,7 +94,7 @@ export const decryptUnsigned = async ({ armoredMessage, privateKey }: UnsignedDe
 export const generateDriveKey = async (rawPassphrase: string) => {
     const encryptionConfigs = ENCRYPTION_CONFIGS[ENCRYPTION_TYPES.X25519];
     const { key: privateKey, privateKeyArmored } = await generateKey({
-        userIds: [{ name: 'Drive key' }],
+        userIds: [{ name: "Drive key" }],
         passphrase: rawPassphrase,
         ...encryptionConfigs,
     });
@@ -89,15 +106,15 @@ export const generateDriveKey = async (rawPassphrase: string) => {
 
 export const generateLookupHash = async (name: string, hashKey: string) => {
     const key = await crypto.subtle.importKey(
-        'raw',
+        "raw",
         binaryStringToArray(hashKey),
-        { name: 'HMAC', hash: 'SHA-256' },
+        { name: "HMAC", hash: "SHA-256" },
         false,
-        ['sign', 'verify']
+        ["sign", "verify"]
     );
 
     const signature = await crypto.subtle.sign(
-        { name: 'HMAC', hash: { name: 'SHA-256' } },
+        { name: "HMAC", hash: { name: "SHA-256" } },
         key,
         binaryStringToArray(name)
     );
@@ -121,7 +138,11 @@ export const encryptPassphrase = async (
     rawPassphrase = generatePassphrase(),
     passphraseSessionKey?: SessionKey
 ) => {
-    const { data: NodePassphrase, signature: NodePassphraseSignature, sessionKey } = await encryptMessage({
+    const {
+        data: NodePassphrase,
+        signature: NodePassphraseSignature,
+        sessionKey,
+    } = await encryptMessage({
         data: rawPassphrase,
         privateKeys: addressKey,
         publicKeys: parentKey.toPublic(),
@@ -133,19 +154,31 @@ export const encryptPassphrase = async (
     return { NodePassphrase, NodePassphraseSignature, sessionKey };
 };
 
-export const generateNodeKeys = async (parentKey: OpenPGPKey, addressKey: OpenPGPKey = parentKey) => {
+export const generateNodeKeys = async (
+    parentKey: OpenPGPKey,
+    addressKey: OpenPGPKey = parentKey
+) => {
     const rawPassphrase = generatePassphrase();
     const [
         { NodePassphrase, NodePassphraseSignature, sessionKey },
         { privateKey, privateKeyArmored: NodeKey },
-    ] = await Promise.all([encryptPassphrase(parentKey, addressKey, rawPassphrase), generateDriveKey(rawPassphrase)]);
+    ] = await Promise.all([
+        encryptPassphrase(parentKey, addressKey, rawPassphrase),
+        generateDriveKey(rawPassphrase),
+    ]);
 
-    return { privateKey, NodeKey, NodePassphrase, NodePassphraseSignature, sessionKey };
+    return {
+        privateKey,
+        NodeKey,
+        NodePassphrase,
+        NodePassphraseSignature,
+        sessionKey,
+    };
 };
 
 export const generateContentHash = async (content: Uint8Array) => {
     const data = await SHA256(content);
-    return { HashType: 'sha256', BlockHash: data };
+    return { HashType: "sha256", BlockHash: data };
 };
 
 export const generateContentKeys = async (nodeKey: OpenPGPKey) => {
@@ -171,7 +204,11 @@ export const generateDriveBootstrap = async (addressPrivateKey: OpenPGPKey) => {
         NodePassphraseSignature: FolderPassphraseSignature,
     } = await generateNodeKeys(sharePrivateKey, addressPrivateKey);
 
-    const FolderName = await encryptName('root', sharePrivateKey.toPublic(), addressPrivateKey);
+    const FolderName = await encryptName(
+        "root",
+        sharePrivateKey.toPublic(),
+        addressPrivateKey
+    );
 
     return {
         bootstrap: {

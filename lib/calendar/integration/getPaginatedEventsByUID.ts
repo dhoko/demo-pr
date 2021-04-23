@@ -1,6 +1,6 @@
-import { getEventByUID } from '../../api/calendars';
-import { Api } from '../../interfaces';
-import { CalendarEventWithMetadata } from '../../interfaces/calendar';
+import { getEventByUID } from "../../api/calendars";
+import { Api } from "../../interfaces";
+import { CalendarEventWithMetadata } from "../../interfaces/calendar";
 
 const MAX_ITERATIONS = 100;
 

@@ -1,8 +1,8 @@
-import getRandomValues from 'get-random-values';
+import getRandomValues from "get-random-values";
 
 // Not using openpgp to allow using this without having to depend on openpgp being loaded
-import { uint8ArrayToString, stringToUint8Array } from './encoding';
-import { hasStorage as hasSessionStorage } from './sessionStorage';
+import { uint8ArrayToString, stringToUint8Array } from "./encoding";
+import { hasStorage as hasSessionStorage } from "./sessionStorage";
 
 /**
  * Partially inspired by http://www.thomasfrank.se/sessionvars.html
@@ -80,7 +80,10 @@ const readSessionStorage = (keys: string[] = []) => {
     }, {});
 };
 
-const mergePart = (serializedA: string | undefined, serializedB: string | undefined) => {
+const mergePart = (
+    serializedA: string | undefined,
+    serializedB: string | undefined
+) => {
     const a = deserializeItem(serializedA);
     const b = deserializeItem(serializedB);
     if (a === undefined || b === undefined || a.length !== b.length) {
@@ -125,7 +128,10 @@ const separatePart = (value: string) => {
 };
 
 export const separateParts = (data: any) =>
-    Object.keys(data).reduce<{ share1: { [key: string]: any }; share2: { [key: string]: any } }>(
+    Object.keys(data).reduce<{
+        share1: { [key: string]: any };
+        share2: { [key: string]: any };
+    }>(
         (acc, key) => {
             const value = data[key];
             if (value === undefined) {
@@ -156,14 +162,14 @@ export const load = (keys: string[]) => {
     }
 
     const nameStorage = deserialize(window.name);
-    window.name = '';
+    window.name = "";
 
     const sessionData = readSessionStorage(keys);
 
     return mergeParts(nameStorage, sessionData);
 };
 
-const SESSION_STORAGE_KEY = 'proton:storage';
+const SESSION_STORAGE_KEY = "proton:storage";
 export const save2 = (data: any) => {
     if (!hasSessionStorage()) {
         return;
@@ -179,10 +185,10 @@ export const load2 = () => {
     }
     try {
         const share1 = deserialize(window.name);
-        const share2 = window.sessionStorage.getItem(SESSION_STORAGE_KEY) || '';
-        window.name = '';
+        const share2 = window.sessionStorage.getItem(SESSION_STORAGE_KEY) || "";
+        window.name = "";
         window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
-        const string = mergePart(share1, share2) || '';
+        const string = mergePart(share1, share2) || "";
         const parsedValue = JSON.parse(string) || {};
         if (parsedValue === Object(parsedValue)) {
             return parsedValue;

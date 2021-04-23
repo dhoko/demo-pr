@@ -1,10 +1,10 @@
-import { OpenPGPKey } from 'pmcrypto';
-import { ActiveKey, Address, Api, EncryptionConfig } from '../../interfaces';
-import { createAddressKeyRoute, createAddressKeyRouteV2 } from '../../api/keys';
-import { DEFAULT_ENCRYPTION_CONFIG, ENCRYPTION_CONFIGS } from '../../constants';
-import { generateAddressKey, generateAddressKeyTokens } from '../addressKeys';
-import { getActiveKeyObject, getPrimaryFlag } from '../getActiveKeys';
-import { getSignedKeyList } from '../signedKeyList';
+import { OpenPGPKey } from "pmcrypto";
+import { ActiveKey, Address, Api, EncryptionConfig } from "../../interfaces";
+import { createAddressKeyRoute, createAddressKeyRouteV2 } from "../../api/keys";
+import { DEFAULT_ENCRYPTION_CONFIG, ENCRYPTION_CONFIGS } from "../../constants";
+import { generateAddressKey, generateAddressKeyTokens } from "../addressKeys";
+import { getActiveKeyObject, getPrimaryFlag } from "../getActiveKeys";
+import { getSignedKeyList } from "../signedKeyList";
 
 interface CreateAddressKeyLegacyArguments {
     api: Api;
@@ -26,7 +26,10 @@ export const createAddressKeyLegacy = async ({
         passphrase,
         encryptionConfig,
     });
-    const newActiveKey = await getActiveKeyObject(privateKey, { ID: 'tmp', primary: getPrimaryFlag(activeKeys) });
+    const newActiveKey = await getActiveKeyObject(privateKey, {
+        ID: "tmp",
+        primary: getPrimaryFlag(activeKeys),
+    });
     const updatedActiveKeys = [...activeKeys, newActiveKey];
     const SignedKeyList = await getSignedKeyList(updatedActiveKeys);
 
@@ -58,13 +61,18 @@ export const createAddressKeyV2 = async ({
     address,
     activeKeys,
 }: CreateAddressKeyV2Arguments) => {
-    const { token, encryptedToken, signature } = await generateAddressKeyTokens(userKey);
+    const { token, encryptedToken, signature } = await generateAddressKeyTokens(
+        userKey
+    );
     const { privateKey, privateKeyArmored } = await generateAddressKey({
         email: address.Email,
         passphrase: token,
         encryptionConfig,
     });
-    const newActiveKey = await getActiveKeyObject(privateKey, { ID: 'tmp', primary: getPrimaryFlag(activeKeys) });
+    const newActiveKey = await getActiveKeyObject(privateKey, {
+        ID: "tmp",
+        primary: getPrimaryFlag(activeKeys),
+    });
     const updatedActiveKeys = [...activeKeys, newActiveKey];
     const SignedKeyList = await getSignedKeyList(updatedActiveKeys);
 

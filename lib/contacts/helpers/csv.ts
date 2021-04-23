@@ -1,16 +1,16 @@
-import Papa from 'papaparse';
+import Papa from "papaparse";
 
-import isTruthy from '../../helpers/isTruthy';
-import { ContactProperties } from '../../interfaces/contacts';
-import { sortByPref } from '../properties';
+import isTruthy from "../../helpers/isTruthy";
+import { ContactProperties } from "../../interfaces/contacts";
+import { sortByPref } from "../properties";
 import {
     ContactPropertyWithDisplay,
     ParsedCsvContacts,
     PreVcardProperty,
     PreVcardsContact,
     PreVcardsProperty,
-} from '../../interfaces/contacts/Import';
-import { standarize, combine, display, toPreVcard } from './csvFormat';
+} from "../../interfaces/contacts/Import";
+import { standarize, combine, display, toPreVcard } from "./csvFormat";
 
 interface PapaParseOnCompleteArgs {
     data?: string[][];
@@ -23,27 +23,36 @@ interface PapaParseOnCompleteArgs {
  * @dev  contacts[i][j] : value for property headers[j] of contact i
  */
 export const readCsv = async (file: File) => {
-    const { headers, contacts, errors }: { headers: string[]; contacts: string[][]; errors: any[] } = await new Promise(
-        (resolve, reject) => {
-            const onComplete = ({ data = [], errors = [] }: PapaParseOnCompleteArgs = {}) =>
-                resolve({ headers: data[0], contacts: data.slice(1), errors });
-            Papa.parse(file, {
-                header: false,
-                /*
+    const {
+        headers,
+        contacts,
+        errors,
+    }: {
+        headers: string[];
+        contacts: string[][];
+        errors: any[];
+    } = await new Promise((resolve, reject) => {
+        const onComplete = ({
+            data = [],
+            errors = [],
+        }: PapaParseOnCompleteArgs = {}) =>
+            resolve({ headers: data[0], contacts: data.slice(1), errors });
+        Papa.parse(file, {
+            header: false,
+            /*
                 If true, the first row of parsed data will be interpreted as field names. An array of field names will be returned in meta,
                 and each row of data will be an object of values keyed by field name instead of a simple array.
                 Rows with a different number of fields from the header row will produce an error.
             */
-                dynamicTyping: false, // If true, numeric and Boolean data will be converted to their type instead of remaining strings.
-                complete: onComplete,
-                error: reject,
-                skipEmptyLines: true, // If true, lines that are completely empty will be skipped. An empty line is defined to be one which evaluates to empty string.
-            });
-        }
-    );
+            dynamicTyping: false, // If true, numeric and Boolean data will be converted to their type instead of remaining strings.
+            complete: onComplete,
+            error: reject,
+            skipEmptyLines: true, // If true, lines that are completely empty will be skipped. An empty line is defined to be one which evaluates to empty string.
+        });
+    });
 
     if (errors.length) {
-        throw new Error('Error when reading csv file');
+        throw new Error("Error when reading csv file");
     }
 
     // we have to manually correct Papa.parse which can return headers and contacts of different length
@@ -66,11 +75,15 @@ export const readCsv = async (file: File) => {
  * @dev  Some csv property may be assigned to several pre-vCard contacts,
  *       so an array of new headers is returned together with the pre-vCard contacts
  */
-const parse = ({ headers = [], contacts = [] }: ParsedCsvContacts): PreVcardsProperty[] => {
+const parse = ({
+    headers = [],
+    contacts = [],
+}: ParsedCsvContacts): PreVcardsProperty[] => {
     if (!contacts.length) {
         return [];
     }
-    const { headers: enrichedHeaders, contacts: standardContacts } = standarize({ headers, contacts }) || {};
+    const { headers: enrichedHeaders, contacts: standardContacts } =
+        standarize({ headers, contacts }) || {};
     if (!enrichedHeaders?.length || !standardContacts?.length) {
         return [];
     }
@@ -139,7 +152,9 @@ export const prepare = ({ headers = [], contacts = [] }: ParsedCsvContacts) => {
         });
     }
     for (const index of nonCombined) {
-        preparedPreVcardContacts.forEach((contact, k) => contact.push([preVcardContacts[k][index]]));
+        preparedPreVcardContacts.forEach((contact, k) =>
+            contact.push([preVcardContacts[k][index]])
+        );
     }
 
     return preparedPreVcardContacts;
@@ -151,18 +166,36 @@ export const prepare = ({ headers = [], contacts = [] }: ParsedCsvContacts) => {
  *
  * @return {Object}             vCard property
  */
-export const toVcard = (preVcards: PreVcardProperty[]): ContactPropertyWithDisplay | undefined => {
+export const toVcard = (
+    preVcards: PreVcardProperty[]
+): ContactPropertyWithDisplay | undefined => {
     if (!preVcards.length) {
         return;
     }
     const { pref, field, type, custom } = preVcards[0];
     return custom
-        ? { pref, field, type, value: combine.custom(preVcards), display: display.custom(preVcards) }
-        : { pref, field, type, value: combine[field](preVcards), display: display[field](preVcards) };
+        ? {
+              pref,
+              field,
+              type,
+              value: combine.custom(preVcards),
+              display: display.custom(preVcards),
+          }
+        : {
+              pref,
+              field,
+              type,
+              value: combine[field](preVcards),
+              display: display[field](preVcards),
+          };
 };
 
 /**
  * Transform pre-vCards contacts into vCard contacts
  */
-export const toVcardContacts = (preVcardsContacts: PreVcardsContact[]): ContactProperties[] =>
-    preVcardsContacts.map((preVcardsContact) => preVcardsContact.map(toVcard).filter(isTruthy).sort(sortByPref));
+export const toVcardContacts = (
+    preVcardsContacts: PreVcardsContact[]
+): ContactProperties[] =>
+    preVcardsContacts.map((preVcardsContact) =>
+        preVcardsContact.map(toVcard).filter(isTruthy).sort(sortByPref)
+    );

@@ -1,14 +1,18 @@
-import { algorithmInfo } from 'pmcrypto';
-import { EncryptionConfig } from '../interfaces';
+import { algorithmInfo } from "pmcrypto";
+import { EncryptionConfig } from "../interfaces";
 
-const NON_ABBREVIATION_ALGS = ['elgamal'];
-const ECC_ALGS = ['ecdh', 'ecdsa', 'eddsa'];
+const NON_ABBREVIATION_ALGS = ["elgamal"];
+const ECC_ALGS = ["ecdh", "ecdsa", "eddsa"];
 
-export const isRSA = (algorithmName = '') => algorithmName.toLowerCase().startsWith('rsa');
-export const isECC = (algorithmName = '') => ECC_ALGS.includes(algorithmName.toLowerCase());
+export const isRSA = (algorithmName = "") =>
+    algorithmName.toLowerCase().startsWith("rsa");
+export const isECC = (algorithmName = "") =>
+    ECC_ALGS.includes(algorithmName.toLowerCase());
 
-export const getFormattedAlgorithmName = ({ algorithm = '', bits, curve }: algorithmInfo = { algorithm: '' }) => {
-    const [name] = algorithm.split('_');
+export const getFormattedAlgorithmName = (
+    { algorithm = "", bits, curve }: algorithmInfo = { algorithm: "" }
+) => {
+    const [name] = algorithm.split("_");
 
     if (isECC(name)) {
         return `ECC (${curve})`;
@@ -21,7 +25,10 @@ export const getFormattedAlgorithmName = ({ algorithm = '', bits, curve }: algor
     return `${formattedName} (${bits})`;
 };
 
-export const getAlgorithmExists = (algorithmInfos: algorithmInfo[] = [], encryptionConfig: EncryptionConfig) => {
+export const getAlgorithmExists = (
+    algorithmInfos: algorithmInfo[] = [],
+    encryptionConfig: EncryptionConfig
+) => {
     return algorithmInfos.some(({ algorithm, curve, bits }) => {
         if (isECC(algorithm)) {
             return curve === encryptionConfig.curve;

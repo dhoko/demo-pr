@@ -1,7 +1,12 @@
-import { addDays, isNextDay } from '../date-fns-utc';
-import { convertUTCDateTimeToZone, convertZonedDateTimeToUTC, fromUTCDate, toUTCDate } from '../date/timezone';
-import { buildMailTo, canonizeEmail, getEmailTo } from '../helpers/email';
-import { mod } from '../helpers/math';
+import { addDays, isNextDay } from "../date-fns-utc";
+import {
+    convertUTCDateTimeToZone,
+    convertZonedDateTimeToUTC,
+    fromUTCDate,
+    toUTCDate,
+} from "../date/timezone";
+import { buildMailTo, canonizeEmail, getEmailTo } from "../helpers/email";
+import { mod } from "../helpers/math";
 import {
     VcalAttendeeProperty,
     VcalDateOrDateTimeProperty,
@@ -14,10 +19,10 @@ import {
     VcalVeventComponent,
     Participant,
     DateTime,
-} from '../interfaces/calendar';
+} from "../interfaces/calendar";
 
-import { getAttendeeEmail } from './attendees';
-import { getIsPropertyAllDay, getPropertyTzid } from './vcalHelper';
+import { getAttendeeEmail } from "./attendees";
+import { getIsPropertyAllDay, getPropertyTzid } from "./vcalHelper";
 
 export const dateToProperty = ({
     year = 1,
@@ -30,12 +35,19 @@ export const dateToProperty = ({
 }): VcalDateProperty => {
     return {
         value: { year, month, day },
-        parameters: { type: 'date' },
+        parameters: { type: "date" },
     };
 };
 
 export const dateTimeToProperty = (
-    { year = 1, month = 1, day = 1, hours = 0, minutes = 0, seconds = 0 }: DateTime,
+    {
+        year = 1,
+        month = 1,
+        day = 1,
+        hours = 0,
+        minutes = 0,
+        seconds = 0,
+    }: DateTime,
     isUTC = false,
     tzid?: string
 ): VcalDateTimeProperty => {
@@ -53,16 +65,27 @@ export const dateTimeToProperty = (
     };
 };
 
-export const getDateProperty = ({ year, month, day }: { year: number; month: number; day: number }) => {
+export const getDateProperty = ({
+    year,
+    month,
+    day,
+}: {
+    year: number;
+    month: number;
+    day: number;
+}) => {
     return dateToProperty({ year, month, day });
 };
 
-export const getDateTimeProperty = (zonelessTime: DateTime, tzid = '') => {
-    const isUTC = (tzid || '').toLowerCase().includes('utc');
+export const getDateTimeProperty = (zonelessTime: DateTime, tzid = "") => {
+    const isUTC = (tzid || "").toLowerCase().includes("utc");
     return dateTimeToProperty(zonelessTime, isUTC, isUTC ? undefined : tzid);
 };
 
-export const getDateOrDateTimeProperty = (property: VcalDateOrDateTimeProperty, start: Date) => {
+export const getDateOrDateTimeProperty = (
+    property: VcalDateOrDateTimeProperty,
+    start: Date
+) => {
     if (getIsPropertyAllDay(property)) {
         return getDateProperty(fromUTCDate(start));
     }
@@ -70,11 +93,17 @@ export const getDateOrDateTimeProperty = (property: VcalDateOrDateTimeProperty, 
 };
 
 export const propertyToUTCDate = (property: VcalDateOrDateTimeProperty) => {
-    if (getIsPropertyAllDay(property) || property.value.isUTC || !property.parameters?.tzid) {
+    if (
+        getIsPropertyAllDay(property) ||
+        property.value.isUTC ||
+        !property.parameters?.tzid
+    ) {
         return toUTCDate(property.value);
     }
     // For dates with a timezone, convert the relative date time to UTC time
-    return toUTCDate(convertZonedDateTimeToUTC(property.value, property.parameters.tzid));
+    return toUTCDate(
+        convertZonedDateTimeToUTC(property.value, property.parameters.tzid)
+    );
 };
 
 interface GetDtendPropertyArgs {
@@ -116,7 +145,10 @@ export const getDateTimePropertyInDifferentTimezone = (
     return getDateTimeProperty(zonedDate, tzid);
 };
 
-export const getAllDayInfo = (dtstart: VcalDateOrDateTimeProperty, dtend?: VcalDateOrDateTimeProperty) => {
+export const getAllDayInfo = (
+    dtstart: VcalDateOrDateTimeProperty,
+    dtend?: VcalDateOrDateTimeProperty
+) => {
     const isAllDay = getIsPropertyAllDay(dtstart);
     if (!isAllDay) {
         return { isAllDay: false, isSingleAllDay: false };
@@ -128,7 +160,12 @@ export const getAllDayInfo = (dtstart: VcalDateOrDateTimeProperty, dtend?: VcalD
     const fakeUTCStart = toUTCDate(dtstart.value);
     const fakeUTCEnd = toUTCDate(dtend.value);
     // account for non-RFC-compliant all-day events with DTSTART = DTEND
-    return { isAllDay: true, isSingleAllDay: isNextDay(fakeUTCStart, fakeUTCEnd) || +fakeUTCStart === +fakeUTCEnd };
+    return {
+        isAllDay: true,
+        isSingleAllDay:
+            isNextDay(fakeUTCStart, fakeUTCEnd) ||
+            +fakeUTCStart === +fakeUTCEnd,
+    };
 };
 
 export interface UntilDateArgument {
@@ -139,7 +176,7 @@ export interface UntilDateArgument {
 export const getUntilProperty = (
     untilDateTime: UntilDateArgument,
     isAllDay: boolean,
-    tzid = 'UTC'
+    tzid = "UTC"
 ): VcalDateOrDateTimeValue => {
     // According to the RFC, we should use UTC dates if and only if the event is not all-day.
     if (isAllDay) {
@@ -151,12 +188,20 @@ export const getUntilProperty = (
         };
     }
     // Pick end of day in the event start date timezone
-    const zonedEndOfDay = { ...untilDateTime, hours: 23, minutes: 59, seconds: 59 };
+    const zonedEndOfDay = {
+        ...untilDateTime,
+        hours: 23,
+        minutes: 59,
+        seconds: 59,
+    };
     const utcEndOfDay = convertZonedDateTimeToUTC(zonedEndOfDay, tzid);
     return { ...utcEndOfDay, isUTC: true };
 };
 
-export const extractEmailAddress = ({ value, parameters }: VcalAttendeeProperty | VcalOrganizerProperty) => {
+export const extractEmailAddress = ({
+    value,
+    parameters,
+}: VcalAttendeeProperty | VcalOrganizerProperty) => {
     const email = value || parameters?.cn;
     return email && getEmailTo(email);
 };
@@ -179,7 +224,10 @@ export const buildVcalAttendee = (email: string) => {
     };
 };
 
-export const getHasModifiedDtstamp = (newVevent: VcalVeventComponent, oldVevent: VcalVeventComponent) => {
+export const getHasModifiedDtstamp = (
+    newVevent: VcalVeventComponent,
+    oldVevent: VcalVeventComponent
+) => {
     const { dtstamp: newDtstamp } = newVevent;
     const { dtstamp: oldDtstamp } = oldVevent;
     if (!newDtstamp || !oldDtstamp) {
@@ -188,16 +236,24 @@ export const getHasModifiedDtstamp = (newVevent: VcalVeventComponent, oldVevent:
     return +propertyToUTCDate(newDtstamp) !== +propertyToUTCDate(oldDtstamp);
 };
 
-export const getHasModifiedDateTimes = (newVevent: VcalVeventComponent, oldVevent: VcalVeventComponent) => {
+export const getHasModifiedDateTimes = (
+    newVevent: VcalVeventComponent,
+    oldVevent: VcalVeventComponent
+) => {
     const { dtstart: newDtstart } = newVevent;
     const { dtstart: oldDtstart } = oldVevent;
-    const isStartPreserved = +propertyToUTCDate(newDtstart) === +propertyToUTCDate(oldDtstart);
+    const isStartPreserved =
+        +propertyToUTCDate(newDtstart) === +propertyToUTCDate(oldDtstart);
     const isEndPreserved =
-        +propertyToUTCDate(getDtendProperty(newVevent)) === +propertyToUTCDate(getDtendProperty(oldVevent));
+        +propertyToUTCDate(getDtendProperty(newVevent)) ===
+        +propertyToUTCDate(getDtendProperty(oldVevent));
     return !isStartPreserved || !isEndPreserved;
 };
 
-const getIsEquivalentAttendee = (newAttendee: VcalAttendeeProperty, oldAttendee: VcalAttendeeProperty) => {
+const getIsEquivalentAttendee = (
+    newAttendee: VcalAttendeeProperty,
+    oldAttendee: VcalAttendeeProperty
+) => {
     if (newAttendee.value !== oldAttendee.value) {
         return false;
     }
@@ -231,16 +287,22 @@ export const getHasModifiedAttendees = ({
     }
     // We check if attendees other than the invitation attendees have been modified
     const otherAttendeesIcs = attendeesIcs.filter(
-        (attendee) => canonizeEmail(getAttendeeEmail(attendee)) !== canonizeEmail(attendeeIcs.emailAddress)
+        (attendee) =>
+            canonizeEmail(getAttendeeEmail(attendee)) !==
+            canonizeEmail(attendeeIcs.emailAddress)
     );
     const otherAttendeesApi = attendeesApi.filter(
-        (attendee) => canonizeEmail(getAttendeeEmail(attendee)) !== canonizeEmail(attendeeApi.emailAddress)
+        (attendee) =>
+            canonizeEmail(getAttendeeEmail(attendee)) !==
+            canonizeEmail(attendeeApi.emailAddress)
     );
     return otherAttendeesIcs.reduce((acc, attendee) => {
         if (acc === true) {
             return true;
         }
-        const index = otherAttendeesApi.findIndex((oldAttendee) => getIsEquivalentAttendee(oldAttendee, attendee));
+        const index = otherAttendeesApi.findIndex((oldAttendee) =>
+            getIsEquivalentAttendee(oldAttendee, attendee)
+        );
         if (index === -1) {
             return true;
         }

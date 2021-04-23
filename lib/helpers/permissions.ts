@@ -1,4 +1,4 @@
-import { PERMISSIONS } from '../constants';
+import { PERMISSIONS } from "../constants";
 
 export const hasPermission = (
     userPermissions: PERMISSIONS[],

@@ -1,4 +1,8 @@
-import { AddressKeyPayload, AddressKeyPayloadV2, SignedKeyList } from '../interfaces';
+import {
+    AddressKeyPayload,
+    AddressKeyPayloadV2,
+    SignedKeyList,
+} from "../interfaces";
 
 interface GetPublicKeysParams {
     Email: string;
@@ -6,14 +10,14 @@ interface GetPublicKeysParams {
 }
 
 export const getPublicKeys = (params: GetPublicKeysParams) => ({
-    url: 'keys',
-    method: 'get',
+    url: "keys",
+    method: "get",
     params,
 });
 
 export const getKeySalts = () => ({
-    url: 'keys/salts',
-    method: 'get',
+    url: "keys/salts",
+    method: "get",
 });
 
 interface CreateAddressKeyPayload {
@@ -24,8 +28,8 @@ interface CreateAddressKeyPayload {
 }
 
 export const createAddressKeyRoute = (data: CreateAddressKeyPayload) => ({
-    url: 'keys',
-    method: 'post',
+    url: "keys",
+    method: "post",
     data,
 });
 
@@ -35,8 +39,8 @@ interface CreateAddressKeyPayloadV2 extends CreateAddressKeyPayload {
 }
 
 export const createAddressKeyRouteV2 = (data: CreateAddressKeyPayloadV2) => ({
-    url: 'keys/address',
-    method: 'post',
+    url: "keys/address",
+    method: "post",
     data,
 });
 
@@ -47,8 +51,8 @@ interface SetupKeysPayload {
 }
 
 export const setupKeys = (data: SetupKeysPayload) => ({
-    url: 'keys/setup',
-    method: 'post',
+    url: "keys/setup",
+    method: "post",
     data,
 });
 
@@ -60,7 +64,7 @@ interface ActivateKeyPayload {
 
 export const activateKeyRoute = ({ ID, ...data }: ActivateKeyPayload) => ({
     url: `keys/${ID}/activate`,
-    method: 'put',
+    method: "put",
     data,
 });
 
@@ -71,13 +75,16 @@ interface ActivateKeyPayloadV2 extends ActivateKeyPayload {
 
 export const activateKeyRouteV2 = ({ ID, ...data }: ActivateKeyPayloadV2) => ({
     url: `keys/address/${ID}/activate`,
-    method: 'put',
+    method: "put",
     data,
 });
 
-export const reactiveLegacyAddressKeyRouteV2 = ({ ID, ...data }: ActivateKeyPayloadV2) => ({
+export const reactiveLegacyAddressKeyRouteV2 = ({
+    ID,
+    ...data
+}: ActivateKeyPayloadV2) => ({
     url: `keys/address/${ID}`,
-    method: 'put',
+    method: "put",
     data,
 });
 
@@ -87,9 +94,13 @@ interface ReactivateKeyPayload {
     SignedKeyList?: SignedKeyList;
 }
 
-export const reactivateKeyRoute = ({ ID, PrivateKey, SignedKeyList }: ReactivateKeyPayload) => ({
+export const reactivateKeyRoute = ({
+    ID,
+    PrivateKey,
+    SignedKeyList,
+}: ReactivateKeyPayload) => ({
     url: `keys/${ID}`,
-    method: 'put',
+    method: "put",
     data: {
         PrivateKey,
         SignedKeyList,
@@ -105,9 +116,12 @@ interface ReactivateUserKeyPayloadV2 {
     };
 }
 
-export const reactivateUserKeyRouteV2 = ({ ID, ...data }: ReactivateUserKeyPayloadV2) => ({
+export const reactivateUserKeyRouteV2 = ({
+    ID,
+    ...data
+}: ReactivateUserKeyPayloadV2) => ({
     url: `keys/user/${ID}`,
-    method: 'put',
+    method: "put",
     data,
 });
 
@@ -118,7 +132,7 @@ interface SetKeyPrimaryPayload {
 
 export const setKeyPrimaryRoute = ({ ID, ...data }: SetKeyPrimaryPayload) => ({
     url: `keys/${ID}/primary`,
-    method: 'put',
+    method: "put",
     data,
 });
 
@@ -130,7 +144,7 @@ interface SetKeyFlagsPayload {
 
 export const setKeyFlagsRoute = ({ ID, ...data }: SetKeyFlagsPayload) => ({
     url: `keys/${ID}/flags`,
-    method: 'put',
+    method: "put",
     data,
 });
 
@@ -141,7 +155,7 @@ interface RemoveKeyPayload {
 
 export const removeKeyRoute = ({ ID, ...data }: RemoveKeyPayload) => ({
     url: `keys/${ID}/delete`,
-    method: 'put',
+    method: "put",
     data,
 });
 
@@ -157,9 +171,11 @@ export interface UpdatePrivateKeyPayloadV2 {
     OrganizationKey?: string;
 }
 
-export const updatePrivateKeyRoute = (data: UpdatePrivateKeyPayload | UpdatePrivateKeyPayloadV2) => ({
-    url: 'keys/private',
-    method: 'put',
+export const updatePrivateKeyRoute = (
+    data: UpdatePrivateKeyPayload | UpdatePrivateKeyPayloadV2
+) => ({
+    url: "keys/private",
+    method: "put",
     data,
 });
 
@@ -179,9 +195,11 @@ export interface ResetKeysPayloadV2 extends ResetKeysPayload {
     AddressKeys: AddressKeyPayloadV2[];
 }
 
-export const resetKeysRoute = (data: ResetKeysPayloadWithKeys | ResetKeysPayloadV2 | ResetKeysPayload) => ({
-    url: 'keys/reset',
-    method: 'post',
+export const resetKeysRoute = (
+    data: ResetKeysPayloadWithKeys | ResetKeysPayloadV2 | ResetKeysPayload
+) => ({
+    url: "keys/reset",
+    method: "post",
     data,
 });
 
@@ -213,8 +231,10 @@ interface UpgradeKeysPayloadV2 {
     };
 }
 
-export const upgradeKeysRoute = (data: UpgradeKeysPayload | UpgradeKeysPayloadV2) => ({
-    url: 'keys/private/upgrade',
-    method: 'post',
+export const upgradeKeysRoute = (
+    data: UpgradeKeysPayload | UpgradeKeysPayloadV2
+) => ({
+    url: "keys/private/upgrade",
+    method: "post",
     data,
 });

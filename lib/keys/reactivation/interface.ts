@@ -1,6 +1,6 @@
-import { OpenPGPKey } from 'pmcrypto';
+import { OpenPGPKey } from "pmcrypto";
 
-import { Address, DecryptedKey, Key, User } from '../../interfaces';
+import { Address, DecryptedKey, Key, User } from "../../interfaces";
 
 export interface KeyReactivationData {
     id: string;
@@ -22,4 +22,7 @@ export type KeyReactivationRecord =
           keysToReactivate: KeyReactivationData[];
       };
 
-export type OnKeyReactivationCallback = (id: string, result: 'ok' | Error) => void;
+export type OnKeyReactivationCallback = (
+    id: string,
+    result: "ok" | Error
+) => void;

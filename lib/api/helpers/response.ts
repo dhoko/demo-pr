@@ -1,4 +1,4 @@
-import { API_CODES } from '../../constants';
+import { API_CODES } from "../../constants";
 
 const { GLOBAL_SUCCESS, SINGLE_SUCCESS } = API_CODES;
 

@@ -1,5 +1,5 @@
-import { runChunksDelayed } from '../../helpers/promise';
-import { chunk } from '../../helpers/array';
+import { runChunksDelayed } from "../../helpers/promise";
+import { chunk } from "../../helpers/array";
 
 interface Arguments<T> {
     requestPage: (page: number) => Promise<T>;
@@ -19,7 +19,10 @@ const queryPagesThrottled = async <T extends { Total: number }>({
     const pages = Array.from({ length: n }, (a, i) => i + 1);
     const chunks = chunk(pages, pagesPerChunk);
 
-    const restPages = chunks.length > 0 ? await runChunksDelayed(chunks, requestPage, delayPerChunk) : [];
+    const restPages =
+        chunks.length > 0
+            ? await runChunksDelayed(chunks, requestPage, delayPerChunk)
+            : [];
 
     return [firstPage].concat(restPages);
 };

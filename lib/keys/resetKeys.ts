@@ -1,14 +1,19 @@
-import { DEFAULT_ENCRYPTION_CONFIG, ENCRYPTION_CONFIGS } from '../constants';
-import { Address, AddressKeyPayload, AddressKeyPayloadV2, EncryptionConfig } from '../interfaces';
-import { generateAddressKey, generateAddressKeyTokens } from './addressKeys';
-import { getSignedKeyList } from './signedKeyList';
-import { getDefaultKeyFlags } from './keyFlags';
-import { generateUserKey } from './userKeys';
-import { getActiveKeyObject } from './getActiveKeys';
+import { DEFAULT_ENCRYPTION_CONFIG, ENCRYPTION_CONFIGS } from "../constants";
+import {
+    Address,
+    AddressKeyPayload,
+    AddressKeyPayloadV2,
+    EncryptionConfig,
+} from "../interfaces";
+import { generateAddressKey, generateAddressKeyTokens } from "./addressKeys";
+import { getSignedKeyList } from "./signedKeyList";
+import { getDefaultKeyFlags } from "./keyFlags";
+import { generateUserKey } from "./userKeys";
+import { getActiveKeyObject } from "./getActiveKeys";
 
 export const getResetAddressesKeys = async ({
     addresses = [],
-    passphrase = '',
+    passphrase = "",
     encryptionConfig = ENCRYPTION_CONFIGS[DEFAULT_ENCRYPTION_CONFIG],
 }: {
     addresses: Address[];
@@ -32,7 +37,7 @@ export const getResetAddressesKeys = async ({
             });
 
             const newPrimaryKey = await getActiveKeyObject(privateKey, {
-                ID: 'tmp',
+                ID: "tmp",
                 primary: 1,
                 flags: getDefaultKeyFlags(),
             });
@@ -46,12 +51,15 @@ export const getResetAddressesKeys = async ({
         })
     );
 
-    return { userKeyPayload: addressKeysPayload[0].PrivateKey, addressKeysPayload };
+    return {
+        userKeyPayload: addressKeysPayload[0].PrivateKey,
+        addressKeysPayload,
+    };
 };
 
 export const getResetAddressesKeysV2 = async ({
     addresses = [],
-    passphrase = '',
+    passphrase = "",
     encryptionConfig = ENCRYPTION_CONFIGS[DEFAULT_ENCRYPTION_CONFIG],
 }: {
     addresses: Address[];
@@ -64,7 +72,10 @@ export const getResetAddressesKeysV2 = async ({
     if (!addresses.length) {
         return { userKeyPayload: undefined, addressKeysPayload: undefined };
     }
-    const { privateKey: userKey, privateKeyArmored: userKeyPayload } = await generateUserKey({
+    const {
+        privateKey: userKey,
+        privateKeyArmored: userKeyPayload,
+    } = await generateUserKey({
         passphrase,
         encryptionConfig,
     });
@@ -73,7 +84,11 @@ export const getResetAddressesKeysV2 = async ({
         addresses.map(async (address) => {
             const { ID: AddressID, Email } = address;
 
-            const { token, encryptedToken, signature } = await generateAddressKeyTokens(userKey);
+            const {
+                token,
+                encryptedToken,
+                signature,
+            } = await generateAddressKeyTokens(userKey);
 
             const { privateKey, privateKeyArmored } = await generateAddressKey({
                 email: Email,
@@ -82,7 +97,7 @@ export const getResetAddressesKeysV2 = async ({
             });
 
             const newPrimaryKey = await getActiveKeyObject(privateKey, {
-                ID: 'tmp',
+                ID: "tmp",
                 primary: 1,
                 flags: getDefaultKeyFlags(),
             });

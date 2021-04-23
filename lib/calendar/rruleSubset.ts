@@ -1,12 +1,20 @@
-import { convertZonedDateTimeToUTC, fromUTCDate, toUTCDate } from '../date/timezone';
-import { VcalVeventComponent } from '../interfaces/calendar';
-import { getOccurrences, getOccurrencesBetween, RecurringResult } from './recurring';
-import { getIsRruleEqual } from './rruleEqual';
-import { propertyToUTCDate } from './vcalConverter';
-import { getIsAllDay, getPropertyTzid } from './vcalHelper';
+import {
+    convertZonedDateTimeToUTC,
+    fromUTCDate,
+    toUTCDate,
+} from "../date/timezone";
+import { VcalVeventComponent } from "../interfaces/calendar";
+import {
+    getOccurrences,
+    getOccurrencesBetween,
+    RecurringResult,
+} from "./recurring";
+import { getIsRruleEqual } from "./rruleEqual";
+import { propertyToUTCDate } from "./vcalConverter";
+import { getIsAllDay, getPropertyTzid } from "./vcalHelper";
 
 export const getAreOccurrencesSubset = (
-    newOccurrences: (RecurringResult | Pick<RecurringResult, 'localStart'>)[],
+    newOccurrences: (RecurringResult | Pick<RecurringResult, "localStart">)[],
     oldVevent: VcalVeventComponent
 ) => {
     const cache = {};
@@ -15,9 +23,16 @@ export const getAreOccurrencesSubset = (
         const startTzid = getPropertyTzid(oldVevent.dtstart);
         let utcStart = localStart;
         if (!isAllDay && startTzid) {
-            utcStart = toUTCDate(convertZonedDateTimeToUTC(fromUTCDate(localStart), startTzid));
+            utcStart = toUTCDate(
+                convertZonedDateTimeToUTC(fromUTCDate(localStart), startTzid)
+            );
         }
-        const [oldOccurrence] = getOccurrencesBetween(oldVevent, +utcStart, +utcStart, cache);
+        const [oldOccurrence] = getOccurrencesBetween(
+            oldVevent,
+            +utcStart,
+            +utcStart,
+            cache
+        );
         if (!oldOccurrence) {
             return false;
         }
@@ -30,8 +45,14 @@ export const getAreOccurrencesSubset = (
  * Return false otherwise
  * We restrict to rrules that can be created by us
  */
-export const getIsRruleSubset = (newVevent: VcalVeventComponent, oldVevent: VcalVeventComponent) => {
-    const [{ rrule: newRrule, dtstart: newDtstart }, { rrule: oldRrule }] = [newVevent, oldVevent];
+export const getIsRruleSubset = (
+    newVevent: VcalVeventComponent,
+    oldVevent: VcalVeventComponent
+) => {
+    const [{ rrule: newRrule, dtstart: newDtstart }, { rrule: oldRrule }] = [
+        newVevent,
+        oldVevent,
+    ];
     const isRruleEqual = getIsRruleEqual(newRrule, oldRrule);
     if (!newRrule || !oldRrule || isRruleEqual) {
         return isRruleEqual;
@@ -53,7 +74,13 @@ export const getIsRruleSubset = (newVevent: VcalVeventComponent, oldVevent: Vcal
     // but for performance we use the same trick as above and check max 10
     const maxCount = newCount ? Math.min(newCount, 10) : 10;
     const newOccurrences = newUntil
-        ? getOccurrencesBetween(newVevent, +propertyToUTCDate(newDtstart), +toUTCDate(newUntil), {}, 10)
+        ? getOccurrencesBetween(
+              newVevent,
+              +propertyToUTCDate(newDtstart),
+              +toUTCDate(newUntil),
+              {},
+              10
+          )
         : getOccurrences({ component: newVevent, maxCount });
 
     return getAreOccurrencesSubset(newOccurrences, oldVevent);

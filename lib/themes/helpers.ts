@@ -1,4 +1,4 @@
-import { DARK_MODE_CLASS } from '../constants';
+import { DARK_MODE_CLASS } from "../constants";
 
 /**
  * Given a theme, return true if it corresponds to dark mode, false otherwise

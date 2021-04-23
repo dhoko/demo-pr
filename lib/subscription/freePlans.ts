@@ -1,10 +1,17 @@
-import { CYCLE, DEFAULT_CURRENCY, DEFAULT_CYCLE, PLAN_SERVICES, PLAN_TYPES, PLANS } from '../constants';
-import { Plan } from '../interfaces';
+import {
+    CYCLE,
+    DEFAULT_CURRENCY,
+    DEFAULT_CYCLE,
+    PLAN_SERVICES,
+    PLAN_TYPES,
+    PLANS,
+} from "../constants";
+import { Plan } from "../interfaces";
 
 export const FREE_MAIL_PLAN = {
-    ID: 'free',
-    Name: 'free_mail' as PLANS,
-    Title: 'Free',
+    ID: "free",
+    Name: "free_mail" as PLANS,
+    Title: "Free",
     Type: PLAN_TYPES.PLAN,
     Currency: DEFAULT_CURRENCY,
     Cycle: DEFAULT_CYCLE,
@@ -27,5 +34,5 @@ export const FREE_MAIL_PLAN = {
 
 export const FREE_VPN_PLAN = {
     ...FREE_MAIL_PLAN,
-    Name: 'free_vpn' as PLANS,
+    Name: "free_vpn" as PLANS,
 } as Plan;

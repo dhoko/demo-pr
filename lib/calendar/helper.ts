@@ -1,7 +1,7 @@
-import getRandomValues from 'get-random-values';
-import { c } from 'ttag';
-import { getDaysInMonth } from '../date-fns-utc';
-import { encodeBase64URL, uint8ArrayToString } from '../helpers/encoding';
+import getRandomValues from "get-random-values";
+import { c } from "ttag";
+import { getDaysInMonth } from "../date-fns-utc";
+import { encodeBase64URL, uint8ArrayToString } from "../helpers/encoding";
 
 /**
  * Generates a calendar UID of the form 'RandomBase64String@proton.me'
@@ -20,18 +20,21 @@ export const generateUID = () => {
  * * Old uids of the form 'proton-calendar-350095ea-4368-26f0-4fc9-60a56015b02e' and derived ones from "this and future" editions
  * * New uids of the form 'RandomBase64String@proton.me' and derived ones from "this and future" editions
  */
-export const getIsProtonUID = (uid = '') => {
-    return uid.endsWith('@proton.me') || uid.startsWith('proton-calendar-');
+export const getIsProtonUID = (uid = "") => {
+    return uid.endsWith("@proton.me") || uid.startsWith("proton-calendar-");
 };
 
-export const getDisplayTitle = (title = '') => {
-    return title.trim() || c('Event title').t`(no title)`;
+export const getDisplayTitle = (title = "") => {
+    return title.trim() || c("Event title").t`(no title)`;
 };
 
 /**
  * Check whether an object has more keys than a set of keys.
  */
-export const hasMoreThan = (set: Set<string>, properties: { [key: string]: any } = {}) => {
+export const hasMoreThan = (
+    set: Set<string>,
+    properties: { [key: string]: any } = {}
+) => {
     return Object.keys(properties).some((key) => !set.has(key));
 };
 
@@ -41,14 +44,14 @@ export const wrap = (res: string) => {
 };
 
 export const unwrap = (res: string) => {
-    if (res.slice(0, 15) !== 'BEGIN:VCALENDAR') {
+    if (res.slice(0, 15) !== "BEGIN:VCALENDAR") {
         return res;
     }
-    const startIdx = res.indexOf('BEGIN:', 1);
+    const startIdx = res.indexOf("BEGIN:", 1);
     if (startIdx === -1 || startIdx === 0) {
-        return '';
+        return "";
     }
-    const endIdx = res.lastIndexOf('END:VCALENDAR');
+    const endIdx = res.lastIndexOf("END:VCALENDAR");
     return res.slice(startIdx, endIdx).trim();
 };
 
@@ -67,7 +70,7 @@ export const getNegativeSetpos = (date: Date) => {
 };
 
 export const reformatApiErrorMessage = (message: string) => {
-    if (message.toLowerCase().endsWith('. please try again')) {
+    if (message.toLowerCase().endsWith(". please try again")) {
         return message.slice(0, -18);
     }
     return message;

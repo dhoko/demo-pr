@@ -1,8 +1,9 @@
-import { getValidatedLocalID } from './sessionForkValidation';
-import { stripLeadingAndTrailingSlash } from '../helpers/string';
-import { isSSOMode, PUBLIC_PATH } from '../constants';
+import { getValidatedLocalID } from "./sessionForkValidation";
+import { stripLeadingAndTrailingSlash } from "../helpers/string";
+import { isSSOMode, PUBLIC_PATH } from "../constants";
 
-export const getLocalIDPath = (u?: number) => (u === undefined ? undefined : `u/${u}`);
+export const getLocalIDPath = (u?: number) =>
+    u === undefined ? undefined : `u/${u}`;
 
 export const getLocalIDFromPathname = (pathname: string) => {
     const maybeLocalID = pathname.match(/\/u\/(\d{0,6})\/?/);
@@ -15,7 +16,7 @@ export const getBasename = (localID?: number) => {
         return publicPathBase ? `/${publicPathBase}` : undefined;
     }
     const localIDPathBase = getLocalIDPath(localID);
-    const joined = [publicPathBase, localIDPathBase].filter(Boolean).join('/');
+    const joined = [publicPathBase, localIDPathBase].filter(Boolean).join("/");
     return joined ? `/${joined}` : undefined;
 };
 

@@ -1,8 +1,8 @@
-import { Member } from './Member';
-import { Passphrase } from './Passphrase';
-import { CalendarKey } from './CalendarKey';
-import { NotificationModel } from './Notification';
-import { SETTINGS_NOTIFICATION_TYPE } from '../../calendar/constants';
+import { Member } from "./Member";
+import { Passphrase } from "./Passphrase";
+import { CalendarKey } from "./CalendarKey";
+import { NotificationModel } from "./Notification";
+import { SETTINGS_NOTIFICATION_TYPE } from "../../calendar/constants";
 
 export interface Calendar {
     ID: string;

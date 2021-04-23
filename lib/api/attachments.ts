@@ -1,7 +1,7 @@
 export const getAttachment = (attachmentID: string) => ({
-    method: 'get',
+    method: "get",
     url: `mail/v4/attachments/${attachmentID}`,
-    output: 'arrayBuffer',
+    output: "arrayBuffer",
 });
 
 export const uploadAttachment = (data: {
@@ -13,14 +13,14 @@ export const uploadAttachment = (data: {
     DataPacket: Blob;
     Signature?: Blob;
 }) => ({
-    method: 'post',
-    url: 'mail/v4/attachments',
-    input: 'form',
+    method: "post",
+    url: "mail/v4/attachments",
+    input: "form",
     data,
 });
 
 export const removeAttachment = (attachmentID: string, messageID: string) => ({
-    method: 'delete',
+    method: "delete",
     url: `mail/v4/attachments/${attachmentID}`,
     params: { MessageID: messageID },
 });

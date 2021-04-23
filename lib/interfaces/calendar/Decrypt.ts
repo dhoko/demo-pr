@@ -1,6 +1,6 @@
-import { Address } from '../Address';
-import { VcalAttendeeProperty, VcalVeventComponent } from './VcalModel';
-import { EVENT_VERIFICATION_STATUS } from '../../calendar/constants';
+import { Address } from "../Address";
+import { VcalAttendeeProperty, VcalVeventComponent } from "./VcalModel";
+import { EVENT_VERIFICATION_STATUS } from "../../calendar/constants";
 
 export interface SelfAddressData {
     selfAttendee?: VcalAttendeeProperty;
@@ -13,4 +13,6 @@ export type DecryptedVeventResult = {
     verificationStatus: EVENT_VERIFICATION_STATUS;
     selfAddressData: SelfAddressData;
 };
-export type DecryptedPersonalVeventMapResult = { [memberID: string]: DecryptedVeventResult | undefined };
+export type DecryptedPersonalVeventMapResult = {
+    [memberID: string]: DecryptedVeventResult | undefined;
+};

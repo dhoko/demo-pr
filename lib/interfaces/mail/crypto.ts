@@ -1,7 +1,7 @@
-import { OpenPGPKey } from 'pmcrypto';
-import { MIME_TYPES, PACKAGE_TYPE } from '../../constants';
-import { EncryptionPreferencesError } from '../../mail/encryptionPreferences';
-import { SimpleMap } from '../utils';
+import { OpenPGPKey } from "pmcrypto";
+import { MIME_TYPES, PACKAGE_TYPE } from "../../constants";
+import { EncryptionPreferencesError } from "../../mail/encryptionPreferences";
+import { SimpleMap } from "../utils";
 
 export interface SendPreferences {
     encrypt: boolean;
@@ -36,7 +36,9 @@ export interface Package {
     BodyKeyPacket?: string;
     Type?: PACKAGE_TYPE;
     PublicKey?: OpenPGPKey;
-    AttachmentKeys?: { [AttachmentID: string]: { Key: string; Algorithm: string } };
+    AttachmentKeys?: {
+        [AttachmentID: string]: { Key: string; Algorithm: string };
+    };
     AttachmentKeyPackets?: { [AttachmentID: string]: string };
 }
 

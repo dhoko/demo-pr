@@ -1,4 +1,4 @@
-import { c } from 'ttag';
+import { c } from "ttag";
 
 export enum IMPORT_CONTACT_ERROR_TYPE {
     UNSUPPORTED_VCARD_VERSION,
@@ -6,17 +6,21 @@ export enum IMPORT_CONTACT_ERROR_TYPE {
     EXTERNAL_ERROR,
 }
 
-const getErrorMessage = (errorType: IMPORT_CONTACT_ERROR_TYPE, externalError?: Error) => {
+const getErrorMessage = (
+    errorType: IMPORT_CONTACT_ERROR_TYPE,
+    externalError?: Error
+) => {
     if (errorType === IMPORT_CONTACT_ERROR_TYPE.UNSUPPORTED_VCARD_VERSION) {
-        return c('Error importing contact').t`vCard versions < 3.0 not supported`;
+        return c("Error importing contact")
+            .t`vCard versions < 3.0 not supported`;
     }
     if (errorType === IMPORT_CONTACT_ERROR_TYPE.ENCRYPTION_ERROR) {
-        return c('Error importing contact').t`Encryption failed`;
+        return c("Error importing contact").t`Encryption failed`;
     }
     if (errorType === IMPORT_CONTACT_ERROR_TYPE.EXTERNAL_ERROR) {
-        return externalError?.message || '';
+        return externalError?.message || "";
     }
-    return '';
+    return "";
 };
 
 export class ImportContactError extends Error {
@@ -26,7 +30,11 @@ export class ImportContactError extends Error {
 
     externalError?: Error;
 
-    constructor(errorType: IMPORT_CONTACT_ERROR_TYPE, contactId: string, externalError?: Error) {
+    constructor(
+        errorType: IMPORT_CONTACT_ERROR_TYPE,
+        contactId: string,
+        externalError?: Error
+    ) {
         super(getErrorMessage(errorType, externalError));
         this.type = errorType;
         this.contactId = contactId;

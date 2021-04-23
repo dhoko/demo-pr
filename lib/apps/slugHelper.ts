@@ -1,6 +1,6 @@
-import { APP_NAMES, APPS, APPS_CONFIGURATION } from '../constants';
-import { stripLeadingAndTrailingSlash } from '../helpers/string';
-import { stripLocalBasenameFromPathname } from '../authentication/pathnameHelper';
+import { APP_NAMES, APPS, APPS_CONFIGURATION } from "../constants";
+import { stripLeadingAndTrailingSlash } from "../helpers/string";
+import { stripLocalBasenameFromPathname } from "../authentication/pathnameHelper";
 
 export const DEFAULT_APP = APPS.PROTONMAIL;
 
@@ -12,7 +12,8 @@ export const ALLOWED_APPS = [
     APPS.PROTONDRIVE,
 ];
 
-export const getSlugFromApp = (app: APP_NAMES) => APPS_CONFIGURATION[app].settingsSlug;
+export const getSlugFromApp = (app: APP_NAMES) =>
+    APPS_CONFIGURATION[app].settingsSlug;
 
 export const getAppFromPathname = (pathname: string): APP_NAMES | undefined => {
     return ALLOWED_APPS.find((appName) => {
@@ -23,10 +24,14 @@ export const getAppFromPathname = (pathname: string): APP_NAMES | undefined => {
 };
 
 export const getAppFromPathnameSafe = (pathname: string) => {
-    const trimmedPathname = stripLeadingAndTrailingSlash(stripLocalBasenameFromPathname(pathname));
+    const trimmedPathname = stripLeadingAndTrailingSlash(
+        stripLocalBasenameFromPathname(pathname)
+    );
     return getAppFromPathname(trimmedPathname);
 };
 
-export const ALLOWED_SLUGS = ALLOWED_APPS.map((app) => APPS_CONFIGURATION[app].settingsSlug);
+export const ALLOWED_SLUGS = ALLOWED_APPS.map(
+    (app) => APPS_CONFIGURATION[app].settingsSlug
+);
 
 export type AppSlug = typeof ALLOWED_SLUGS[number];

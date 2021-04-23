@@ -1,39 +1,61 @@
-import { Plan, PlanIDs, MaxKeys, Organization } from '../interfaces';
-import { PLAN_SERVICES, PLANS, CYCLE, MAX_DOMAIN_PLUS_ADDON, ADDON_NAMES } from '../constants';
+import { Plan, PlanIDs, MaxKeys, Organization } from "../interfaces";
+import {
+    PLAN_SERVICES,
+    PLANS,
+    CYCLE,
+    MAX_DOMAIN_PLUS_ADDON,
+    ADDON_NAMES,
+} from "../constants";
 
-import { hasBit } from './bitset';
-import { toMap, omit } from './object';
+import { hasBit } from "./bitset";
+import { toMap, omit } from "./object";
 
 const { PLUS, VPNPLUS, VPNBASIC, VISIONARY, PROFESSIONAL } = PLANS;
 const { VPN, SPACE, MEMBER, ADDRESS, DOMAIN } = ADDON_NAMES;
 
-export const hasPlanIDs = (planIDs: PlanIDs) => Object.values(planIDs).some((quantity) => quantity > 0);
+export const hasPlanIDs = (planIDs: PlanIDs) =>
+    Object.values(planIDs).some((quantity) => quantity > 0);
 
 export const clearPlanIDs = (planIDs: PlanIDs) => {
-    return Object.entries(planIDs).reduce<PlanIDs>((acc, [planID, quantity = 0]) => {
-        if (quantity <= 0) {
+    return Object.entries(planIDs).reduce<PlanIDs>(
+        (acc, [planID, quantity = 0]) => {
+            if (quantity <= 0) {
+                return acc;
+            }
+            acc[planID] = quantity;
             return acc;
-        }
-        acc[planID] = quantity;
-        return acc;
-    }, {});
+        },
+        {}
+    );
 };
 
-export const removeService = (planIDs: PlanIDs, plans: Plan[], service: PLAN_SERVICES = PLAN_SERVICES.MAIL) => {
+export const removeService = (
+    planIDs: PlanIDs,
+    plans: Plan[],
+    service: PLAN_SERVICES = PLAN_SERVICES.MAIL
+) => {
     const plansMap = toMap(plans);
-    return Object.entries(planIDs).reduce<PlanIDs>((acc, [planID = '', quantity = 0]) => {
-        const { Services } = plansMap[planID];
+    return Object.entries(planIDs).reduce<PlanIDs>(
+        (acc, [planID = "", quantity = 0]) => {
+            const { Services } = plansMap[planID];
 
-        if (hasBit(Services, service)) {
+            if (hasBit(Services, service)) {
+                return acc;
+            }
+
+            acc[planID] = quantity;
             return acc;
-        }
-
-        acc[planID] = quantity;
-        return acc;
-    }, {});
+        },
+        {}
+    );
 };
 
-const getAddonQuantity = (plan: Plan | undefined, used = 0, key: MaxKeys, addon: Plan) => {
+const getAddonQuantity = (
+    plan: Plan | undefined,
+    used = 0,
+    key: MaxKeys,
+    addon: Plan
+) => {
     const planKey = plan?.[key] || 0;
 
     if (!plan) {
@@ -70,18 +92,26 @@ export const switchPlan = ({
         return removeService(planIDs, plans, service);
     }
 
-    const plansMap = toMap(plans, 'Name');
+    const plansMap = toMap(plans, "Name");
 
     if (planID === plansMap[VISIONARY].ID) {
         return { [plansMap[VISIONARY].ID]: 1 };
     }
 
-    const { UsedDomains = 0, UsedAddresses = 0, UsedSpace = 0, UsedVPN = 0, UsedMembers = 0 } = organization || {};
+    const {
+        UsedDomains = 0,
+        UsedAddresses = 0,
+        UsedSpace = 0,
+        UsedVPN = 0,
+        UsedMembers = 0,
+    } = organization || {};
     const selectedPlan = plans.find(({ ID }) => ID === planID);
 
     const transferDomains = (from: PLANS, to: PLANS) => {
         const domains = planIDs[plansMap[DOMAIN].ID]
-            ? plansMap[from].MaxDomains - plansMap[to].MaxDomains + planIDs[plansMap[DOMAIN].ID]
+            ? plansMap[from].MaxDomains -
+              plansMap[to].MaxDomains +
+              planIDs[plansMap[DOMAIN].ID]
             : 0;
         if (domains < 0) {
             return 0;
@@ -103,17 +133,35 @@ export const switchPlan = ({
             ]),
             [plansMap[DOMAIN].ID]:
                 transferDomains(PROFESSIONAL, PLUS) ||
-                getAddonQuantity(selectedPlan, UsedDomains, 'MaxDomains', plansMap[DOMAIN]) ||
+                getAddonQuantity(
+                    selectedPlan,
+                    UsedDomains,
+                    "MaxDomains",
+                    plansMap[DOMAIN]
+                ) ||
                 0,
             [plansMap[ADDRESS].ID]:
-                getAddonQuantity(selectedPlan, UsedAddresses, 'MaxAddresses', plansMap[ADDRESS]) || 0,
-            [plansMap[SPACE].ID]: getAddonQuantity(selectedPlan, UsedSpace, 'MaxSpace', plansMap[SPACE]) || 0,
+                getAddonQuantity(
+                    selectedPlan,
+                    UsedAddresses,
+                    "MaxAddresses",
+                    plansMap[ADDRESS]
+                ) || 0,
+            [plansMap[SPACE].ID]:
+                getAddonQuantity(
+                    selectedPlan,
+                    UsedSpace,
+                    "MaxSpace",
+                    plansMap[SPACE]
+                ) || 0,
             [planID]: 1,
         });
     }
 
     if (plansMap[PROFESSIONAL].ID === planID) {
-        const vpnAddons = getAddonQuantity(selectedPlan, UsedVPN, 'MaxVPN', plansMap[VPN]) || 0;
+        const vpnAddons =
+            getAddonQuantity(selectedPlan, UsedVPN, "MaxVPN", plansMap[VPN]) ||
+            0;
 
         return clearPlanIDs({
             ...omit(planIDs, [
@@ -125,32 +173,69 @@ export const switchPlan = ({
             ]),
             [plansMap[MEMBER].ID]:
                 Math.max(
-                    getAddonQuantity(selectedPlan, UsedMembers, 'MaxMembers', plansMap[MEMBER]),
-                    getAddonQuantity(selectedPlan, UsedAddresses, 'MaxAddresses', plansMap[MEMBER]),
-                    getAddonQuantity(selectedPlan, UsedSpace, 'MaxSpace', plansMap[MEMBER])
+                    getAddonQuantity(
+                        selectedPlan,
+                        UsedMembers,
+                        "MaxMembers",
+                        plansMap[MEMBER]
+                    ),
+                    getAddonQuantity(
+                        selectedPlan,
+                        UsedAddresses,
+                        "MaxAddresses",
+                        plansMap[MEMBER]
+                    ),
+                    getAddonQuantity(
+                        selectedPlan,
+                        UsedSpace,
+                        "MaxSpace",
+                        plansMap[MEMBER]
+                    )
                 ) || 0,
             [plansMap[DOMAIN].ID]:
                 transferDomains(PLUS, PROFESSIONAL) ||
-                getAddonQuantity(selectedPlan, UsedDomains, 'MaxDomains', plansMap[DOMAIN]) ||
+                getAddonQuantity(
+                    selectedPlan,
+                    UsedDomains,
+                    "MaxDomains",
+                    plansMap[DOMAIN]
+                ) ||
                 0,
             [planID]: 1,
-            [plansMap[VPNPLUS].ID]: vpnAddons || planIDs[plansMap[VPNPLUS].ID] ? 1 : 0,
-            [plansMap[VPN].ID]: vpnAddons ? vpnAddons - plansMap[VPNPLUS].MaxVPN : 0,
+            [plansMap[VPNPLUS].ID]:
+                vpnAddons || planIDs[plansMap[VPNPLUS].ID] ? 1 : 0,
+            [plansMap[VPN].ID]: vpnAddons
+                ? vpnAddons - plansMap[VPNPLUS].MaxVPN
+                : 0,
         });
     }
 
     if (plansMap[VPNBASIC].ID === planID) {
         return clearPlanIDs({
-            ...omit(planIDs, [plansMap[VPNBASIC].ID, plansMap[VPNPLUS].ID, plansMap[VISIONARY].ID, plansMap[VPN].ID]),
+            ...omit(planIDs, [
+                plansMap[VPNBASIC].ID,
+                plansMap[VPNPLUS].ID,
+                plansMap[VISIONARY].ID,
+                plansMap[VPN].ID,
+            ]),
             [planID]: 1,
         });
     }
 
     if (plansMap[VPNPLUS].ID === planID) {
         return clearPlanIDs({
-            ...omit(planIDs, [plansMap[VPNBASIC].ID, plansMap[VPNPLUS].ID, plansMap[VISIONARY].ID]),
+            ...omit(planIDs, [
+                plansMap[VPNBASIC].ID,
+                plansMap[VPNPLUS].ID,
+                plansMap[VISIONARY].ID,
+            ]),
             [plansMap[VPN].ID]: planIDs[plansMap[PROFESSIONAL].ID]
-                ? getAddonQuantity(selectedPlan, UsedVPN, 'MaxVPN', plansMap[VPN])
+                ? getAddonQuantity(
+                      selectedPlan,
+                      UsedVPN,
+                      "MaxVPN",
+                      plansMap[VPN]
+                  )
                 : 0,
             [planID]: 1,
         });
@@ -159,7 +244,11 @@ export const switchPlan = ({
     return {};
 };
 
-export const setQuantity = (planIDs: PlanIDs, planID: string, newQuantity: number) => {
+export const setQuantity = (
+    planIDs: PlanIDs,
+    planID: string,
+    newQuantity: number
+) => {
     const { [planID]: removedPlan, ...restPlanIDs } = planIDs;
     if (!newQuantity || newQuantity <= 0) {
         return restPlanIDs;
@@ -182,19 +271,22 @@ export const getTotal = ({
     planIDs?: PlanIDs;
 }) => {
     const plansMap = toMap(plans);
-    return Object.entries(planIDs).reduce((acc, [planID = '', quantity = 0]) => {
-        const { Pricing, Services } = plansMap[planID];
+    return Object.entries(planIDs).reduce(
+        (acc, [planID = "", quantity = 0]) => {
+            const { Pricing, Services } = plansMap[planID];
 
-        if (Number.isInteger(service) && !hasBit(Services, service)) {
-            return acc;
-        }
+            if (Number.isInteger(service) && !hasBit(Services, service)) {
+                return acc;
+            }
 
-        return acc + Pricing[cycle] * quantity;
-    }, 0);
+            return acc + Pricing[cycle] * quantity;
+        },
+        0
+    );
 };
 
 export const getSupportedAddons = (planIDs: PlanIDs, plans: Plan[]) => {
-    const plansMap = toMap(plans, 'Name');
+    const plansMap = toMap(plans, "Name");
     const supported: Partial<Record<ADDON_NAMES, boolean>> = {};
 
     if (planIDs[plansMap[PLANS.PLUS].ID]) {
@@ -208,7 +300,10 @@ export const getSupportedAddons = (planIDs: PlanIDs, plans: Plan[]) => {
         supported[ADDON_NAMES.DOMAIN] = true;
     }
 
-    if (planIDs[plansMap[PLANS.PROFESSIONAL].ID] && planIDs[plansMap[PLANS.VPNPLUS].ID]) {
+    if (
+        planIDs[plansMap[PLANS.PROFESSIONAL].ID] &&
+        planIDs[plansMap[PLANS.VPNPLUS].ID]
+    ) {
         supported[ADDON_NAMES.VPN] = true;
     }
 

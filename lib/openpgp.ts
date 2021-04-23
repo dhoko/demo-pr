@@ -1,13 +1,19 @@
-import { hasModulesSupport, getOS } from './helpers/browser';
-import { initScript, initWorker, setOpenpgp } from './helpers/setupPmcrypto';
-import { OPENPGP } from './constants';
+import { hasModulesSupport, getOS } from "./helpers/browser";
+import { initScript, initWorker, setOpenpgp } from "./helpers/setupPmcrypto";
+import { OPENPGP } from "./constants";
 
 let promise: undefined | Promise<void>;
 
-const dl = ({ filepath, integrity }: { filepath: string; integrity?: string }) => {
+const dl = ({
+    filepath,
+    integrity,
+}: {
+    filepath: string;
+    integrity?: string;
+}) => {
     const options = {
         integrity,
-        credentials: 'include',
+        credentials: "include",
     } as const;
     return fetch(filepath, options).then((response) => response.text());
 };
@@ -19,7 +25,7 @@ const dl = ({ filepath, integrity }: { filepath: string; integrity?: string }) =
  */
 const isUnsupportedWorker = () => {
     const { name, version } = getOS();
-    return name.toLowerCase() === 'ios' && parseInt(version, 10) === 11;
+    return name.toLowerCase() === "ios" && parseInt(version, 10) === 11;
 };
 
 /**

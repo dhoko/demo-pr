@@ -1,5 +1,5 @@
-import { fromUTCDate } from '../date/timezone';
-import { omit, pick } from '../helpers/object';
+import { fromUTCDate } from "../date/timezone";
+import { omit, pick } from "../helpers/object";
 import {
     CalendarEvent,
     CalendarEventData,
@@ -7,9 +7,9 @@ import {
     VcalVeventComponent,
     AttendeeClearPartResult,
     AttendeePart,
-} from '../interfaces/calendar';
-import { RequireOnly } from '../interfaces/utils';
-import { fromInternalAttendee } from './attendees';
+} from "../interfaces/calendar";
+import { RequireOnly } from "../interfaces/utils";
+import { fromInternalAttendee } from "./attendees";
 import {
     CALENDAR_CARD_TYPE,
     ICAL_EVENT_STATUS,
@@ -21,11 +21,15 @@ import {
     TAKEN_KEYS,
     USER_ENCRYPTED_FIELDS,
     USER_SIGNED_FIELDS,
-} from './constants';
-import { parse, serialize } from './vcal';
-import { dateTimeToProperty } from './vcalConverter';
-import { generateUID, hasMoreThan, wrap } from './helper';
-import { getEventStatus, getIsCalendar, getIsEventComponent } from './vcalHelper';
+} from "./constants";
+import { parse, serialize } from "./vcal";
+import { dateTimeToProperty } from "./vcalConverter";
+import { generateUID, hasMoreThan, wrap } from "./helper";
+import {
+    getEventStatus,
+    getIsCalendar,
+    getIsEventComponent,
+} from "./vcalHelper";
 
 const { ENCRYPTED_AND_SIGNED, SIGNED, CLEAR_TEXT } = CALENDAR_CARD_TYPE;
 
@@ -39,14 +43,18 @@ export const getIsEventCancelled = (event: CalendarEvent) => {
         return;
     }
     const vcalPart = parse(calendarClearTextPart.Data);
-    const vevent = getIsCalendar(vcalPart) ? vcalPart.components?.find(getIsEventComponent) : undefined;
+    const vevent = getIsCalendar(vcalPart)
+        ? vcalPart.components?.find(getIsEventComponent)
+        : undefined;
     if (!vevent) {
         return;
     }
     return getEventStatus(vevent) === ICAL_EVENT_STATUS.CANCELLED;
 };
 
-export const withUid = <T>(properties: VcalVeventComponent & T): VcalVeventComponent & T => {
+export const withUid = <T>(
+    properties: VcalVeventComponent & T
+): VcalVeventComponent & T => {
     if (properties.uid) {
         return properties;
     }
@@ -56,18 +64,24 @@ export const withUid = <T>(properties: VcalVeventComponent & T): VcalVeventCompo
     };
 };
 
-export const withSummary = <T>(properties: VcalVeventComponent & T): VcalVeventComponent & T => {
+export const withSummary = <T>(
+    properties: VcalVeventComponent & T
+): VcalVeventComponent & T => {
     if (properties.summary) {
         return properties;
     }
     return {
         ...properties,
-        summary: { value: '' },
+        summary: { value: "" },
     };
 };
 
 export const withDtstamp = <T>(
-    properties: RequireOnly<VcalVeventComponent, 'uid' | 'component' | 'dtstart'> & T
+    properties: RequireOnly<
+        VcalVeventComponent,
+        "uid" | "component" | "dtstart"
+    > &
+        T
 ): VcalVeventComponent & T => {
     if (properties.dtstamp) {
         return properties as VcalVeventComponent & T;
@@ -78,7 +92,9 @@ export const withDtstamp = <T>(
     };
 };
 
-export const withRequiredProperties = <T>(properties: VcalVeventComponent & T): VcalVeventComponent & T => {
+export const withRequiredProperties = <T>(
+    properties: VcalVeventComponent & T
+): VcalVeventComponent & T => {
     return withDtstamp(withUid(properties));
 };
 
@@ -109,13 +125,18 @@ export const getAttendeesPart = (
     [CLEAR_TEXT]: AttendeeClearPartResult[];
     [ENCRYPTED_AND_SIGNED]: Partial<VcalVeventComponent>;
 } => {
-    const formattedAttendees: { [CLEAR_TEXT]: AttendeeClearPartResult[]; attendee: AttendeePart[] } = {
+    const formattedAttendees: {
+        [CLEAR_TEXT]: AttendeeClearPartResult[];
+        attendee: AttendeePart[];
+    } = {
         [CLEAR_TEXT]: [],
         attendee: [],
     };
     if (Array.isArray(veventProperties.attendee)) {
         for (const attendee of veventProperties.attendee) {
-            const { clear, attendee: newAttendee } = fromInternalAttendee(attendee);
+            const { clear, attendee: newAttendee } = fromInternalAttendee(
+                attendee
+            );
             formattedAttendees[CLEAR_TEXT].push(clear);
             formattedAttendees.attendee.push(newAttendee);
         }
@@ -128,7 +149,7 @@ export const getAttendeesPart = (
         };
     }
 
-    const result: Pick<VcalVeventComponent, 'uid' | 'attendee'> = {
+    const result: Pick<VcalVeventComponent, "uid" | "attendee"> = {
         uid: veventProperties.uid,
         attendee: formattedAttendees.attendee,
     };
@@ -139,11 +160,14 @@ export const getAttendeesPart = (
     };
 };
 
-const toResult = (veventProperties: Partial<VcalVeventComponent>, veventComponents: VcalValarmComponent[] = []) => {
+const toResult = (
+    veventProperties: Partial<VcalVeventComponent>,
+    veventComponents: VcalValarmComponent[] = []
+) => {
     return wrap(
         serialize({
             ...veventProperties,
-            component: 'vevent',
+            component: "vevent",
             components: veventComponents,
         })
     );
@@ -156,7 +180,8 @@ const toResultOptimized = (
     veventProperties: Partial<VcalVeventComponent>,
     veventComponents: VcalValarmComponent[] = []
 ) => {
-    return hasMoreThan(REQUIRED_SET, veventProperties) || veventComponents.length
+    return hasMoreThan(REQUIRED_SET, veventProperties) ||
+        veventComponents.length
         ? toResult(veventProperties, veventComponents)
         : undefined;
 };
@@ -164,7 +189,10 @@ const toResultOptimized = (
 /**
  * Split the internal vevent component into the parts expected by the API.
  */
-export const getVeventParts = ({ components, ...properties }: VcalVeventComponent) => {
+export const getVeventParts = ({
+    components,
+    ...properties
+}: VcalVeventComponent) => {
     const restProperties = omit(properties, TAKEN_KEYS);
 
     const sharedPart = getSharedPart(properties);
@@ -183,7 +211,9 @@ export const getVeventParts = ({ components, ...properties }: VcalVeventComponen
         },
         calendarPart: {
             [SIGNED]: toResultOptimized(calendarPart[SIGNED]),
-            [ENCRYPTED_AND_SIGNED]: toResultOptimized(calendarPart[ENCRYPTED_AND_SIGNED]),
+            [ENCRYPTED_AND_SIGNED]: toResultOptimized(
+                calendarPart[ENCRYPTED_AND_SIGNED]
+            ),
         },
         personalPart: {
             // Assume all sub-components are valarm that go in the personal part
@@ -194,7 +224,9 @@ export const getVeventParts = ({ components, ...properties }: VcalVeventComponen
         attendeesPart: {
             // Nothing to sign for now
             [SIGNED]: undefined,
-            [ENCRYPTED_AND_SIGNED]: toResultOptimized(attendeesPart[ENCRYPTED_AND_SIGNED]),
+            [ENCRYPTED_AND_SIGNED]: toResultOptimized(
+                attendeesPart[ENCRYPTED_AND_SIGNED]
+            ),
             [CLEAR_TEXT]: attendeesPart[CLEAR_TEXT],
         },
     };

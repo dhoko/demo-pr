@@ -1,5 +1,5 @@
-import { decryptPrivateKey } from 'pmcrypto';
-import { CachedOrganizationKey, OrganizationKey } from '../interfaces';
+import { decryptPrivateKey } from "pmcrypto";
+import { CachedOrganizationKey, OrganizationKey } from "../interfaces";
 
 export const getDecryptedOrganizationKey = async ({
     keyPassword,

@@ -1,8 +1,14 @@
-import { getHasMigratedAddressKeys } from '../keyMigration';
-import reactivateKeysProcessLegacy, { ReactivateKeysProcessLegacyArguments } from './reactivateKeysProcessLegacy';
-import reactivateKeysProcessV2, { ReactivateKeysProcessV2Arguments } from './reactivateKeysProcessV2';
+import { getHasMigratedAddressKeys } from "../keyMigration";
+import reactivateKeysProcessLegacy, {
+    ReactivateKeysProcessLegacyArguments,
+} from "./reactivateKeysProcessLegacy";
+import reactivateKeysProcessV2, {
+    ReactivateKeysProcessV2Arguments,
+} from "./reactivateKeysProcessV2";
 
-interface Arguments extends ReactivateKeysProcessV2Arguments, ReactivateKeysProcessLegacyArguments {}
+interface Arguments
+    extends ReactivateKeysProcessV2Arguments,
+        ReactivateKeysProcessLegacyArguments {}
 
 export const reactivateKeysProcess = async ({
     api,

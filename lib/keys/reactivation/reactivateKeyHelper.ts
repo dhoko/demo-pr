@@ -1,10 +1,17 @@
-import { User as tsUser, Address as tsAddress, KeyPair, SignedKeyList, DecryptedKey, Key } from '../../interfaces';
+import {
+    User as tsUser,
+    Address as tsAddress,
+    KeyPair,
+    SignedKeyList,
+    DecryptedKey,
+    Key,
+} from "../../interfaces";
 
-import { unique } from '../../helpers/array';
+import { unique } from "../../helpers/array";
 
-import { getDecryptedAddressKeys } from '../getDecryptedAddressKeys';
-import { getSignedKeyList } from '../signedKeyList';
-import { getActiveKeys, getReactivatedKeyFlag } from '../getActiveKeys';
+import { getDecryptedAddressKeys } from "../getDecryptedAddressKeys";
+import { getSignedKeyList } from "../signedKeyList";
+import { getActiveKeys, getReactivatedKeyFlag } from "../getActiveKeys";
 
 interface GetReactivatedAddressKeys {
     address: tsAddress;
@@ -64,27 +71,43 @@ export const getReactivatedAddressKeys = async ({
         return empty;
     }
     if (newDecryptedAddressKeys.length < oldDecryptedAddressKeys.length) {
-        throw new Error('More old decryptable keys than new, should never happen');
+        throw new Error(
+            "More old decryptable keys than new, should never happen"
+        );
     }
 
     // New keys were able to get decrypted
-    const oldDecryptedAddressKeysSet = new Set<string>(oldDecryptedAddressKeys.map(({ ID }) => ID));
-    const reactivatedKeys = newDecryptedAddressKeys.filter(({ ID }) => !oldDecryptedAddressKeysSet.has(ID));
-    const reactivatedKeysSet = new Set<string>(reactivatedKeys.map(({ ID }) => ID));
+    const oldDecryptedAddressKeysSet = new Set<string>(
+        oldDecryptedAddressKeys.map(({ ID }) => ID)
+    );
+    const reactivatedKeys = newDecryptedAddressKeys.filter(
+        ({ ID }) => !oldDecryptedAddressKeysSet.has(ID)
+    );
+    const reactivatedKeysSet = new Set<string>(
+        reactivatedKeys.map(({ ID }) => ID)
+    );
 
     if (!reactivatedKeysSet.size) {
         return empty;
     }
 
-    const oldAddressKeysMap = new Map<string, Key>(address.Keys.map((Key) => [Key.ID, Key]));
-    const newActiveKeys = await getActiveKeys(address.SignedKeyList, address.Keys, newDecryptedAddressKeys);
+    const oldAddressKeysMap = new Map<string, Key>(
+        address.Keys.map((Key) => [Key.ID, Key])
+    );
+    const newActiveKeys = await getActiveKeys(
+        address.SignedKeyList,
+        address.Keys,
+        newDecryptedAddressKeys
+    );
     const newActiveKeysFormatted = newActiveKeys.map((activeKey) => {
         if (!reactivatedKeysSet.has(activeKey.ID)) {
             return activeKey;
         }
         return {
             ...activeKey,
-            flags: getReactivatedKeyFlag(oldAddressKeysMap.get(activeKey.ID)?.Flags),
+            flags: getReactivatedKeyFlag(
+                oldAddressKeysMap.get(activeKey.ID)?.Flags
+            ),
         };
     });
 
@@ -95,7 +118,9 @@ export const getReactivatedAddressKeys = async ({
     };
 };
 
-export const getAddressReactivationPayload = (results: GetReactivateAddressKeysReturnValue[]) => {
+export const getAddressReactivationPayload = (
+    results: GetReactivateAddressKeysReturnValue[]
+) => {
     const AddressKeyFingerprints = unique(
         results.reduce<KeyPair[]>((acc, { reactivatedKeys }) => {
             if (!reactivatedKeys) {
@@ -105,13 +130,16 @@ export const getAddressReactivationPayload = (results: GetReactivateAddressKeysR
         }, [])
     ).map(({ privateKey }) => privateKey.getFingerprint());
 
-    const SignedKeyLists = results.reduce<{ [key: string]: SignedKeyList }>((acc, result) => {
-        if (!result.reactivatedKeys?.length || !result.signedKeyList) {
-            throw new Error('Missing reactivated keys');
-        }
-        acc[result.address.ID] = result.signedKeyList;
-        return acc;
-    }, {});
+    const SignedKeyLists = results.reduce<{ [key: string]: SignedKeyList }>(
+        (acc, result) => {
+            if (!result.reactivatedKeys?.length || !result.signedKeyList) {
+                throw new Error("Missing reactivated keys");
+            }
+            acc[result.address.ID] = result.signedKeyList;
+            return acc;
+        },
+        {}
+    );
 
     return {
         AddressKeyFingerprints,

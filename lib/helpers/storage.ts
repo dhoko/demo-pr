@@ -23,7 +23,7 @@ export const removeItem = (key: string) => {
     }
 };
 
-export const hasStorage = (key = 'test') => {
+export const hasStorage = (key = "test") => {
     try {
         window.localStorage.setItem(key, key);
         window.localStorage.removeItem(key);

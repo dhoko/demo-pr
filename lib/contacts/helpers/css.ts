@@ -1,1 +1,2 @@
-export const opaqueClassName = (greyedOut: boolean) => (greyedOut ? 'opacity-50' : '');
+export const opaqueClassName = (greyedOut: boolean) =>
+    greyedOut ? "opacity-50" : "";

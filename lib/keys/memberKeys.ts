@@ -1,4 +1,4 @@
-import { decryptPrivateKey, encryptPrivateKey, OpenPGPKey } from 'pmcrypto';
+import { decryptPrivateKey, encryptPrivateKey, OpenPGPKey } from "pmcrypto";
 import {
     EncryptionConfig,
     Address as tsAddress,
@@ -6,22 +6,33 @@ import {
     Member as tsMember,
     DecryptedKey,
     Key as tsKey,
-} from '../interfaces';
-import { generateKeySaltAndPassphrase } from './keys';
-import { generateAddressKey, generateAddressKeyTokens } from './addressKeys';
-import { decryptMemberToken, encryptMemberToken, generateMemberToken } from './memberToken';
-import { getActiveKeyObject, getActiveKeys, getPrimaryFlag } from './getActiveKeys';
-import { getSignedKeyList } from './signedKeyList';
-import { srpVerify } from '../srp';
-import { createMemberKeyRoute, setupMemberKeyRoute } from '../api/memberKeys';
-import { generateMemberAddressKey } from './organizationKeys';
-import { generateUserKey } from './userKeys';
-import { hasAddressKeyMigration } from '../constants';
-import { getHasMigratedAddressKeys } from './keyMigration';
+} from "../interfaces";
+import { generateKeySaltAndPassphrase } from "./keys";
+import { generateAddressKey, generateAddressKeyTokens } from "./addressKeys";
+import {
+    decryptMemberToken,
+    encryptMemberToken,
+    generateMemberToken,
+} from "./memberToken";
+import {
+    getActiveKeyObject,
+    getActiveKeys,
+    getPrimaryFlag,
+} from "./getActiveKeys";
+import { getSignedKeyList } from "./signedKeyList";
+import { srpVerify } from "../srp";
+import { createMemberKeyRoute, setupMemberKeyRoute } from "../api/memberKeys";
+import { generateMemberAddressKey } from "./organizationKeys";
+import { generateUserKey } from "./userKeys";
+import { hasAddressKeyMigration } from "../constants";
+import { getHasMigratedAddressKeys } from "./keyMigration";
 
-export const getDecryptedMemberKey = async ({ Token, PrivateKey }: tsKey, organizationKey: OpenPGPKey) => {
+export const getDecryptedMemberKey = async (
+    { Token, PrivateKey }: tsKey,
+    organizationKey: OpenPGPKey
+) => {
     if (!Token) {
-        throw new Error('Member token invalid');
+        throw new Error("Member token invalid");
     }
     const decryptedToken = await decryptMemberToken(Token, organizationKey);
     return decryptPrivateKey(PrivateKey, decryptedToken);
@@ -44,7 +55,10 @@ export const setupMemberKeyLegacy = async ({
     organizationKey,
     encryptionConfig,
 }: SetupMemberKeySharedArgumentsS) => {
-    const { salt: keySalt, passphrase: memberMailboxPassword } = await generateKeySaltAndPassphrase(password);
+    const {
+        salt: keySalt,
+        passphrase: memberMailboxPassword,
+    } = await generateKeySaltAndPassphrase(password);
 
     const { privateKey, privateKeyArmored } = await generateAddressKey({
         email: address.Email,
@@ -53,10 +67,19 @@ export const setupMemberKeyLegacy = async ({
     });
 
     const memberKeyToken = generateMemberToken();
-    const privateKeyArmoredOrganization = await encryptPrivateKey(privateKey, memberKeyToken);
-    const organizationToken = await encryptMemberToken(memberKeyToken, organizationKey);
+    const privateKeyArmoredOrganization = await encryptPrivateKey(
+        privateKey,
+        memberKeyToken
+    );
+    const organizationToken = await encryptMemberToken(
+        memberKeyToken,
+        organizationKey
+    );
 
-    const newActiveKey = await getActiveKeyObject(privateKey, { ID: 'tmp', primary: 1 });
+    const newActiveKey = await getActiveKeyObject(privateKey, {
+        ID: "tmp",
+        primary: 1,
+    });
     const updatedActiveKeys = [newActiveKey];
     const SignedKeyList = await getSignedKeyList(updatedActiveKeys);
 
@@ -100,29 +123,49 @@ export const setupMemberKeyV2 = async ({
     organizationKey,
     encryptionConfig,
 }: SetupMemberKeySharedArgumentsS) => {
-    const { salt: keySalt, passphrase: memberKeyPassword } = await generateKeySaltAndPassphrase(password);
+    const {
+        salt: keySalt,
+        passphrase: memberKeyPassword,
+    } = await generateKeySaltAndPassphrase(password);
 
-    const { privateKey: userPrivateKey, privateKeyArmored: userPrivateKeyArmored } = await generateUserKey({
+    const {
+        privateKey: userPrivateKey,
+        privateKeyArmored: userPrivateKeyArmored,
+    } = await generateUserKey({
         passphrase: memberKeyPassword,
         encryptionConfig,
     });
 
     const memberKeyToken = generateMemberToken();
-    const privateKeyArmoredOrganization = await encryptPrivateKey(userPrivateKey, memberKeyToken);
-    const organizationToken = await encryptMemberToken(memberKeyToken, organizationKey);
-
-    const { token, signature, organizationSignature, encryptedToken } = await generateAddressKeyTokens(
+    const privateKeyArmoredOrganization = await encryptPrivateKey(
         userPrivateKey,
+        memberKeyToken
+    );
+    const organizationToken = await encryptMemberToken(
+        memberKeyToken,
         organizationKey
     );
 
-    const { privateKey: addressPrivateKey, privateKeyArmored: addressPrivateKeyArmored } = await generateAddressKey({
+    const {
+        token,
+        signature,
+        organizationSignature,
+        encryptedToken,
+    } = await generateAddressKeyTokens(userPrivateKey, organizationKey);
+
+    const {
+        privateKey: addressPrivateKey,
+        privateKeyArmored: addressPrivateKeyArmored,
+    } = await generateAddressKey({
         email: address.Email,
         passphrase: token,
         encryptionConfig,
     });
 
-    const newActiveKey = await getActiveKeyObject(addressPrivateKey, { ID: 'tmp', primary: 1 });
+    const newActiveKey = await getActiveKeyObject(addressPrivateKey, {
+        ID: "tmp",
+        primary: 1,
+    });
     const updatedActiveKeys = [newActiveKey];
     const SignedKeyList = await getSignedKeyList(updatedActiveKeys);
 
@@ -162,7 +205,10 @@ export const setupMemberKeyV2 = async ({
 interface SetupMemberKeyArguments extends SetupMemberKeySharedArgumentsS {
     ownerAddresses: tsAddress[];
 }
-export const setupMemberKey = async ({ ownerAddresses, ...rest }: SetupMemberKeyArguments) => {
+export const setupMemberKey = async ({
+    ownerAddresses,
+    ...rest
+}: SetupMemberKeyArguments) => {
     if (hasAddressKeyMigration || getHasMigratedAddressKeys(ownerAddresses)) {
         return setupMemberKeyV2(rest);
     }
@@ -201,8 +247,15 @@ export const createMemberAddressKeysLegacy = async ({
         encryptionConfig,
     });
 
-    const activeKeys = await getActiveKeys(memberAddress.SignedKeyList, memberAddress.Keys, memberAddressKeys);
-    const newActiveKey = await getActiveKeyObject(privateKey, { ID: 'tmp', primary: getPrimaryFlag(activeKeys) });
+    const activeKeys = await getActiveKeys(
+        memberAddress.SignedKeyList,
+        memberAddress.Keys,
+        memberAddressKeys
+    );
+    const newActiveKey = await getActiveKeyObject(privateKey, {
+        ID: "tmp",
+        primary: getPrimaryFlag(activeKeys),
+    });
     const updatedActiveKeys = [...activeKeys, newActiveKey];
     const SignedKeyList = await getSignedKeyList(updatedActiveKeys);
 
@@ -245,20 +298,29 @@ export const createMemberAddressKeysV2 = async ({
     organizationKey,
     encryptionConfig,
 }: CreateMemberAddressKeysV2Arguments) => {
-    const { token, signature, organizationSignature, encryptedToken } = await generateAddressKeyTokens(
-        memberUserKey,
-        organizationKey
-    );
+    const {
+        token,
+        signature,
+        organizationSignature,
+        encryptedToken,
+    } = await generateAddressKeyTokens(memberUserKey, organizationKey);
 
-    const { privateKey: addressPrivateKey, privateKeyArmored: addressPrivateKeyArmored } = await generateAddressKey({
+    const {
+        privateKey: addressPrivateKey,
+        privateKeyArmored: addressPrivateKeyArmored,
+    } = await generateAddressKey({
         email: memberAddress.Email,
         passphrase: token,
         encryptionConfig,
     });
 
-    const activeKeys = await getActiveKeys(memberAddress.SignedKeyList, memberAddress.Keys, memberAddressKeys);
+    const activeKeys = await getActiveKeys(
+        memberAddress.SignedKeyList,
+        memberAddress.Keys,
+        memberAddressKeys
+    );
     const newActiveKey = await getActiveKeyObject(addressPrivateKey, {
-        ID: 'tmp',
+        ID: "tmp",
         primary: getPrimaryFlag(activeKeys),
     });
     const updatedActiveKeys = [...activeKeys, newActiveKey];

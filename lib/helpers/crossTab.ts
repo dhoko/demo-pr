@@ -1,11 +1,11 @@
-import getRandomValues from 'get-random-values';
+import getRandomValues from "get-random-values";
 
-import { removeItem, setItem } from './storage';
-import { uint8ArrayToBase64String } from './encoding';
+import { removeItem, setItem } from "./storage";
+import { uint8ArrayToBase64String } from "./encoding";
 
-export const PASSWORD_CHANGE_MESSAGE_TYPE = 'password-change';
+export const PASSWORD_CHANGE_MESSAGE_TYPE = "password-change";
 
-const CROSS_TAB_EVENT_KEY = 'cte';
+const CROSS_TAB_EVENT_KEY = "cte";
 
 let id: string | undefined;
 

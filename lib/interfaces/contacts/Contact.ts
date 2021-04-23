@@ -1,5 +1,5 @@
-import { OpenPGPKey } from 'pmcrypto';
-import { CONTACT_CARD_TYPE } from '../../constants';
+import { OpenPGPKey } from "pmcrypto";
+import { CONTACT_CARD_TYPE } from "../../constants";
 
 export interface ContactEmail {
     ID: string;

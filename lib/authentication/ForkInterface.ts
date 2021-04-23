@@ -1,4 +1,4 @@
 export enum FORK_TYPE {
-    SWITCH = '1',
-    SIGNUP = '2',
+    SWITCH = "1",
+    SIGNUP = "2",
 }

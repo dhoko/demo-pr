@@ -1,10 +1,12 @@
 // @ts-ignore
-import { init, createWorker } from 'pmcrypto';
+import { init, createWorker } from "pmcrypto";
 
-import { loadScript } from './dom';
+import { loadScript } from "./dom";
 
 export const initScript = async (openpgpContents: string) => {
-    const mainUrl = URL.createObjectURL(new Blob([openpgpContents], { type: 'text/javascript' }));
+    const mainUrl = URL.createObjectURL(
+        new Blob([openpgpContents], { type: "text/javascript" })
+    );
     await loadScript(mainUrl);
     URL.revokeObjectURL(mainUrl);
 };
@@ -17,7 +19,7 @@ export const setOpenpgp = (
     openpgp.config.indutny_elliptic_path = `${window.location.origin}${ellipticOptions.filepath}`;
     openpgp.config.indutny_elliptic_fetch_options = {
         integrity: ellipticOptions.integrity,
-        credentials: 'same-origin',
+        credentials: "same-origin",
     };
 
     Object.entries(openpgpConfig).forEach(([key, value]) => {
@@ -27,11 +29,17 @@ export const setOpenpgp = (
     init(openpgp);
 };
 
-export const initWorker = async (openpgpContents: string, openpgpWorkerContents: string) => {
+export const initWorker = async (
+    openpgpContents: string,
+    openpgpWorkerContents: string
+) => {
     const workerUrl = URL.createObjectURL(
-        new Blob(['self.window = self;', openpgpContents, openpgpWorkerContents], {
-            type: 'text/javascript',
-        })
+        new Blob(
+            ["self.window = self;", openpgpContents, openpgpWorkerContents],
+            {
+                type: "text/javascript",
+            }
+        )
     );
     await createWorker({
         path: workerUrl,

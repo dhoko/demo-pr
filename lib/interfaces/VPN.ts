@@ -1,4 +1,4 @@
-import { PLANS } from '../constants';
+import { PLANS } from "../constants";
 
 export interface MyLocationResponse {
     IP: string;

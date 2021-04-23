@@ -1,13 +1,13 @@
 /**
  * Pending date-fn to implement UTC functions https://github.com/date-fns/date-fns/issues/376
  */
-export { default as eachDayOfInterval } from './eachDayOfInterval';
-export { default as startOfDay } from './startOfDay';
-export { default as endOfDay } from './endOfDay';
-export { default as startOfWeek } from './startOfWeek';
-export { default as endOfWeek } from './endOfWeek';
-export { default as getWeekNumber } from './getWeekNumber';
-export { default as differenceInCalendarDays } from './differenceInCalendarDays';
+export { default as eachDayOfInterval } from "./eachDayOfInterval";
+export { default as startOfDay } from "./startOfDay";
+export { default as endOfDay } from "./endOfDay";
+export { default as startOfWeek } from "./startOfWeek";
+export { default as endOfWeek } from "./endOfWeek";
+export { default as getWeekNumber } from "./getWeekNumber";
+export { default as differenceInCalendarDays } from "./differenceInCalendarDays";
 
 export const startOfYear = (date: Date) => {
     return new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
@@ -20,7 +20,17 @@ export const startOfMonth = (date: Date) => {
     return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
 };
 export const endOfMonth = (date: Date) => {
-    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+    return new Date(
+        Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth() + 1,
+            0,
+            23,
+            59,
+            59,
+            999
+        )
+    );
 };
 
 export const min = (a: Date, b: Date) => {
@@ -31,10 +41,12 @@ export const max = (a: Date, b: Date) => {
     return +a > +b ? a : b;
 };
 
-export const addMilliseconds = (date: Date, amount: number) => new Date(date.getTime() + amount);
+export const addMilliseconds = (date: Date, amount: number) =>
+    new Date(date.getTime() + amount);
 
 export const MILLISECONDS_IN_MINUTE = 60000;
-export const addMinutes = (date: Date, amount: number) => addMilliseconds(date, amount * MILLISECONDS_IN_MINUTE);
+export const addMinutes = (date: Date, amount: number) =>
+    addMilliseconds(date, amount * MILLISECONDS_IN_MINUTE);
 
 export const addDays = (date: Date, amount: number) => {
     const result = new Date(date);
@@ -96,8 +108,14 @@ export const isSameDay = (dateLeft: Date, dateRight: Date) => {
  * @param {Date} dateRight      Later date
  */
 export const isNextDay = (dateLeft: Date, dateRight: Date) => {
-    const tomorrow = new Date(Date.UTC(dateLeft.getUTCFullYear(), dateLeft.getUTCMonth(), dateLeft.getUTCDate() + 1));
+    const tomorrow = new Date(
+        Date.UTC(
+            dateLeft.getUTCFullYear(),
+            dateLeft.getUTCMonth(),
+            dateLeft.getUTCDate() + 1
+        )
+    );
     return isSameDay(tomorrow, dateRight);
 };
 
-export { default as format } from './format';
+export { default as format } from "./format";

@@ -1,6 +1,10 @@
-import { Locale } from 'date-fns';
-import { enGBLocale, enUSLocale, faIRLocale } from './dateFnLocales';
-import { SETTINGS_DATE_FORMAT, SETTINGS_TIME_FORMAT, SETTINGS_WEEK_START } from '../interfaces';
+import { Locale } from "date-fns";
+import { enGBLocale, enUSLocale, faIRLocale } from "./dateFnLocales";
+import {
+    SETTINGS_DATE_FORMAT,
+    SETTINGS_TIME_FORMAT,
+    SETTINGS_WEEK_START,
+} from "../interfaces";
 
 // Support for changing the date format is not great. Hide it for now.
 export const IS_DATE_FORMAT_ENABLED = false;
@@ -30,9 +34,13 @@ export interface Options {
     WeekStart: SETTINGS_WEEK_START;
 }
 
-export const getIsLocaleAMPM = (locale: Locale) => locale.formatLong?.time().includes('a');
+export const getIsLocaleAMPM = (locale: Locale) =>
+    locale.formatLong?.time().includes("a");
 
-export const getDateFnLocaleWithDateFormat = (locale: Locale, dateFormat: SETTINGS_DATE_FORMAT): Locale => {
+export const getDateFnLocaleWithDateFormat = (
+    locale: Locale,
+    dateFormat: SETTINGS_DATE_FORMAT
+): Locale => {
     const date = (dateFormat === SETTINGS_DATE_FORMAT.DDMMYYYY
         ? enGBLocale
         : dateFormat === SETTINGS_DATE_FORMAT.MMDDYYYY
@@ -50,7 +58,10 @@ export const getDateFnLocaleWithDateFormat = (locale: Locale, dateFormat: SETTIN
     };
 };
 
-export const getDateFnLocaleWithTimeFormat = (dateLocale: Locale, displayAMPM = false): Locale => {
+export const getDateFnLocaleWithTimeFormat = (
+    dateLocale: Locale,
+    displayAMPM = false
+): Locale => {
     const isAMPMLocale = getIsLocaleAMPM(dateLocale);
     if ((displayAMPM && isAMPMLocale) || (!displayAMPM && !isAMPMLocale)) {
         return dateLocale;
@@ -85,11 +96,18 @@ export const getDateFnLocaleWithSettings = (
         copy = getDateFnLocaleWithTimeFormat(locale, displayAMPM);
     }
 
-    if (IS_DATE_FORMAT_ENABLED && DateFormat !== SETTINGS_DATE_FORMAT.LOCALE_DEFAULT) {
+    if (
+        IS_DATE_FORMAT_ENABLED &&
+        DateFormat !== SETTINGS_DATE_FORMAT.LOCALE_DEFAULT
+    ) {
         copy = getDateFnLocaleWithDateFormat(copy, DateFormat);
     }
 
-    if (WeekStart !== SETTINGS_WEEK_START.LOCALE_DEFAULT && WeekStart >= 1 && WeekStart <= 7) {
+    if (
+        WeekStart !== SETTINGS_WEEK_START.LOCALE_DEFAULT &&
+        WeekStart >= 1 &&
+        WeekStart <= 7
+    ) {
         copy.options = {
             ...copy.options,
             weekStartsOn: (WeekStart % 7) as any,

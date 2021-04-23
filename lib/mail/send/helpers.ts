@@ -1,40 +1,46 @@
-import mimemessage from 'mimemessage';
-import { encodeUtf8 } from 'pmcrypto';
-import { AttachmentDirect } from '../../interfaces/mail/crypto';
+import mimemessage from "mimemessage";
+import { encodeUtf8 } from "pmcrypto";
+import { AttachmentDirect } from "../../interfaces/mail/crypto";
 
 /**
  * Remove '; name=' and '; filename=' values
  */
-const extractContentValue = (value = '') => {
-    const semicolonIndex = value.indexOf(';');
+const extractContentValue = (value = "") => {
+    const semicolonIndex = value.indexOf(";");
     if (semicolonIndex === -1) {
         return value;
     }
     return value.substr(0, semicolonIndex);
 };
 
-const buildAttachment = (attachmentData: { attachment: AttachmentDirect; data: string }) => {
+const buildAttachment = (attachmentData: {
+    attachment: AttachmentDirect;
+    data: string;
+}) => {
     const { attachment, data } = attachmentData;
     const attachmentName = JSON.stringify(attachment.Filename);
     const headers = attachment.Headers || {};
     const contentTypeValue =
-        extractContentValue(headers['content-type']) || attachment.MIMEType || 'application/octet-stream';
-    const contentDispositionValue = extractContentValue(headers['content-disposition']) || 'attachment';
+        extractContentValue(headers["content-type"]) ||
+        attachment.MIMEType ||
+        "application/octet-stream";
+    const contentDispositionValue =
+        extractContentValue(headers["content-disposition"]) || "attachment";
     const entity = mimemessage.factory({
         contentType: `${contentTypeValue}; filename=${attachmentName}; name=${attachmentName}`,
-        contentTransferEncoding: 'base64',
+        contentTransferEncoding: "base64",
         // the mimemessage library requires a particular transformation of the string `data` into a binary string
         // to produce the right body when data contains non Latin1 characters
         body: encodeUtf8(data),
     });
 
     entity.header(
-        'content-disposition',
+        "content-disposition",
         `${contentDispositionValue}; filename=${attachmentName}; name=${attachmentName}`
     );
 
-    if (headers['content-id']) {
-        entity.header('content-id', headers['content-id']);
+    if (headers["content-id"]) {
+        entity.header("content-id", headers["content-id"]);
     }
 
     return entity;
@@ -47,11 +53,11 @@ const buildAttachment = (attachmentData: { attachment: AttachmentDirect; data: s
 const buildPlaintextEntity = (plaintext?: string) => {
     const entity = mimemessage.factory({
         body: plaintext,
-        contentTransferEncoding: 'quoted-printable',
+        contentTransferEncoding: "quoted-printable",
     });
     if (!plaintext) {
         // the mimemessage library is buggy in this case and converts an empty string into 'null'
-        entity.internalBody = '';
+        entity.internalBody = "";
     }
     return entity;
 };
@@ -65,7 +71,7 @@ export const constructMime = (
     const body = [bodyEntity].concat(attachmentEntities);
 
     const msgentity = mimemessage.factory({
-        contentType: 'multipart/mixed',
+        contentType: "multipart/mixed",
         body,
     });
 

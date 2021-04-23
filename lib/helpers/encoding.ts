@@ -1,4 +1,4 @@
-import { encodeBase64, decodeBase64 } from './base64';
+import { encodeBase64, decodeBase64 } from "./base64";
 
 /**
  * NOTE: These functions exist in openpgp, but in order to load the application
@@ -12,9 +12,14 @@ export const uint8ArrayToString = (bytes: Uint8Array): string => {
     for (let i = 0; i < j; i += bs) {
         // @ts-ignore
         // eslint-disable-next-line prefer-spread
-        result.push(String.fromCharCode.apply(String, buffer.subarray(i, i + bs < j ? i + bs : j)));
+        result.push(
+            String.fromCharCode.apply(
+                String,
+                buffer.subarray(i, i + bs < j ? i + bs : j)
+            )
+        );
     }
-    return result.join('');
+    return result.join("");
 };
 
 export const stringToUint8Array = (str: string) => {
@@ -25,9 +30,11 @@ export const stringToUint8Array = (str: string) => {
     return result;
 };
 
-export const uint8ArrayToBase64String = (array: Uint8Array) => encodeBase64(uint8ArrayToString(array));
+export const uint8ArrayToBase64String = (array: Uint8Array) =>
+    encodeBase64(uint8ArrayToString(array));
 
-export const base64StringToUint8Array = (string: string) => stringToUint8Array(decodeBase64(string) || '');
+export const base64StringToUint8Array = (string: string) =>
+    stringToUint8Array(decodeBase64(string) || "");
 
 /**
  * Encode a binary string in the so-called base64 URL (https://tools.ietf.org/html/rfc4648#section-5)
@@ -38,7 +45,10 @@ export const base64StringToUint8Array = (string: string) => stringToUint8Array(d
  * @dev WE REMOVE THE PADDING CHARACTERS
  */
 export const encodeBase64URL = (str: string) => {
-    return encodeBase64(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    return encodeBase64(str)
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=/g, "");
 };
 
 /**
@@ -46,5 +56,9 @@ export const encodeBase64URL = (str: string) => {
  * @param str
  */
 export const decodeBase64URL = (str: string) => {
-    return decodeBase64((str + '==='.slice((str.length + 3) % 4)).replace(/-/g, '+').replace(/_/g, '/'));
+    return decodeBase64(
+        (str + "===".slice((str.length + 3) % 4))
+            .replace(/-/g, "+")
+            .replace(/_/g, "/")
+    );
 };

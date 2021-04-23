@@ -1,5 +1,8 @@
-import { ATTENDEE_STATUS_API } from '../../calendar/constants';
-import { VcalAttendeeProperty, VcalAttendeePropertyParameters } from './VcalModel';
+import { ATTENDEE_STATUS_API } from "../../calendar/constants";
+import {
+    VcalAttendeeProperty,
+    VcalAttendeePropertyParameters,
+} from "./VcalModel";
 
 export interface AttendeeClearPartResult {
     status: ATTENDEE_STATUS_API;
@@ -7,7 +10,7 @@ export interface AttendeeClearPartResult {
 }
 
 interface AttendeeParameters extends VcalAttendeePropertyParameters {
-    'x-pm-token': string;
+    "x-pm-token": string;
 }
 export interface AttendeePart extends VcalAttendeeProperty {
     parameters: AttendeeParameters;

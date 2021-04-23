@@ -8,7 +8,7 @@ import {
     sub,
     isAfter,
     getDaysInMonth,
-} from 'date-fns';
+} from "date-fns";
 
 interface FormatOptions {
     locale?: Locale;
@@ -17,9 +17,15 @@ interface FormatOptions {
 /**
  * Get a list with the names of the days of the week according to current locale, where Sunday is the start of the week.
  */
-export const getFormattedWeekdays = (stringFormat: string, options?: FormatOptions) => {
+export const getFormattedWeekdays = (
+    stringFormat: string,
+    options?: FormatOptions
+) => {
     const zeroTime = new Date(0);
-    const weekdays = eachDayOfInterval({ start: startOfWeek(zeroTime), end: endOfWeek(zeroTime) });
+    const weekdays = eachDayOfInterval({
+        start: startOfWeek(zeroTime),
+        end: endOfWeek(zeroTime),
+    });
 
     return weekdays.map((day) => format(day, stringFormat, options));
 };
@@ -27,9 +33,14 @@ export const getFormattedWeekdays = (stringFormat: string, options?: FormatOptio
 /**
  * Get a list with the names of the days of the week according to current locale
  */
-export const getFormattedMonths = (stringFormat: string, options?: FormatOptions) => {
+export const getFormattedMonths = (
+    stringFormat: string,
+    options?: FormatOptions
+) => {
     const dummyDate = startOfYear(new Date(0));
-    const dummyMonths = Array.from({ length: 12 }).map((_, i) => addMonths(dummyDate, i));
+    const dummyMonths = Array.from({ length: 12 }).map((_, i) =>
+        addMonths(dummyDate, i)
+    );
 
     return dummyMonths.map((date) => format(date, stringFormat, options));
 };
@@ -37,7 +48,9 @@ export const getFormattedMonths = (stringFormat: string, options?: FormatOptions
 /**
  * Get the index of the start of week day for a given date-fn locale
  */
-export const getWeekStartsOn = ({ options: { weekStartsOn = 0 } = { weekStartsOn: 0 } }: Locale) => weekStartsOn;
+export const getWeekStartsOn = ({
+    options: { weekStartsOn = 0 } = { weekStartsOn: 0 },
+}: Locale) => weekStartsOn;
 
 export const getTimeRemaining = (earlierDate: Date, laterDate: Date) => {
     const result = {
@@ -89,11 +102,14 @@ export const getTimeRemaining = (earlierDate: Date, laterDate: Date) => {
 
     if (result.days < 0) {
         const daysInLastFullMonth = getDaysInMonth(
-            sub(new Date(`${later.getFullYear()}-${later.getMonth() + 1}`), { months: 1 })
+            sub(new Date(`${later.getFullYear()}-${later.getMonth() + 1}`), {
+                months: 1,
+            })
         );
         if (daysInLastFullMonth < earlier.getDate()) {
             // 31/01 -> 2/03
-            result.days += daysInLastFullMonth + (earlier.getDate() - daysInLastFullMonth);
+            result.days +=
+                daysInLastFullMonth + (earlier.getDate() - daysInLastFullMonth);
         } else {
             result.days += daysInLastFullMonth;
         }

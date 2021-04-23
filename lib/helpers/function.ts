@@ -6,7 +6,11 @@ export const identity = <T>(value: T) => value;
  */
 export const unary = <A>(fn: Function) => (arg: A) => fn(arg);
 
-export const debounce = <A extends any[]>(func: (...args: A) => void, wait: number, isImmediate?: boolean) => {
+export const debounce = <A extends any[]>(
+    func: (...args: A) => void,
+    wait: number,
+    isImmediate?: boolean
+) => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     function debouncedFunction(this: any, ...args: A) {
@@ -40,7 +44,11 @@ export const debounce = <A extends any[]>(func: (...args: A) => void, wait: numb
     return debouncedFunction;
 };
 
-export const throttle = <A extends any[]>(func: (...args: A) => void, ms = 50, context = window) => {
+export const throttle = <A extends any[]>(
+    func: (...args: A) => void,
+    ms = 50,
+    context = window
+) => {
     let wait = false;
 
     return (...args: A) => {
@@ -59,7 +67,10 @@ export const throttle = <A extends any[]>(func: (...args: A) => void, ms = 50, c
 };
 
 /** Similar to throttle but ensures first and last calls are made */
-export const buffer = <A extends any[]>(func: (...args: A) => void, ms = 50) => {
+export const buffer = <A extends any[]>(
+    func: (...args: A) => void,
+    ms = 50
+) => {
     let cooldown: any;
     let lastArgs: A | undefined;
 

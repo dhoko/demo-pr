@@ -1,14 +1,14 @@
-import { INTERVAL_EVENT_TIMER } from '../constants';
-import { getEvents } from '../api/events';
-import { onceWithQueue } from '../helpers/onceWithQueue';
-import createListeners, { Listener } from '../helpers/listeners';
-import { Api } from '../interfaces';
+import { INTERVAL_EVENT_TIMER } from "../constants";
+import { getEvents } from "../api/events";
+import { onceWithQueue } from "../helpers/onceWithQueue";
+import createListeners, { Listener } from "../helpers/listeners";
+import { Api } from "../interfaces";
 
 const FIBONACCI = [1, 1, 2, 3, 5, 8];
 
 export enum EVENT_ID_KEYS {
-    DEFAULT = 'EventID',
-    CALENDAR = 'CalendarModelEventID',
+    DEFAULT = "EventID",
+    CALENDAR = "CalendarModelEventID",
 }
 
 type EventResponse = {
@@ -29,7 +29,9 @@ interface EventManagerConfig {
     eventIDKey?: EVENT_ID_KEYS;
 }
 
-export type SubscribeFn = <A extends any[], R = void>(listener: Listener<A, R>) => () => void;
+export type SubscribeFn = <A extends any[], R = void>(
+    listener: Listener<A, R>
+) => () => void;
 
 export interface EventManager {
     setEventID: (eventID: string) => void;
@@ -54,7 +56,7 @@ const eventManager = ({
     const listeners = createListeners<[EventResponse]>();
 
     if (!initialEventID) {
-        throw new Error('eventID must be provided.');
+        throw new Error("eventID must be provided.");
     }
 
     let STATE: {
@@ -148,7 +150,7 @@ const eventManager = ({
                 const eventID = getEventID();
 
                 if (!eventID) {
-                    throw new Error('EventID undefined');
+                    throw new Error("EventID undefined");
                 }
 
                 let result: EventResponse;
@@ -159,7 +161,7 @@ const eventManager = ({
                         silence: true,
                     });
                 } catch (error) {
-                    if (error.name === 'AbortError') {
+                    if (error.name === "AbortError") {
                         return;
                     }
                     throw error;

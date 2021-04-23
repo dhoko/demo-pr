@@ -1,30 +1,37 @@
-import { OpenPGPKey, SessionKey } from 'pmcrypto';
-import { CalendarEventBlobData } from '../api/calendars';
-import { RequireSome } from '../interfaces/utils';
+import { OpenPGPKey, SessionKey } from "pmcrypto";
+import { CalendarEventBlobData } from "../api/calendars";
+import { RequireSome } from "../interfaces/utils";
 
-import { CALENDAR_CARD_TYPE } from './constants';
-import { getVeventParts } from './veventHelper';
-import { createSessionKey, encryptPart, getEncryptedSessionKey, signPart } from './encrypt';
-import { SignPartResult, VcalVeventComponent } from '../interfaces/calendar';
-import { getIsEventComponent } from './vcalHelper';
-import { formatData, getArmoredSignatureString } from './formatData';
+import { CALENDAR_CARD_TYPE } from "./constants";
+import { getVeventParts } from "./veventHelper";
+import {
+    createSessionKey,
+    encryptPart,
+    getEncryptedSessionKey,
+    signPart,
+} from "./encrypt";
+import { SignPartResult, VcalVeventComponent } from "../interfaces/calendar";
+import { getIsEventComponent } from "./vcalHelper";
+import { formatData, getArmoredSignatureString } from "./formatData";
 
 const { ENCRYPTED_AND_SIGNED, SIGNED, CLEAR_TEXT } = CALENDAR_CARD_TYPE;
 
 export const getHasSharedEventContent = (
     data: Partial<CalendarEventBlobData>
-): data is RequireSome<CalendarEventBlobData, 'SharedEventContent'> => !!data.SharedEventContent;
+): data is RequireSome<CalendarEventBlobData, "SharedEventContent"> =>
+    !!data.SharedEventContent;
 
 export const getHasSharedKeyPacket = (
     data: CalendarEventBlobData
-): data is RequireSome<CalendarEventBlobData, 'SharedKeyPacket'> => !!data.SharedKeyPacket;
+): data is RequireSome<CalendarEventBlobData, "SharedKeyPacket"> =>
+    !!data.SharedKeyPacket;
 
 /**
  * Split the properties of the component into parts.
  */
 const getParts = (eventComponent: VcalVeventComponent) => {
     if (!getIsEventComponent(eventComponent)) {
-        throw new Error('Type other than vevent not supported');
+        throw new Error("Type other than vevent not supported");
     }
     return getVeventParts(eventComponent);
 };
@@ -54,7 +61,9 @@ export const createCalendarEvent = async ({
     isSwitchCalendar,
     isInvitation,
 }: CreateCalendarEventArguments) => {
-    const { sharedPart, calendarPart, personalPart, attendeesPart } = getParts(eventComponent);
+    const { sharedPart, calendarPart, personalPart, attendeesPart } = getParts(
+        eventComponent
+    );
 
     const isCreateOrSwitchCalendar = isCreateEvent || isSwitchCalendar;
     const isSwitchCalendarOfInvitation = isSwitchCalendar && isInvitation;
@@ -62,7 +71,9 @@ export const createCalendarEvent = async ({
     const shouldHaveCalendarKey = !!calendarPart[ENCRYPTED_AND_SIGNED];
 
     const [calendarSessionKey, sharedSessionKey] = await Promise.all([
-        shouldHaveCalendarKey ? oldCalendarSessionKey || createSessionKey(publicKey) : undefined,
+        shouldHaveCalendarKey
+            ? oldCalendarSessionKey || createSessionKey(publicKey)
+            : undefined,
         oldSharedSessionKey || createSessionKey(publicKey),
     ]);
 
@@ -80,19 +91,36 @@ export const createCalendarEvent = async ({
         isCreateOrSwitchCalendar && calendarSessionKey
             ? getEncryptedSessionKey(calendarSessionKey, privateKey)
             : undefined,
-        isCreateOrSwitchCalendar ? getEncryptedSessionKey(sharedSessionKey, privateKey) : undefined,
+        isCreateOrSwitchCalendar
+            ? getEncryptedSessionKey(sharedSessionKey, privateKey)
+            : undefined,
         // attendees are not allowed to change the SharedEventContent, so they shouldn't send it (API will complain otherwise)
-        isSwitchCalendarOfInvitation ? undefined : signPart(sharedPart[SIGNED], signingKey),
         isSwitchCalendarOfInvitation
             ? undefined
-            : encryptPart(sharedPart[ENCRYPTED_AND_SIGNED], signingKey, sharedSessionKey),
+            : signPart(sharedPart[SIGNED], signingKey),
+        isSwitchCalendarOfInvitation
+            ? undefined
+            : encryptPart(
+                  sharedPart[ENCRYPTED_AND_SIGNED],
+                  signingKey,
+                  sharedSessionKey
+              ),
         signPart(calendarPart[SIGNED], signingKey),
-        calendarSessionKey && encryptPart(calendarPart[ENCRYPTED_AND_SIGNED], signingKey, calendarSessionKey),
+        calendarSessionKey &&
+            encryptPart(
+                calendarPart[ENCRYPTED_AND_SIGNED],
+                signingKey,
+                calendarSessionKey
+            ),
         signPart(personalPart[SIGNED], signingKey),
         // attendees are not allowed to change the SharedEventContent, so they shouldn't send it (API will complain otherwise)
         isSwitchCalendarOfInvitation
             ? undefined
-            : encryptPart(attendeesPart[ENCRYPTED_AND_SIGNED], signingKey, sharedSessionKey),
+            : encryptPart(
+                  attendeesPart[ENCRYPTED_AND_SIGNED],
+                  signingKey,
+                  sharedSessionKey
+              ),
     ]);
 
     return formatData({
@@ -104,7 +132,9 @@ export const createCalendarEvent = async ({
         calendarSessionKey: encryptedCalendarSessionKey,
         personalSignedPart,
         attendeesEncryptedPart,
-        attendeesClearPart: isSwitchCalendarOfInvitation ? undefined : attendeesPart[CLEAR_TEXT],
+        attendeesClearPart: isSwitchCalendarOfInvitation
+            ? undefined
+            : attendeesPart[CLEAR_TEXT],
     });
 };
 
@@ -129,7 +159,10 @@ interface CreatePersonalEventArguments {
     eventComponent: VcalVeventComponent;
     signingKey: OpenPGPKey;
 }
-export const createPersonalEvent = async ({ eventComponent, signingKey }: CreatePersonalEventArguments) => {
+export const createPersonalEvent = async ({
+    eventComponent,
+    signingKey,
+}: CreatePersonalEventArguments) => {
     const { personalPart } = getParts(eventComponent);
 
     const personalSignedPart = await signPart(personalPart[SIGNED], signingKey);

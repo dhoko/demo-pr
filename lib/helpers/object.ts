@@ -4,7 +4,10 @@
  * @returns bitmap
  */
 export const toBitMap = (o: { [key: string]: boolean } = {}): number =>
-    Object.keys(o).reduce((acc, key, index) => acc + (Number(o[key]) << index), 0);
+    Object.keys(o).reduce(
+        (acc, key, index) => acc + (Number(o[key]) << index),
+        0
+    );
 
 /**
  * Define an Object from a bitmap value
@@ -24,7 +27,10 @@ export const fromBitmap = (value: number, keys: string[] = []) =>
  * @param properties Properties to omit.
  * @retuns Returns a new object.
  */
-export const omit = <T, K extends keyof T>(model: T, properties: readonly K[] = []): Omit<T, K> => {
+export const omit = <T, K extends keyof T>(
+    model: T,
+    properties: readonly K[] = []
+): Omit<T, K> => {
     const result = { ...model };
     for (let i = 0; i < properties.length; ++i) {
         delete result[properties[i]];
@@ -38,7 +44,10 @@ export const omit = <T, K extends keyof T>(model: T, properties: readonly K[] = 
  * @param properties Properties to keep.
  * @return Returns a new object.
  */
-export const pick = <T, K extends keyof T>(model: T, properties: readonly K[] = []) => {
+export const pick = <T, K extends keyof T>(
+    model: T,
+    properties: readonly K[] = []
+) => {
     const result: Pick<T, K> = {} as any;
     for (let i = 0; i < properties.length; ++i) {
         const key = properties[i];
@@ -52,7 +61,10 @@ export const pick = <T, K extends keyof T>(model: T, properties: readonly K[] = 
 /**
  * Compare two objects but not deeply
  */
-export const isEquivalent = (a: { [key: string]: any }, b: { [key: string]: any }) => {
+export const isEquivalent = (
+    a: { [key: string]: any },
+    b: { [key: string]: any }
+) => {
     const aProps = Object.getOwnPropertyNames(a);
     const bProps = Object.getOwnPropertyNames(b);
 
@@ -76,7 +88,7 @@ export const isEquivalent = (a: { [key: string]: any }, b: { [key: string]: any 
  */
 export const toMap = <T extends { [key: string]: any }, K extends keyof T>(
     collection: T[] = [],
-    key: K = 'ID' as K
+    key: K = "ID" as K
 ) => {
     const result: { [key in T[K]]: T } = {} as any;
     for (let i = 0; i < collection.length; i++) {

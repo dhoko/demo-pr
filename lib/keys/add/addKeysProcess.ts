@@ -1,8 +1,11 @@
-import { createAddressKeyLegacy, createAddressKeyV2 } from './addAddressKeyHelper';
-import { getHasMigratedAddressKeys } from '../keyMigration';
-import { Address, Api, DecryptedKey, EncryptionConfig } from '../../interfaces';
-import { getActiveKeys } from '../getActiveKeys';
-import { getPrimaryKey } from '../getPrimaryKey';
+import {
+    createAddressKeyLegacy,
+    createAddressKeyV2,
+} from "./addAddressKeyHelper";
+import { getHasMigratedAddressKeys } from "../keyMigration";
+import { Address, Api, DecryptedKey, EncryptionConfig } from "../../interfaces";
+import { getActiveKeys } from "../getActiveKeys";
+import { getPrimaryKey } from "../getPrimaryKey";
 
 interface AddAddressKeysProcessArguments {
     api: Api;
@@ -25,12 +28,16 @@ export const addAddressKeysProcess = async ({
 }: AddAddressKeysProcessArguments) => {
     const hasMigratedAddressKeys = getHasMigratedAddressKeys(addresses);
 
-    const activeKeys = await getActiveKeys(address.SignedKeyList, address.Keys, addressKeys);
+    const activeKeys = await getActiveKeys(
+        address.SignedKeyList,
+        address.Keys,
+        addressKeys
+    );
 
     if (hasMigratedAddressKeys) {
         const userKey = getPrimaryKey(userKeys)?.privateKey;
         if (!userKey) {
-            throw new Error('Missing primary user key');
+            throw new Error("Missing primary user key");
         }
         return createAddressKeyV2({
             api,

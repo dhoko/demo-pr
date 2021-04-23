@@ -1,4 +1,4 @@
-import { DRAFT_MIME_TYPES, PACKAGE_TYPE } from '../constants';
+import { DRAFT_MIME_TYPES, PACKAGE_TYPE } from "../constants";
 
 export interface AutoResponder {
     StartTime: number;

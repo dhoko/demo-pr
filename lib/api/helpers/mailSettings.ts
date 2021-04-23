@@ -1,10 +1,19 @@
-import { MIME_TYPES, PACKAGE_TYPE, PGP_SCHEMES, PGP_SIGN, CONTACT_MIME_TYPES } from '../../constants';
-import { ContactPublicKeyModel, MailSettings } from '../../interfaces';
+import {
+    MIME_TYPES,
+    PACKAGE_TYPE,
+    PGP_SCHEMES,
+    PGP_SIGN,
+    CONTACT_MIME_TYPES,
+} from "../../constants";
+import { ContactPublicKeyModel, MailSettings } from "../../interfaces";
 
 /**
  * Extract sign flag from the contact public key model and mail settings
  */
-export const extractSign = (model: ContactPublicKeyModel, mailSettings: MailSettings): boolean => {
+export const extractSign = (
+    model: ContactPublicKeyModel,
+    mailSettings: MailSettings
+): boolean => {
     const { sign } = model;
     return sign !== undefined ? sign : mailSettings.Sign === PGP_SIGN;
 };
@@ -12,7 +21,10 @@ export const extractSign = (model: ContactPublicKeyModel, mailSettings: MailSett
 /**
  * Extract PGP scheme from the contact public key model and mail settings
  */
-export const extractScheme = (model: ContactPublicKeyModel, mailSettings: MailSettings): PGP_SCHEMES => {
+export const extractScheme = (
+    model: ContactPublicKeyModel,
+    mailSettings: MailSettings
+): PGP_SCHEMES => {
     const { scheme } = model;
     if (scheme === PGP_SCHEMES.PGP_INLINE || scheme === PGP_SCHEMES.PGP_MIME) {
         return scheme;
@@ -26,7 +38,10 @@ export const extractScheme = (model: ContactPublicKeyModel, mailSettings: MailSe
 /**
  * Extract MIME type (for the composer) from the contact public key model and mail settings
  */
-export const extractDraftMIMEType = (model: ContactPublicKeyModel, mailSettings: MailSettings): CONTACT_MIME_TYPES => {
+export const extractDraftMIMEType = (
+    model: ContactPublicKeyModel,
+    mailSettings: MailSettings
+): CONTACT_MIME_TYPES => {
     const { mimeType } = model;
     const sign = extractSign(model, mailSettings);
     const scheme = extractScheme(model, mailSettings);

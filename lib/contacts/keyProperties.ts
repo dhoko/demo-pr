@@ -1,11 +1,22 @@
-import { arrayToBinaryString, binaryStringToArray, decodeBase64, encodeBase64, getKeys, OpenPGPKey } from 'pmcrypto';
-import { PGP_SCHEMES, MIME_TYPES } from '../constants';
-import { noop } from '../helpers/function';
-import isTruthy from '../helpers/isTruthy';
-import { MimeTypeVcard, PinnedKeysConfig, PublicKeyWithPref } from '../interfaces';
-import { ContactProperties, ContactProperty } from '../interfaces/contacts';
-import { VCARD_KEY_FIELDS } from './constants';
-import { sortByPref } from './properties';
+import {
+    arrayToBinaryString,
+    binaryStringToArray,
+    decodeBase64,
+    encodeBase64,
+    getKeys,
+    OpenPGPKey,
+} from "pmcrypto";
+import { PGP_SCHEMES, MIME_TYPES } from "../constants";
+import { noop } from "../helpers/function";
+import isTruthy from "../helpers/isTruthy";
+import {
+    MimeTypeVcard,
+    PinnedKeysConfig,
+    PublicKeyWithPref,
+} from "../interfaces";
+import { ContactProperties, ContactProperty } from "../interfaces/contacts";
+import { VCARD_KEY_FIELDS } from "./constants";
+import { sortByPref } from "./properties";
 
 /**
  * The only values allowed for a PGP scheme stored in a vCard are
@@ -34,9 +45,14 @@ const getMimeTypeVcard = (mimeType: string): MimeTypeVcard | undefined => {
 export const getKeyInfoFromProperties = async (
     properties: ContactProperties,
     emailGroup: string
-): Promise<Omit<PinnedKeysConfig, 'isContactSignatureVerified' | 'isContact'>> => {
+): Promise<
+    Omit<PinnedKeysConfig, "isContactSignatureVerified" | "isContact">
+> => {
     const { pinnedKeyPromises, mimeType, encrypt, scheme, sign } = properties
-        .filter(({ field, group }) => VCARD_KEY_FIELDS.includes(field) && group === emailGroup)
+        .filter(
+            ({ field, group }) =>
+                VCARD_KEY_FIELDS.includes(field) && group === emailGroup
+        )
         .reduce<{
             pinnedKeyPromises: Promise<PublicKeyWithPref | undefined>[];
             encrypt?: boolean;
@@ -45,8 +61,8 @@ export const getKeyInfoFromProperties = async (
             mimeType?: MimeTypeVcard;
         }>(
             (acc, { field, value, pref }) => {
-                if (field === 'key' && value) {
-                    const [, base64 = ''] = (value as string).split(',');
+                if (field === "key" && value) {
+                    const [, base64 = ""] = (value as string).split(",");
                     const key = binaryStringToArray(decodeBase64(base64));
 
                     if (key.length) {
@@ -58,19 +74,19 @@ export const getKeyInfoFromProperties = async (
 
                     return acc;
                 }
-                if (field === 'x-pm-encrypt' && value) {
-                    acc.encrypt = value === 'true';
+                if (field === "x-pm-encrypt" && value) {
+                    acc.encrypt = value === "true";
                     return acc;
                 }
-                if (field === 'x-pm-sign' && value) {
-                    acc.sign = value === 'true';
+                if (field === "x-pm-sign" && value) {
+                    acc.sign = value === "true";
                     return acc;
                 }
-                if (field === 'x-pm-scheme' && value) {
+                if (field === "x-pm-scheme" && value) {
                     acc.scheme = getPGPSchemeVcard(value as string);
                     return acc;
                 }
-                if (field === 'x-pm-mimetype' && value) {
+                if (field === "x-pm-mimetype" && value) {
                     acc.mimeType = getMimeTypeVcard(value as string);
                     return acc;
                 }
@@ -85,8 +101,12 @@ export const getKeyInfoFromProperties = async (
                 mimeType: undefined,
             }
         );
-    const rawPinnedKeys = (await Promise.all(pinnedKeyPromises)).filter(isTruthy);
-    const pinnedKeys = rawPinnedKeys.sort(sortByPref).map(({ publicKey }) => publicKey);
+    const rawPinnedKeys = (await Promise.all(pinnedKeyPromises)).filter(
+        isTruthy
+    );
+    const pinnedKeys = rawPinnedKeys
+        .sort(sortByPref)
+        .map(({ publicKey }) => publicKey);
 
     return { pinnedKeys, encrypt, scheme, mimeType, sign };
 };
@@ -100,8 +120,12 @@ interface VcardPublicKey {
 /**
  * Transform a key into a vCard property
  */
-export const toKeyProperty = ({ publicKey, group, index }: VcardPublicKey): ContactProperty => ({
-    field: 'key',
+export const toKeyProperty = ({
+    publicKey,
+    group,
+    index,
+}: VcardPublicKey): ContactProperty => ({
+    field: "key",
     value: `data:application/pgp-keys;base64,${encodeBase64(
         arrayToBinaryString(publicKey.toPacketlist().write() as Uint8Array)
     )}`,

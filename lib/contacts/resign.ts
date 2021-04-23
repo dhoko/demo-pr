@@ -1,6 +1,6 @@
-import { OpenPGPKey, signMessage } from 'pmcrypto';
-import { CONTACT_CARD_TYPE } from '../constants';
-import { ContactCard } from '../interfaces/contacts';
+import { OpenPGPKey, signMessage } from "pmcrypto";
+import { CONTACT_CARD_TYPE } from "../constants";
+import { ContactCard } from "../interfaces/contacts";
 
 /**
  * Re-sign contact cards
@@ -11,12 +11,24 @@ interface Params {
     contactCards: ContactCard[];
     privateKeys: OpenPGPKey[];
 }
-export const resignCards = async ({ contactCards, privateKeys }: Params): Promise<ContactCard[]> => {
-    const signedCards = contactCards.filter((card) => card.Type === CONTACT_CARD_TYPE.SIGNED);
-    const otherCards = contactCards.filter((card) => card.Type !== CONTACT_CARD_TYPE.SIGNED);
+export const resignCards = async ({
+    contactCards,
+    privateKeys,
+}: Params): Promise<ContactCard[]> => {
+    const signedCards = contactCards.filter(
+        (card) => card.Type === CONTACT_CARD_TYPE.SIGNED
+    );
+    const otherCards = contactCards.filter(
+        (card) => card.Type !== CONTACT_CARD_TYPE.SIGNED
+    );
     const reSignedCards = await Promise.all(
         signedCards.map(async ({ Data }) => {
-            const { signature } = await signMessage({ data: Data, privateKeys, armor: true, detached: true });
+            const { signature } = await signMessage({
+                data: Data,
+                privateKeys,
+                armor: true,
+                detached: true,
+            });
             return {
                 Type: CONTACT_CARD_TYPE.SIGNED,
                 Data,

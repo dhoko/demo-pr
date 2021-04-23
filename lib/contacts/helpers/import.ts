@@ -1,8 +1,8 @@
-import { c } from 'ttag';
+import { c } from "ttag";
 
-import { CONTACT_CARD_TYPE, FORBIDDEN_LABEL_NAMES } from '../../constants';
-import isTruthy from '../../helpers/isTruthy';
-import { normalize } from '../../helpers/string';
+import { CONTACT_CARD_TYPE, FORBIDDEN_LABEL_NAMES } from "../../constants";
+import isTruthy from "../../helpers/isTruthy";
+import { normalize } from "../../helpers/string";
 import {
     ContactGroup,
     ContactMetadata,
@@ -10,63 +10,83 @@ import {
     IMPORT_GROUPS_ACTION,
     ImportCategories,
     ImportedContact,
-} from '../../interfaces/contacts';
+} from "../../interfaces/contacts";
 import {
     ACCEPTED_EXTENSIONS,
     EncryptedContact,
     EXTENSION,
     ImportContactsModel,
-} from '../../interfaces/contacts/Import';
-import { SimpleMap } from '../../interfaces/utils';
+} from "../../interfaces/contacts/Import";
+import { SimpleMap } from "../../interfaces/utils";
 
-import { IMPORT_CONTACT_ERROR_TYPE, ImportContactError } from '../errors/ImportContactError';
+import {
+    IMPORT_CONTACT_ERROR_TYPE,
+    ImportContactError,
+} from "../errors/ImportContactError";
 
-import { hasCategories } from '../properties';
-import { parse as parseVcard } from '../vcard';
+import { hasCategories } from "../properties";
+import { parse as parseVcard } from "../vcard";
 
-export const getIsAcceptedExtension = (extension: string): extension is ACCEPTED_EXTENSIONS => {
+export const getIsAcceptedExtension = (
+    extension: string
+): extension is ACCEPTED_EXTENSIONS => {
     return Object.values(EXTENSION).includes(extension as EXTENSION);
 };
 
 export const getHasPreVcardsContacts = (
     model: ImportContactsModel
-): model is ImportContactsModel & Required<Pick<ImportContactsModel, 'preVcardsContacts'>> => {
+): model is ImportContactsModel &
+    Required<Pick<ImportContactsModel, "preVcardsContacts">> => {
     return !!model.preVcardsContacts;
 };
 
 /**
  * Try to get a string that identifies a contact. This will be used in case of errors
  */
-export const getContactId = (vcardOrContactProperties: string | ContactProperties) => {
+export const getContactId = (
+    vcardOrContactProperties: string | ContactProperties
+) => {
     if (Array.isArray(vcardOrContactProperties)) {
-        const fn = vcardOrContactProperties.filter(({ field }) => field === 'fn')[0]?.value;
+        const fn = vcardOrContactProperties.filter(
+            ({ field }) => field === "fn"
+        )[0]?.value;
         if (fn) {
             return fn as string;
         }
-        const email = vcardOrContactProperties.filter(({ field }) => field === 'email')[0]?.value;
+        const email = vcardOrContactProperties.filter(
+            ({ field }) => field === "email"
+        )[0]?.value;
         if (email) {
             return email as string;
         }
-        return c('Import contact. Contact identifier').t`unknown`;
+        return c("Import contact. Contact identifier").t`unknown`;
     }
     // try to get the name of the contact from FN, which is a required field in a vcard
-    const [, fn] = vcardOrContactProperties.match(/FN(?:;[^\r\n]*)*:([^\r\n]*)\s/) || [];
+    const [, fn] =
+        vcardOrContactProperties.match(/FN(?:;[^\r\n]*)*:([^\r\n]*)\s/) || [];
     if (fn) {
         return fn;
     }
-    return c('Import contact. Contact identifier').t`unknown`;
+    return c("Import contact. Contact identifier").t`unknown`;
 };
 
 export const getSupportedContact = (vcard: string) => {
-    if (vcard.includes('VERSION:2.1')) {
+    if (vcard.includes("VERSION:2.1")) {
         const contactId = getContactId(vcard);
-        return new ImportContactError(IMPORT_CONTACT_ERROR_TYPE.UNSUPPORTED_VCARD_VERSION, contactId);
+        return new ImportContactError(
+            IMPORT_CONTACT_ERROR_TYPE.UNSUPPORTED_VCARD_VERSION,
+            contactId
+        );
     }
     try {
         return parseVcard(vcard);
     } catch (error) {
         const contactId = getContactId(vcard);
-        return new ImportContactError(IMPORT_CONTACT_ERROR_TYPE.EXTERNAL_ERROR, contactId, error);
+        return new ImportContactError(
+            IMPORT_CONTACT_ERROR_TYPE.EXTERNAL_ERROR,
+            contactId,
+            error
+        );
     }
 };
 
@@ -80,7 +100,11 @@ export const getSupportedContacts = (vcards: string[]) => {
                     return error;
                 }
                 const contactId = getContactId(vcard);
-                return new ImportContactError(IMPORT_CONTACT_ERROR_TYPE.EXTERNAL_ERROR, contactId, error);
+                return new ImportContactError(
+                    IMPORT_CONTACT_ERROR_TYPE.EXTERNAL_ERROR,
+                    contactId,
+                    error
+                );
             }
         })
         .filter(isTruthy);
@@ -103,7 +127,10 @@ export const extractContactImportCategories = (
             const matchingContactEmailIDs = contactEmails
                 .filter(({ group: emailGroup }) => emailGroup === group)
                 .map(({ email }) => {
-                    const { ID } = contact.ContactEmails.find(({ Email }) => Email === email) || {};
+                    const { ID } =
+                        contact.ContactEmails.find(
+                            ({ Email }) => Email === email
+                        ) || {};
                     return ID;
                 })
                 .filter(isTruthy);
@@ -114,17 +141,23 @@ export const extractContactImportCategories = (
         }
         return { name };
     });
-    const categoriesMap = withGroup.reduce<SimpleMap<string[]>>((acc, { name, contactEmailIDs = [] }) => {
-        const category = acc[name];
-        if (category && contactEmailIDs.length) {
-            category.push(...contactEmailIDs);
-        } else {
-            acc[name] = [...contactEmailIDs];
-        }
-        return acc;
-    }, {});
+    const categoriesMap = withGroup.reduce<SimpleMap<string[]>>(
+        (acc, { name, contactEmailIDs = [] }) => {
+            const category = acc[name];
+            if (category && contactEmailIDs.length) {
+                category.push(...contactEmailIDs);
+            } else {
+                acc[name] = [...contactEmailIDs];
+            }
+            return acc;
+        },
+        {}
+    );
 
-    return Object.entries(categoriesMap).map(([name, contactEmailIDs]) => ({ name, contactEmailIDs }));
+    return Object.entries(categoriesMap).map(([name, contactEmailIDs]) => ({
+        name,
+        contactEmailIDs,
+    }));
 };
 
 /**
@@ -133,7 +166,12 @@ export const extractContactImportCategories = (
  */
 export const getImportCategories = (contacts: ImportedContact[]) => {
     const allCategoriesMap = contacts.reduce<
-        SimpleMap<Pick<ImportCategories, 'contactEmailIDs' | 'contactIDs' | 'totalContacts'>>
+        SimpleMap<
+            Pick<
+                ImportCategories,
+                "contactEmailIDs" | "contactIDs" | "totalContacts"
+            >
+        >
     >((acc, { contactID, categories }) => {
         if (!categories.length) {
             return acc;
@@ -142,8 +180,16 @@ export const getImportCategories = (contacts: ImportedContact[]) => {
             const category = acc[name];
             if (!category) {
                 acc[name] = contactEmailIDs.length
-                    ? { contactEmailIDs: [...contactEmailIDs], contactIDs: [], totalContacts: 1 }
-                    : { contactEmailIDs: [], contactIDs: [contactID], totalContacts: 1 };
+                    ? {
+                          contactEmailIDs: [...contactEmailIDs],
+                          contactIDs: [],
+                          totalContacts: 1,
+                      }
+                    : {
+                          contactEmailIDs: [],
+                          contactIDs: [contactID],
+                          totalContacts: 1,
+                      };
             } else {
                 const {
                     contactEmailIDs: existingContactEmailIDs,
@@ -152,7 +198,9 @@ export const getImportCategories = (contacts: ImportedContact[]) => {
                 } = category;
                 if (contactEmailIDs.length) {
                     acc[name] = {
-                        contactEmailIDs: existingContactEmailIDs.concat(contactEmailIDs),
+                        contactEmailIDs: existingContactEmailIDs.concat(
+                            contactEmailIDs
+                        ),
                         contactIDs: existingContactIDs,
                         totalContacts: existingTotalContacts + 1,
                     };
@@ -182,20 +230,29 @@ export const getImportCategories = (contacts: ImportedContact[]) => {
         .filter(isTruthy);
 };
 
-export const getImportCategoriesModel = (contacts: ImportedContact[], groups: ContactGroup[] = []) => {
+export const getImportCategoriesModel = (
+    contacts: ImportedContact[],
+    groups: ContactGroup[] = []
+) => {
     const categories = getImportCategories(contacts).map((category) => {
         const existingGroup = groups.find(({ Name }) => Name === category.name);
-        const action = existingGroup && groups.length ? IMPORT_GROUPS_ACTION.MERGE : IMPORT_GROUPS_ACTION.CREATE;
+        const action =
+            existingGroup && groups.length
+                ? IMPORT_GROUPS_ACTION.MERGE
+                : IMPORT_GROUPS_ACTION.CREATE;
         const targetGroup = existingGroup || groups[0];
-        const targetName = existingGroup ? '' : category.name;
+        const targetName = existingGroup ? "" : category.name;
         const result: ImportCategories = {
             ...category,
             action,
             targetGroup,
             targetName,
         };
-        if (action === IMPORT_GROUPS_ACTION.CREATE && FORBIDDEN_LABEL_NAMES.includes(normalize(targetName))) {
-            result.error = c('Error').t`Invalid name`;
+        if (
+            action === IMPORT_GROUPS_ACTION.CREATE &&
+            FORBIDDEN_LABEL_NAMES.includes(normalize(targetName))
+        ) {
+            result.error = c("Error").t`Invalid name`;
         }
         return result;
     });
@@ -221,7 +278,10 @@ export const splitErrors = <T>(contacts: (T | ImportContactError)[]) => {
  * @param contacts
  */
 export const splitContacts = (contacts: ContactProperties[] = []) =>
-    contacts.reduce<{ withCategories: ContactProperties[]; withoutCategories: ContactProperties[] }>(
+    contacts.reduce<{
+        withCategories: ContactProperties[];
+        withoutCategories: ContactProperties[];
+    }>(
         (acc, contact) => {
             if (hasCategories(contact)) {
                 acc.withCategories.push(contact);
@@ -237,7 +297,10 @@ export const splitContacts = (contacts: ContactProperties[] = []) =>
  * Split encrypted contacts depending on having the CATEGORIES property.
  */
 export const splitEncryptedContacts = (contacts: EncryptedContact[] = []) =>
-    contacts.reduce<{ withCategories: EncryptedContact[]; withoutCategories: EncryptedContact[] }>(
+    contacts.reduce<{
+        withCategories: EncryptedContact[];
+        withoutCategories: EncryptedContact[];
+    }>(
         (acc, contact) => {
             const {
                 contact: { Cards, error },
@@ -245,7 +308,13 @@ export const splitEncryptedContacts = (contacts: EncryptedContact[] = []) =>
             if (error) {
                 return acc;
             }
-            if (Cards.some(({ Type, Data }) => Type === CONTACT_CARD_TYPE.CLEAR_TEXT && Data.includes('CATEGORIES'))) {
+            if (
+                Cards.some(
+                    ({ Type, Data }) =>
+                        Type === CONTACT_CARD_TYPE.CLEAR_TEXT &&
+                        Data.includes("CATEGORIES")
+                )
+            ) {
                 acc.withCategories.push(contact);
             } else {
                 acc.withoutCategories.push(contact);

@@ -1,2 +1,2 @@
-export * from './reactivateKeysProcess';
-export * from './interface';
+export * from "./reactivateKeysProcess";
+export * from "./interface";

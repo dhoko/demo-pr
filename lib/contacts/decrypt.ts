@@ -5,19 +5,34 @@ import {
     verifyMessage,
     createCleartextMessage,
     VERIFICATION_STATUS,
-} from 'pmcrypto';
-import { c } from 'ttag';
-import { KeysPair } from '../interfaces';
-import { Contact, ContactCard, ContactProperties } from '../interfaces/contacts';
-import { merge, parse } from './vcard';
-import { sanitizeProperties } from './properties';
+} from "pmcrypto";
+import { c } from "ttag";
+import { KeysPair } from "../interfaces";
+import {
+    Contact,
+    ContactCard,
+    ContactProperties,
+} from "../interfaces/contacts";
+import { merge, parse } from "./vcard";
+import { sanitizeProperties } from "./properties";
 
-import { CONTACT_CARD_TYPE } from '../constants';
-import { CRYPTO_PROCESSING_TYPES } from './constants';
+import { CONTACT_CARD_TYPE } from "../constants";
+import { CRYPTO_PROCESSING_TYPES } from "./constants";
 
-const { SUCCESS, SIGNATURE_NOT_VERIFIED, FAIL_TO_READ, FAIL_TO_LOAD, FAIL_TO_DECRYPT } = CRYPTO_PROCESSING_TYPES;
+const {
+    SUCCESS,
+    SIGNATURE_NOT_VERIFIED,
+    FAIL_TO_READ,
+    FAIL_TO_LOAD,
+    FAIL_TO_DECRYPT,
+} = CRYPTO_PROCESSING_TYPES;
 
-const { CLEAR_TEXT, ENCRYPTED_AND_SIGNED, ENCRYPTED, SIGNED } = CONTACT_CARD_TYPE;
+const {
+    CLEAR_TEXT,
+    ENCRYPTED_AND_SIGNED,
+    ENCRYPTED,
+    SIGNED,
+} = CONTACT_CARD_TYPE;
 
 export interface CryptoProcessingError {
     type: Exclude<CRYPTO_PROCESSING_TYPES, CRYPTO_PROCESSING_TYPES.SUCCESS>;
@@ -31,14 +46,16 @@ interface ContactClearTextData {
 }
 
 interface ContactSignedData {
-    type: CRYPTO_PROCESSING_TYPES.SUCCESS | CRYPTO_PROCESSING_TYPES.SIGNATURE_NOT_VERIFIED;
+    type:
+        | CRYPTO_PROCESSING_TYPES.SUCCESS
+        | CRYPTO_PROCESSING_TYPES.SIGNATURE_NOT_VERIFIED;
     data: string;
     error?: Error;
 }
 
 export const decrypt = async (
     { Data }: ContactCard,
-    { privateKeys }: Pick<KeysPair, 'privateKeys'>
+    { privateKeys }: Pick<KeysPair, "privateKeys">
 ): Promise<ContactClearTextData> => {
     let message;
     try {
@@ -50,8 +67,8 @@ export const decrypt = async (
     try {
         const { data } = await decryptMessage({ message, privateKeys });
 
-        if (data && typeof data !== 'string') {
-            throw new Error('Unknown data');
+        if (data && typeof data !== "string") {
+            throw new Error("Unknown data");
         }
         return { type: SUCCESS, data };
     } catch (error) {
@@ -60,12 +77,12 @@ export const decrypt = async (
 };
 
 export const readSigned = async (
-    { Data, Signature = '' }: ContactCard,
-    { publicKeys }: Pick<KeysPair, 'publicKeys'>
+    { Data, Signature = "" }: ContactCard,
+    { publicKeys }: Pick<KeysPair, "publicKeys">
 ): Promise<ContactSignedData> => {
     try {
         if (!Signature) {
-            throw new Error(c('Error').t`Missing signature`);
+            throw new Error(c("Error").t`Missing signature`);
         }
         const signature = await getSignature(Signature);
         const { verified } = await verifyMessage({
@@ -78,7 +95,7 @@ export const readSigned = async (
             return {
                 data: Data,
                 type: SIGNATURE_NOT_VERIFIED,
-                error: new Error(c('Error').t`Contact signature not verified`),
+                error: new Error(c("Error").t`Contact signature not verified`),
             };
         }
         return { type: SUCCESS, data: Data };
@@ -96,9 +113,15 @@ export const decryptSigned = async (
 
     try {
         if (!Signature) {
-            return { type: FAIL_TO_LOAD, error: new Error(c('Error').t`Missing signature`) };
+            return {
+                type: FAIL_TO_LOAD,
+                error: new Error(c("Error").t`Missing signature`),
+            };
         }
-        [message, signature] = await Promise.all([getMessage(Data), getSignature(Signature)]);
+        [message, signature] = await Promise.all([
+            getMessage(Data),
+            getSignature(Signature),
+        ]);
     } catch (error) {
         return { type: FAIL_TO_READ, error };
     }
@@ -111,12 +134,16 @@ export const decryptSigned = async (
             signature,
         });
 
-        if (data && typeof data !== 'string') {
-            throw new Error('Unknown data');
+        if (data && typeof data !== "string") {
+            throw new Error("Unknown data");
         }
 
         if (verified !== 1) {
-            return { data, type: SIGNATURE_NOT_VERIFIED, error: new Error(c('Error').t`Signature not verified`) };
+            return {
+                data,
+                type: SIGNATURE_NOT_VERIFIED,
+                error: new Error(c("Error").t`Signature not verified`),
+            };
         }
 
         return { type: SUCCESS, data };
@@ -125,7 +152,10 @@ export const decryptSigned = async (
     }
 };
 
-const clearText = ({ Data }: ContactCard): ContactClearTextData => ({ type: SUCCESS, data: Data });
+const clearText = ({ Data }: ContactCard): ContactClearTextData => ({
+    type: SUCCESS,
+    data: Data,
+});
 
 const ACTIONS: { [index: number]: any } = {
     [ENCRYPTED_AND_SIGNED]: decryptSigned,
@@ -137,7 +167,10 @@ const ACTIONS: { [index: number]: any } = {
 export const prepareContact = async (
     contact: Contact,
     { publicKeys, privateKeys }: KeysPair
-): Promise<{ properties: ContactProperties; errors: CryptoProcessingError[] }> => {
+): Promise<{
+    properties: ContactProperties;
+    errors: CryptoProcessingError[];
+}> => {
     const { Cards } = contact;
 
     const decryptedCards = await Promise.all(
@@ -151,10 +184,13 @@ export const prepareContact = async (
 
     // remove UIDs put by mistake in encrypted cards
     const sanitizedCards = decryptedCards.map((card, i) => {
-        if (![ENCRYPTED_AND_SIGNED, ENCRYPTED].includes(Cards[i].Type) || !card.data) {
+        if (
+            ![ENCRYPTED_AND_SIGNED, ENCRYPTED].includes(Cards[i].Type) ||
+            !card.data
+        ) {
             return card;
         }
-        return { ...card, data: card.data.replace(/\nUID:.*\n/i, '\n') };
+        return { ...card, data: card.data.replace(/\nUID:.*\n/i, "\n") };
     });
 
     const { vcards, errors } = sanitizedCards.reduce(

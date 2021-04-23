@@ -1,5 +1,5 @@
-import { computeKeyPassword, generateKeySalt } from 'pm-srp';
-import { decryptPrivateKey, OpenPGPKey } from 'pmcrypto';
+import { computeKeyPassword, generateKeySalt } from "pm-srp";
+import { decryptPrivateKey, OpenPGPKey } from "pmcrypto";
 
 import {
     Address as tsAddress,
@@ -10,20 +10,23 @@ import {
     CachedOrganizationKey,
     DecryptedKey,
     SignedKeyList,
-} from '../interfaces';
-import { getOrganizationKeys } from '../api/organization';
-import { hasAddressKeyMigration as originalHasAdressKeyMigration, USER_ROLES } from '../constants';
-import { srpVerify } from '../srp';
-import { generateAddressKeyTokens, reformatAddressKey } from './addressKeys';
-import { getDecryptedOrganizationKey } from './getDecryptedOrganizationKey';
-import { reformatOrganizationKey } from './organizationKeys';
-import { UpgradeAddressKeyPayload, upgradeKeysRoute } from '../api/keys';
-import { getDecryptedUserKeys } from './getDecryptedUserKeys';
-import { getDecryptedAddressKeys } from './getDecryptedAddressKeys';
-import { toMap } from '../helpers/object';
-import { USER_KEY_USERID } from './userKeys';
-import { getActiveKeys } from './getActiveKeys';
-import { getSignedKeyList } from './signedKeyList';
+} from "../interfaces";
+import { getOrganizationKeys } from "../api/organization";
+import {
+    hasAddressKeyMigration as originalHasAdressKeyMigration,
+    USER_ROLES,
+} from "../constants";
+import { srpVerify } from "../srp";
+import { generateAddressKeyTokens, reformatAddressKey } from "./addressKeys";
+import { getDecryptedOrganizationKey } from "./getDecryptedOrganizationKey";
+import { reformatOrganizationKey } from "./organizationKeys";
+import { UpgradeAddressKeyPayload, upgradeKeysRoute } from "../api/keys";
+import { getDecryptedUserKeys } from "./getDecryptedUserKeys";
+import { getDecryptedAddressKeys } from "./getDecryptedAddressKeys";
+import { toMap } from "../helpers/object";
+import { USER_KEY_USERID } from "./userKeys";
+import { getActiveKeys } from "./getActiveKeys";
+import { getSignedKeyList } from "./signedKeyList";
 
 export const getV2KeyToUpgrade = (Key: tsKey) => {
     return Key.Version < 3;
@@ -43,7 +46,11 @@ export const getHasV2KeysToUpgrade = (User: tsUser, Addresses: tsAddress[]) => {
     );
 };
 
-const getReformattedKeys = (keys: DecryptedKey[], email: string, passphrase: string) => {
+const getReformattedKeys = (
+    keys: DecryptedKey[],
+    email: string,
+    passphrase: string
+) => {
     return Promise.all(
         keys.map(async ({ privateKey, ID }) => {
             const { privateKeyArmored } = await reformatAddressKey({
@@ -59,11 +66,22 @@ const getReformattedKeys = (keys: DecryptedKey[], email: string, passphrase: str
     );
 };
 
-const getReformattedAddressKeysV2 = (keys: DecryptedKey[], email: string, userKey: OpenPGPKey) => {
+const getReformattedAddressKeysV2 = (
+    keys: DecryptedKey[],
+    email: string,
+    userKey: OpenPGPKey
+) => {
     return Promise.all(
         keys.map(async ({ privateKey, ID }) => {
-            const { token, encryptedToken, signature } = await generateAddressKeyTokens(userKey);
-            const { privateKey: reformattedPrivateKey, privateKeyArmored } = await reformatAddressKey({
+            const {
+                token,
+                encryptedToken,
+                signature,
+            } = await generateAddressKeyTokens(userKey);
+            const {
+                privateKey: reformattedPrivateKey,
+                privateKeyArmored,
+            } = await reformatAddressKey({
                 email,
                 passphrase: token,
                 privateKey,
@@ -108,19 +126,34 @@ export const upgradeV2KeysLegacy = async ({
     api,
 }: UpgradeV2KeysLegacyArgs) => {
     const keySalt = generateKeySalt();
-    const newKeyPassword: string = await computeKeyPassword(clearKeyPassword, keySalt);
+    const newKeyPassword: string = await computeKeyPassword(
+        clearKeyPassword,
+        keySalt
+    );
 
-    const [reformattedUserKeys, reformattedAddressesKeys, reformattedOrganizationKey] = await Promise.all([
+    const [
+        reformattedUserKeys,
+        reformattedAddressesKeys,
+        reformattedOrganizationKey,
+    ] = await Promise.all([
         getReformattedKeys(userKeys, USER_KEY_USERID, newKeyPassword),
         Promise.all(
             addressesKeys.map(({ address, keys }) => {
                 return getReformattedKeys(keys, address.Email, newKeyPassword);
             })
         ),
-        organizationKey?.privateKey ? reformatOrganizationKey(organizationKey.privateKey, newKeyPassword) : undefined,
+        organizationKey?.privateKey
+            ? reformatOrganizationKey(
+                  organizationKey.privateKey,
+                  newKeyPassword
+              )
+            : undefined,
     ]);
 
-    const reformattedKeys = [...reformattedUserKeys, ...reformattedAddressesKeys.flat()];
+    const reformattedKeys = [
+        ...reformattedUserKeys,
+        ...reformattedAddressesKeys.flat(),
+    ];
 
     const config = upgradeKeysRoute({
         KeySalt: keySalt,
@@ -154,17 +187,35 @@ export const upgradeV2KeysV2 = async ({
         return;
     }
     const keySalt = generateKeySalt();
-    const newKeyPassword: string = await computeKeyPassword(clearKeyPassword, keySalt);
-    const [reformattedUserKeys, reformattedOrganizationKey] = await Promise.all([
+    const newKeyPassword: string = await computeKeyPassword(
+        clearKeyPassword,
+        keySalt
+    );
+    const [
+        reformattedUserKeys,
+        reformattedOrganizationKey,
+    ] = await Promise.all([
         getReformattedKeys(userKeys, USER_KEY_USERID, newKeyPassword),
-        organizationKey?.privateKey ? reformatOrganizationKey(organizationKey.privateKey, newKeyPassword) : undefined,
+        organizationKey?.privateKey
+            ? reformatOrganizationKey(
+                  organizationKey.privateKey,
+                  newKeyPassword
+              )
+            : undefined,
     ]);
 
-    const primaryUserKey = await decryptPrivateKey(reformattedUserKeys[0].PrivateKey, newKeyPassword);
+    const primaryUserKey = await decryptPrivateKey(
+        reformattedUserKeys[0].PrivateKey,
+        newKeyPassword
+    );
 
     const reformattedAddressesKeys = await Promise.all(
         addressesKeys.map(async ({ address, keys }) => {
-            const reformattedAddressKeys = await getReformattedAddressKeysV2(keys, address.Email, primaryUserKey);
+            const reformattedAddressKeys = await getReformattedAddressKeysV2(
+                keys,
+                address.Email,
+                primaryUserKey
+            );
             const [decryptedKeys, addressKeys] = reformattedAddressKeys.reduce<
                 [DecryptedKey[], UpgradeAddressKeyPayload[]]
             >(
@@ -175,7 +226,11 @@ export const upgradeV2KeysV2 = async ({
                 },
                 [[], []]
             );
-            const activeKeys = await getActiveKeys(address.SignedKeyList, address.Keys, decryptedKeys);
+            const activeKeys = await getActiveKeys(
+                address.SignedKeyList,
+                address.Keys,
+                decryptedKeys
+            );
             return {
                 address,
                 addressKeys,
@@ -184,14 +239,15 @@ export const upgradeV2KeysV2 = async ({
         })
     );
 
-    const AddressKeys = reformattedAddressesKeys.map(({ addressKeys }) => addressKeys).flat();
-    const SignedKeyLists = reformattedAddressesKeys.reduce<{ [id: string]: SignedKeyList }>(
-        (acc, { address, signedKeyList }) => {
-            acc[address.ID] = signedKeyList;
-            return acc;
-        },
-        {}
-    );
+    const AddressKeys = reformattedAddressesKeys
+        .map(({ addressKeys }) => addressKeys)
+        .flat();
+    const SignedKeyLists = reformattedAddressesKeys.reduce<{
+        [id: string]: SignedKeyList;
+    }>((acc, { address, signedKeyList }) => {
+        acc[address.ID] = signedKeyList;
+        return acc;
+    }, {});
 
     const config = upgradeKeysRoute({
         KeySalt: keySalt,
@@ -235,7 +291,11 @@ export const upgradeV2KeysHelper = async ({
     api,
     hasAddressKeyMigration = originalHasAdressKeyMigration,
 }: UpgradeV2KeysHelperArgs) => {
-    const userKeys = await getDecryptedUserKeys({ user, userKeys: user.Keys, keyPassword });
+    const userKeys = await getDecryptedUserKeys({
+        user,
+        userKeys: user.Keys,
+        keyPassword,
+    });
 
     const addressesKeys = await Promise.all(
         addresses.map(async (address) => {
@@ -254,31 +314,37 @@ export const upgradeV2KeysHelper = async ({
 
     const organizationKey =
         user.Role === USER_ROLES.ADMIN_ROLE
-            ? await api<tsOrganizationKey>(getOrganizationKeys()).then((Key) => {
-                  return getDecryptedOrganizationKey({ keyPassword, Key });
-              })
+            ? await api<tsOrganizationKey>(getOrganizationKeys()).then(
+                  (Key) => {
+                      return getDecryptedOrganizationKey({ keyPassword, Key });
+                  }
+              )
             : undefined;
 
     if (!clearKeyPassword || !loginPassword) {
-        throw new Error('Password required');
+        throw new Error("Password required");
     }
     // Not allowed signed into member
     if (user.OrganizationPrivateKey) {
         return;
     }
 
-    const userKeyMap = toMap(user.Keys, 'ID');
-    const hasDecryptedUserKeysToUpgrade = userKeys.some(({ privateKey, ID }) => {
-        const Key = userKeyMap[ID];
-        return Key && privateKey && getV2KeyToUpgrade(Key);
-    });
-    const hasDecryptedAddressKeyToUpgrade = addressesKeys.some(({ address, keys }) => {
-        const addressKeyMap = toMap(address.Keys, 'ID');
-        return keys.some(({ privateKey, ID }) => {
-            const Key = addressKeyMap[ID];
+    const userKeyMap = toMap(user.Keys, "ID");
+    const hasDecryptedUserKeysToUpgrade = userKeys.some(
+        ({ privateKey, ID }) => {
+            const Key = userKeyMap[ID];
             return Key && privateKey && getV2KeyToUpgrade(Key);
-        });
-    });
+        }
+    );
+    const hasDecryptedAddressKeyToUpgrade = addressesKeys.some(
+        ({ address, keys }) => {
+            const addressKeyMap = toMap(address.Keys, "ID");
+            return keys.some(({ privateKey, ID }) => {
+                const Key = addressKeyMap[ID];
+                return Key && privateKey && getV2KeyToUpgrade(Key);
+            });
+        }
+    );
 
     if (!hasDecryptedUserKeysToUpgrade && !hasDecryptedAddressKeyToUpgrade) {
         return;

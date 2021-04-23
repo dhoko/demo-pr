@@ -5,7 +5,11 @@
  * @param failed       Number of tasks that failed
  * @param total        Total number of tasks
  */
-export const percentageProgress = (successful: number, failed: number, total: number) => {
+export const percentageProgress = (
+    successful: number,
+    failed: number,
+    total: number
+) => {
     if (+total === 0) {
         // assume the process has not started
         return 0;
@@ -22,9 +26,18 @@ export const percentageProgress = (successful: number, failed: number, total: nu
  * @return Combined progrees
  */
 export const combineProgress = (
-    processes: { allocated: number; successful: number; failed: number; total: number }[] = []
+    processes: {
+        allocated: number;
+        successful: number;
+        failed: number;
+        total: number;
+    }[] = []
 ) => {
-    const { combinedTotal, combinedAllocations, progresses } = processes.reduce<{
+    const {
+        combinedTotal,
+        combinedAllocations,
+        progresses,
+    } = processes.reduce<{
         combinedTotal: number;
         combinedAllocations: number;
         progresses: number[];
@@ -38,17 +51,21 @@ export const combineProgress = (
         { combinedTotal: 0, combinedAllocations: 0, progresses: [] }
     );
     if (combinedAllocations !== 1 && !!processes.length) {
-        throw new Error('Allocations must add up to one');
+        throw new Error("Allocations must add up to one");
     }
     if (!combinedTotal) {
         return 0;
     }
-    const combinedProgress = processes.reduce((acc, { allocated, total }, i) => {
-        // set progress to 100 if there are no tasks to be performed for this process,
-        // but there are tasks in other processes
-        const progress = allocated * (!total && !!combinedTotal ? 100 : progresses[i]);
-        return acc + progress;
-    }, 0);
+    const combinedProgress = processes.reduce(
+        (acc, { allocated, total }, i) => {
+            // set progress to 100 if there are no tasks to be performed for this process,
+            // but there are tasks in other processes
+            const progress =
+                allocated * (!total && !!combinedTotal ? 100 : progresses[i]);
+            return acc + progress;
+        },
+        0
+    );
 
     return Math.round(combinedProgress);
 };

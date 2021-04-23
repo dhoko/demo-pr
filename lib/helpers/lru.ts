@@ -12,7 +12,10 @@ function createLRU<K, V>({ max, onDispose }: Args<K, V>): Map<K, V> {
         get size() {
             return map.size;
         },
-        forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any) {
+        forEach(
+            callbackfn: (value: V, key: K, map: Map<K, V>) => void,
+            thisArg?: any
+        ) {
             return map.forEach(callbackfn, thisArg);
         },
         clear: () => map.clear(),

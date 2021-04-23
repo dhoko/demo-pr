@@ -1,5 +1,5 @@
-import { MIME_TYPES } from '../../constants';
-import { Recipient } from '../Address';
+import { MIME_TYPES } from "../../constants";
+import { Recipient } from "../Address";
 
 export interface Attachment {
     ID?: string;
@@ -21,7 +21,7 @@ export interface UnsubscribeMethods {
         ToList: string[];
     };
     HttpClient?: string;
-    OneClick?: 'OneClick';
+    OneClick?: "OneClick";
 }
 
 export interface Message {

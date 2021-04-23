@@ -9,16 +9,20 @@ import {
     VERIFICATION_STATUS,
     decryptPrivateKey,
     OpenPGPKey,
-} from 'pmcrypto';
-import getRandomValues from 'get-random-values';
-import { c } from 'ttag';
+} from "pmcrypto";
+import getRandomValues from "get-random-values";
+import { c } from "ttag";
 
-import { ENCRYPTION_TYPES, ENCRYPTION_CONFIGS } from '../constants';
-import { normalize } from '../helpers/string';
-import { uint8ArrayToBase64String } from '../helpers/encoding';
-import { Address, EncryptionConfig } from '../interfaces';
-import { DecryptedCalendarKey, CalendarKey as tsKey, Member } from '../interfaces/calendar';
-import isTruthy from '../helpers/isTruthy';
+import { ENCRYPTION_TYPES, ENCRYPTION_CONFIGS } from "../constants";
+import { normalize } from "../helpers/string";
+import { uint8ArrayToBase64String } from "../helpers/encoding";
+import { Address, EncryptionConfig } from "../interfaces";
+import {
+    DecryptedCalendarKey,
+    CalendarKey as tsKey,
+    Member,
+} from "../interfaces/calendar";
+import isTruthy from "../helpers/isTruthy";
 
 export const generatePassphrase = () => {
     const value = getRandomValues(new Uint8Array(32));
@@ -36,7 +40,7 @@ export const generateCalendarKey = async ({
     encryptionConfig: EncryptionConfig;
 }) => {
     const { key: privateKey, privateKeyArmored } = await generateKey({
-        userIds: [{ name: 'Calendar key' }],
+        userIds: [{ name: "Calendar key" }],
         passphrase,
         ...encryptionConfig,
     });
@@ -97,15 +101,18 @@ export const decryptPassphrase = async ({
     });
 
     if (verified !== VERIFICATION_STATUS.SIGNED_AND_VALID) {
-        const error = new Error(c('Error').t`Signature verification failed`);
-        error.name = 'SignatureError';
+        const error = new Error(c("Error").t`Signature verification failed`);
+        error.name = "SignatureError";
         throw error;
     }
 
     return decryptedPassphrase as string;
 };
 
-export const getAddressesMembersMap = (Members: Member[], Addresses: Address[]) => {
+export const getAddressesMembersMap = (
+    Members: Member[],
+    Addresses: Address[]
+) => {
     return Members.reduce<{ [key: string]: Address }>((acc, Member) => {
         const Address = Addresses.find(({ Email }) => Email === Member.Email);
         if (!Address) {
@@ -128,7 +135,7 @@ export const getDecryptedCalendarKeys = async (
     const process = async (Key: tsKey) => {
         try {
             const { PrivateKey, PassphraseID } = Key;
-            const passphrase = passphrasesMap[PassphraseID] || '';
+            const passphrase = passphrasesMap[PassphraseID] || "";
             const privateKey = await decryptPrivateKey(PrivateKey, passphrase);
             return {
                 Key,
@@ -147,11 +154,17 @@ export const getDecryptedCalendarKeys = async (
 /**
  * Convert a map of email -> value to the corresponding member id -> value
  */
-export const getKeysMemberMap = <T>(Members: Member[] = [], emailMap: { [key: string]: T } = {}) => {
+export const getKeysMemberMap = <T>(
+    Members: Member[] = [],
+    emailMap: { [key: string]: T } = {}
+) => {
     return Object.keys(emailMap).reduce<{ [key: string]: T }>((acc, email) => {
-        const { ID: memberID } = Members.find(({ Email }) => normalize(Email) === normalize(email)) || {};
+        const { ID: memberID } =
+            Members.find(
+                ({ Email }) => normalize(Email) === normalize(email)
+            ) || {};
         if (!memberID) {
-            throw new Error(c('Error').t`Could not find address ${email}.`);
+            throw new Error(c("Error").t`Could not find address ${email}.`);
         }
         acc[memberID] = emailMap[email];
         return acc;
@@ -171,7 +184,11 @@ export const generateCalendarKeyPayload = async ({
     const encryptionConfig = ENCRYPTION_CONFIGS[ENCRYPTION_TYPES.X25519];
     const [
         { privateKeyArmored: PrivateKey },
-        { dataPacket: DataPacket, keyPackets: KeyPackets, signature: Signature },
+        {
+            dataPacket: DataPacket,
+            keyPackets: KeyPackets,
+            signature: Signature,
+        },
     ] = await Promise.all([
         generateCalendarKey({ passphrase, encryptionConfig }),
         encryptPassphrase({ passphrase, privateKey, memberPublicKeys }),

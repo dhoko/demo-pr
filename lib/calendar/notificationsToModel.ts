@@ -1,13 +1,16 @@
-import generateUID from '../helpers/generateUID';
+import generateUID from "../helpers/generateUID";
 
-import { filterFutureNotifications } from './alarms';
-import { CalendarNotificationSettings } from '../interfaces/calendar';
-import { triggerToModel } from './notificationModel';
-import { fromTriggerString } from './vcal';
+import { filterFutureNotifications } from "./alarms";
+import { CalendarNotificationSettings } from "../interfaces/calendar";
+import { triggerToModel } from "./notificationModel";
+import { fromTriggerString } from "./vcal";
 
-export const notificationsToModel = (notifications: CalendarNotificationSettings[] = [], isAllDay: boolean) => {
+export const notificationsToModel = (
+    notifications: CalendarNotificationSettings[] = [],
+    isAllDay: boolean
+) => {
     const modelNotifications = notifications.map(({ Type, Trigger }) => ({
-        id: generateUID('notification'),
+        id: generateUID("notification"),
         ...triggerToModel({
             isAllDay,
             type: Type,

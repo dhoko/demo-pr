@@ -8,6 +8,6 @@ export const sendFeedback = ({
     FeedbackType: string;
 }) => ({
     url: `v4/feedback`,
-    method: 'post',
+    method: "post",
     data: { Score, Feedback, FeedbackType },
 });

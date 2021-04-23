@@ -1,12 +1,21 @@
-import { decryptMessage, encryptMessage, getMessage, OpenPGPKey, VERIFICATION_STATUS } from 'pmcrypto';
-import getRandomValues from 'get-random-values';
+import {
+    decryptMessage,
+    encryptMessage,
+    getMessage,
+    OpenPGPKey,
+    VERIFICATION_STATUS,
+} from "pmcrypto";
+import getRandomValues from "get-random-values";
 
-import { uint8ArrayToBase64String } from '../helpers/encoding';
+import { uint8ArrayToBase64String } from "../helpers/encoding";
 
 /**
  * Decrypts a member token with the organization private key
  */
-export const decryptMemberToken = async (token: string, privateKey: OpenPGPKey) => {
+export const decryptMemberToken = async (
+    token: string,
+    privateKey: OpenPGPKey
+) => {
     const { data: decryptedToken, verified } = await decryptMessage({
         message: await getMessage(token),
         privateKeys: [privateKey],
@@ -14,8 +23,8 @@ export const decryptMemberToken = async (token: string, privateKey: OpenPGPKey) 
     });
 
     if (verified !== VERIFICATION_STATUS.SIGNED_AND_VALID) {
-        const error = new Error('Signature verification failed');
-        error.name = 'SignatureError';
+        const error = new Error("Signature verification failed");
+        error.name = "SignatureError";
         throw error;
     }
 
@@ -35,7 +44,10 @@ export const generateMemberToken = () => {
  * @param token - The member key token
  * @param privateKey - The key to encrypt the token with
  */
-export const encryptMemberToken = async (token: string, privateKey: OpenPGPKey) => {
+export const encryptMemberToken = async (
+    token: string,
+    privateKey: OpenPGPKey
+) => {
     const { data: encryptedToken } = await encryptMessage({
         data: token,
         publicKeys: [privateKey.toPublic()],

@@ -1,19 +1,23 @@
-import { APP_NAMES, FORKABLE_APPS } from '../constants';
-import { stringToUint8Array, decodeBase64URL } from '../helpers/encoding';
-import { FORK_TYPE } from './ForkInterface';
+import { APP_NAMES, FORKABLE_APPS } from "../constants";
+import { stringToUint8Array, decodeBase64URL } from "../helpers/encoding";
+import { FORK_TYPE } from "./ForkInterface";
 
-export const getValidatedApp = (app = ''): APP_NAMES | undefined => {
+export const getValidatedApp = (app = ""): APP_NAMES | undefined => {
     if (FORKABLE_APPS.has(app as any)) {
         return app as APP_NAMES;
     }
 };
 
-export const getValidatedLocalID = (localID = '') => {
+export const getValidatedLocalID = (localID = "") => {
     if (!localID) {
         return;
     }
     const maybeLocalID = parseInt(localID, 10);
-    if (Number.isInteger(maybeLocalID) && maybeLocalID >= 0 && maybeLocalID <= 100000000) {
+    if (
+        Number.isInteger(maybeLocalID) &&
+        maybeLocalID >= 0 &&
+        maybeLocalID <= 100000000
+    ) {
         return maybeLocalID;
     }
 };

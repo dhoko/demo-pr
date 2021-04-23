@@ -1,11 +1,11 @@
-import Push from 'push.js';
+import Push from "push.js";
 
-import { noop } from './function';
+import { noop } from "./function";
 
 export enum Status {
-    DENIED = 'denied',
-    DEFAULT = 'default',
-    GRANTED = 'granted',
+    DENIED = "denied",
+    DEFAULT = "default",
+    GRANTED = "granted",
 }
 
 export const getStatus = (): Status => {
@@ -24,7 +24,10 @@ export const isEnabled = (): boolean => Push.Permission.has();
 
 export const clear = () => Push.clear();
 
-export const request = (onGranted: () => void = noop, onDenied: () => void = noop) => {
+export const request = (
+    onGranted: () => void = noop,
+    onDenied: () => void = noop
+) => {
     try {
         Push.Permission.request(onGranted, onDenied);
     } catch (err) {
@@ -42,7 +45,7 @@ export const request = (onGranted: () => void = noop, onDenied: () => void = noo
  * @param title
  * @param params https://pushjs.org/docs/options
  */
-export const create = async (title = '', params = {}) => {
+export const create = async (title = "", params = {}) => {
     if (!isEnabled()) {
         return;
     }
